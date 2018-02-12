@@ -21,6 +21,12 @@ Simple Query
 query.Where("FirstName", ConditionOperators.Equal, "David");
 ```
 
+Simple Sorting
+```csharp
+query = query.OrderByDescending("AuthorId");
+query = query.ThenBy("Id");
+```
+
 Using Query Builder
 ```csharp
 // subject.
