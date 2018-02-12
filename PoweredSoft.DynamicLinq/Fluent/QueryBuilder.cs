@@ -14,7 +14,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public Type QueryableType { get; set; }
 
-        public List<QueryFilterPart> Parts { get; protected set; } = new List<QueryFilterPart>();
+        public List<QueryBuilderFilter> Parts { get; protected set; } = new List<QueryBuilderFilter>();
 
         public QueryBuilder(IQueryable<T> query)
         {
@@ -25,7 +25,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, 
             bool and = true)
         {
-            Parts.Add(new QueryFilterPart
+            Parts.Add(new QueryBuilderFilter
             {
                 And = and,
                 ConditionOperator = conditionOperators,
@@ -46,7 +46,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             subQuery(qb);
             
             // create a query part.
-            var part = new QueryFilterPart();
+            var part = new QueryBuilderFilter();
             part.And = and;
             part.Parts = qb.Parts;
             Parts.Add(part);
@@ -88,20 +88,20 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return query;
         }
 
-        protected virtual Expression BuildFilterExpression(ParameterExpression parameter, List<QueryFilterPart> parts)
+        protected virtual Expression BuildFilterExpression(ParameterExpression parameter, List<QueryBuilderFilter> filters)
         {
             Expression ret = null;
 
-            parts.ForEach(part =>
+            filters.ForEach(filter =>
             {
                 Expression innerExpression;
-                if (part.Parts?.Any() == true)
-                    innerExpression = BuildFilterExpression(parameter, part.Parts);
+                if (filter.Parts?.Any() == true)
+                    innerExpression = BuildFilterExpression(parameter, filter.Parts);
                 else
-                    innerExpression = BuildFilterExpression(parameter, part);
+                    innerExpression = BuildFilterExpression(parameter, filter);
 
                 if (ret != null)
-                    ret = part.And ? Expression.And(ret, innerExpression) : Expression.Or(ret, innerExpression);
+                    ret = filter.And ? Expression.And(ret, innerExpression) : Expression.Or(ret, innerExpression);
                 else
                     ret = innerExpression;
             });
@@ -109,11 +109,11 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return ret;
         }
 
-        protected virtual Expression BuildFilterExpression(ParameterExpression parameter, QueryFilterPart part)
+        protected virtual Expression BuildFilterExpression(ParameterExpression parameter, QueryBuilderFilter filter)
         {
-            var member = QueryableHelpers.ResolvePathForExpression(parameter, part.Path);
-            var constant = QueryableHelpers.ResolveConstant(member, part.Value, part.ConvertStrategy);
-            var expression = QueryableHelpers.GetConditionExpressionForMember(parameter, member, part.ConditionOperator, constant);
+            var member = QueryableHelpers.ResolvePathForExpression(parameter, filter.Path);
+            var constant = QueryableHelpers.ResolveConstant(member, filter.Value, filter.ConvertStrategy);
+            var expression = QueryableHelpers.GetConditionExpressionForMember(parameter, member, filter.ConditionOperator, constant);
             return expression;
         }
     }

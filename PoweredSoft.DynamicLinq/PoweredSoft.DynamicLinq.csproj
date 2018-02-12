@@ -46,7 +46,7 @@
     <Compile Include="Helpers\TypeHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Fluent\QueryBuilder.cs" />
-    <Compile Include="Fluent\QueryFilterPart.cs" />
+    <Compile Include="Fluent\QueryBuilderFilter.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
