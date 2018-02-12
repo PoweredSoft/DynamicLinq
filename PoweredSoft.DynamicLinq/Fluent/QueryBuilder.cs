@@ -73,22 +73,22 @@ namespace PoweredSoft.DynamicLinq.Fluent
             var query = Query;
 
             // execute the filters.
-            query = ExecuteFilters(query);
+            query = BuildFilters(query);
 
             
             return query;
         }
 
-        protected virtual IQueryable<T> ExecuteFilters(IQueryable<T> query)
+        protected virtual IQueryable<T> BuildFilters(IQueryable<T> query)
         {
             var parameter = Expression.Parameter(typeof(T), "t");
-            var expression = BuildExpression(parameter, Parts);
+            var expression = BuildFilterExpression(parameter, Parts);
             var lambda = Expression.Lambda<Func<T, bool>>(expression, parameter);
             query = query.Where(lambda);
             return query;
         }
 
-        protected virtual Expression BuildExpression(ParameterExpression parameter, List<QueryFilterPart> parts)
+        protected virtual Expression BuildFilterExpression(ParameterExpression parameter, List<QueryFilterPart> parts)
         {
             Expression ret = null;
 
@@ -96,9 +96,9 @@ namespace PoweredSoft.DynamicLinq.Fluent
             {
                 Expression innerExpression;
                 if (part.Parts?.Any() == true)
-                    innerExpression = BuildExpression(parameter, part.Parts);
+                    innerExpression = BuildFilterExpression(parameter, part.Parts);
                 else
-                    innerExpression = BuildExpression(parameter, part);
+                    innerExpression = BuildFilterExpression(parameter, part);
 
                 if (ret != null)
                     ret = part.And ? Expression.And(ret, innerExpression) : Expression.Or(ret, innerExpression);
@@ -109,7 +109,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return ret;
         }
 
-        protected virtual Expression BuildExpression(ParameterExpression parameter, QueryFilterPart part)
+        protected virtual Expression BuildFilterExpression(ParameterExpression parameter, QueryFilterPart part)
         {
             var member = QueryableHelpers.ResolvePathForExpression(parameter, part.Path);
             var constant = QueryableHelpers.ResolveConstant(member, part.Value, part.ConvertStrategy);
