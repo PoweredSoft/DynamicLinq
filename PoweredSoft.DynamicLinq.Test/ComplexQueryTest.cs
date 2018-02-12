@@ -26,10 +26,17 @@ namespace PoweredSoft.DynamicLinq.Test
             // the query.
             var query = authors.AsQueryable();
 
-            query = query.Query(q => q
-                .Compare("AuthorId", ConditionOperators.Equal, 1)
-                .Or("AuthorId", ConditionOperators.Equal, 2)
-            );
+            query = query.Query(q =>
+            {
+                q.Compare("AuthorId", ConditionOperators.Equal, 1);
+                q.And(sq =>
+                {
+                    sq.Compare("Content", ConditionOperators.Equal, "World");
+                    sq.Or("Title", ConditionOperators.Contains, 3);
+                });
+            });
+
+            Assert.AreEqual(2, query.Count());
         }
     }
 }
