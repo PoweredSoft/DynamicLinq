@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -90,6 +91,31 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 return QueryableHelpers.GetConstantSameAsLeftOperator(member, value);
 
             throw new NotSupportedException($"{convertStrategy} supplied is not recognized");
+        }
+
+        public static IQueryable<T> CreateSortExpression<T>(IQueryable<T> query, string sortPath, SortOrder sortOrder, bool appendSort = true)
+        {
+            var parameter = Expression.Parameter(typeof(T), "t");
+            var member = QueryableHelpers.ResolvePathForExpression(parameter, sortPath);
+
+            string sortCommand = null;
+            if (sortOrder == SortOrder.Descending)
+                sortCommand = appendSort == false ? "OrderByDescending" : "ThenByDescending";
+            else
+                sortCommand = appendSort == false ? "OrderBy" : "ThenBy";
+
+            var expression = Expression.Lambda(member, parameter);
+
+            var resultExpression = Expression.Call
+                    (typeof(Queryable),
+                    sortCommand,
+                    new Type[] { typeof(T), member.Type },
+                    query.Expression,
+                    Expression.Quote(expression)
+                );
+
+            query = query.Provider.CreateQuery<T>(resultExpression);
+            return query;
         }
     }
 }

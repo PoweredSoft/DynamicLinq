@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Extensions\QueryableExtensions.cs" />
+    <Compile Include="Fluent\QueryBuilderSort.cs" />
     <Compile Include="Helpers\QueryableHelpers.cs" />
     <Compile Include="Helpers\TypeHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

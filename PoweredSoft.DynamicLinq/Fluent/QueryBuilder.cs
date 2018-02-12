@@ -1,6 +1,7 @@
 ﻿using PoweredSoft.DynamicLinq.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -14,7 +15,9 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public Type QueryableType { get; set; }
 
-        public List<QueryBuilderFilter> Parts { get; protected set; } = new List<QueryBuilderFilter>();
+        public List<QueryBuilderFilter> Filters { get; protected set; } = new List<QueryBuilderFilter>();
+
+        public List<QueryBuilderSort> Sorts { get; protected set; } = new List<QueryBuilderSort>();
 
         public QueryBuilder(IQueryable<T> query)
         {
@@ -25,7 +28,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, 
             bool and = true)
         {
-            Parts.Add(new QueryBuilderFilter
+            Filters.Add(new QueryBuilderFilter
             {
                 And = and,
                 ConditionOperator = conditionOperators,
@@ -34,6 +37,17 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 ConvertStrategy = convertStrategy
             });
 
+            return this;
+        }
+
+        public virtual QueryBuilder<T> Sort(string path, SortOrder sortOrder, bool appendSort)
+        {
+            Sorts.Add(new QueryBuilderSort
+            {
+                Path = path,
+                SortOrder = sortOrder,
+                AppendSort = appendSort
+            });
             return this;
         }
 
@@ -48,8 +62,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
             // create a query part.
             var part = new QueryBuilderFilter();
             part.And = and;
-            part.Parts = qb.Parts;
-            Parts.Add(part);
+            part.Parts = qb.Filters;
+            Filters.Add(part);
             
             //return self.
             return this;
@@ -72,17 +86,78 @@ namespace PoweredSoft.DynamicLinq.Fluent
             // the query.
             var query = Query;
 
-            // execute the filters.
+            // build the filters.
             query = BuildFilters(query);
 
+            // build the sorts
+            query = BuildSorts(query);
             
+            return query;
+        }
+
+        public virtual QueryBuilder<T> OrderBy(string path)
+        {
+            Sorts.Clear();
+            Sorts.Add(new QueryBuilderSort
+            {
+                Path = path,
+                SortOrder = SortOrder.Ascending,
+                AppendSort = false
+            });
+            return this;
+        }
+
+        public virtual QueryBuilder<T> OrderByDescending(string path)
+        {
+            Sorts.Clear();
+            Sorts.Add(new QueryBuilderSort
+            {
+                Path = path,
+                SortOrder = SortOrder.Descending,
+                AppendSort = false
+            });
+            return this;
+        }
+
+        public virtual QueryBuilder<T> ThenBy(string path)
+        {
+            Sorts.Add(new QueryBuilderSort
+            {
+                Path = path,
+                SortOrder = SortOrder.Ascending,
+                AppendSort = true
+            });
+            return this;
+        }
+
+        public virtual QueryBuilder<T> ThenByDescending(string path)
+        {
+            Sorts.Add(new QueryBuilderSort
+            {
+                Path = path,
+                SortOrder = SortOrder.Descending,
+                AppendSort = true
+            });
+            return this;
+        }
+
+        protected virtual IQueryable<T> BuildSorts(IQueryable<T> query)
+        {
+            Sorts.ForEach(sort =>
+            {
+                query = QueryableHelpers.CreateSortExpression(query, sort.Path, sort.SortOrder, sort.AppendSort);
+            });
+
             return query;
         }
 
         protected virtual IQueryable<T> BuildFilters(IQueryable<T> query)
         {
+            if (Filters == null || Filters?.Count() == 0)
+                return query;              
+
             var parameter = Expression.Parameter(typeof(T), "t");
-            var expression = BuildFilterExpression(parameter, Parts);
+            var expression = BuildFilterExpression(parameter, Filters);
             var lambda = Expression.Lambda<Func<T, bool>>(expression, parameter);
             query = query.Where(lambda);
             return query;

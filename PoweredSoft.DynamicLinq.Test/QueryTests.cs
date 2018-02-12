@@ -91,7 +91,7 @@ namespace PoweredSoft.DynamicLinq.Test
         public void LessThen()
         {
             // subject.
-            var authors = new List<Post>()
+            var posts = new List<Post>()
             {
                 new Post { Id = 1, AuthorId = 1, Title = "Hello 1", Content = "World" },
                 new Post { Id = 2, AuthorId = 1, Title = "Hello 2", Content = "World" },
@@ -99,7 +99,7 @@ namespace PoweredSoft.DynamicLinq.Test
             };
 
             // the query.
-            var query = authors.AsQueryable();
+            var query = posts.AsQueryable();
 
             // simple where.
             var newQuery = query.Where("AuthorId", ConditionOperators.LessThan, 2);
@@ -112,7 +112,7 @@ namespace PoweredSoft.DynamicLinq.Test
         public void GreaterThanOrEqual()
         {
             // subject.
-            var authors = new List<Post>()
+            var posts = new List<Post>()
             {
                 new Post { Id = 1, AuthorId = 1, Title = "Hello 1", Content = "World" },
                 new Post { Id = 2, AuthorId = 1, Title = "Hello 2", Content = "World" },
@@ -120,13 +120,36 @@ namespace PoweredSoft.DynamicLinq.Test
             };
 
             // the query.
-            var query = authors.AsQueryable();
+            var query = posts.AsQueryable();
 
             // simple where.
             var newQuery = query.Where("AuthorId", ConditionOperators.GreaterThanOrEqual, 2);
 
             // must match.
             Assert.AreEqual(1, newQuery.Count());
+        }
+
+        [TestMethod]
+        public void TestingSort()
+        {
+            // subject.
+            var posts = new List<Post>()
+            {
+                new Post { Id = 1, AuthorId = 1, Title = "Hello 1", Content = "World" },
+                new Post { Id = 2, AuthorId = 1, Title = "Hello 2", Content = "World" },
+                new Post { Id = 3, AuthorId = 2, Title = "Hello 3", Content = "World" },
+            };
+
+            // the query.
+            var query = posts.AsQueryable();
+            query = query.OrderByDescending("AuthorId");
+            query = query.ThenBy("Id");
+
+            var first = query.First();
+            var second = query.Skip(1).First();
+
+            Assert.IsTrue(first.Id == 3);
+            Assert.IsTrue(second.Id == 1);
         }
     }
 }
