@@ -15,3 +15,8 @@ query = query.Query(q =>
     });
 });
 ```
+
+Simple Query
+```
+query.Where("FirstName", ConditionOperators.Equal, "David");
+```
