@@ -21,8 +21,9 @@ namespace PoweredSoft.DynamicLinq.Fluent
             Query = query;
         }
 
-        public QueryBuilder<T> Compare(string path, ConditionOperators conditionOperators, object value, 
-            bool convertConstantToLeftOperator = true, bool and = true)
+        public virtual QueryBuilder<T> Compare(string path, ConditionOperators conditionOperators, object value, 
+            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, 
+            bool and = true)
         {
             Parts.Add(new QueryFilterPart
             {
@@ -30,13 +31,13 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 ConditionOperator = conditionOperators,
                 Path = path,
                 Value = value,
-                ConvertConstantToLeftOperator = convertConstantToLeftOperator
+                ConvertStrategy = convertStrategy
             });
 
             return this;
         }
 
-        public QueryBuilder<T> SubQuery(Action<QueryBuilder<T>> subQuery, bool and = true)
+        public virtual QueryBuilder<T> SubQuery(Action<QueryBuilder<T>> subQuery, bool and = true)
         {
             // create query builder for same type.
             var qb = new QueryBuilder<T>(Query);
@@ -54,11 +55,11 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return this;
         }
 
-        public QueryBuilder<T> And(string path, ConditionOperators conditionOperator, object value, bool convertConstantToLeftOperator = true)
-            => Compare(path, conditionOperator, value, convertConstantToLeftOperator: convertConstantToLeftOperator, and: true);
+        public QueryBuilder<T> And(string path, ConditionOperators conditionOperator, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
+            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, and: true);
 
-        public QueryBuilder<T> Or(string path, ConditionOperators conditionOperator, object value, bool convertConstantToLeftOperator = true)
-            => Compare(path, conditionOperator, value, convertConstantToLeftOperator: convertConstantToLeftOperator, and: false);
+        public QueryBuilder<T> Or(string path, ConditionOperators conditionOperator, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
+            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, and: false);
 
         public QueryBuilder<T> And(Action<QueryBuilder<T>> subQuery)
             => SubQuery(subQuery, true);
@@ -66,16 +67,28 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public QueryBuilder<T> Or(Action<QueryBuilder<T>> subQuery)
             => SubQuery(subQuery, false);
 
-        public IQueryable<T> Build()
+        public virtual IQueryable<T> Build()
+        {
+            // the query.
+            var query = Query;
+
+            // execute the filters.
+            query = ExecuteFilters(query);
+
+            
+            return query;
+        }
+
+        protected virtual IQueryable<T> ExecuteFilters(IQueryable<T> query)
         {
             var parameter = Expression.Parameter(typeof(T), "t");
             var expression = BuildExpression(parameter, Parts);
             var lambda = Expression.Lambda<Func<T, bool>>(expression, parameter);
-            var query = Query.Where(lambda);
+            query = query.Where(lambda);
             return query;
         }
 
-        protected Expression BuildExpression(ParameterExpression parameter, List<QueryFilterPart> parts)
+        protected virtual Expression BuildExpression(ParameterExpression parameter, List<QueryFilterPart> parts)
         {
             Expression ret = null;
 
@@ -96,10 +109,10 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return ret;
         }
 
-        private Expression BuildExpression(ParameterExpression parameter, QueryFilterPart part)
+        protected virtual Expression BuildExpression(ParameterExpression parameter, QueryFilterPart part)
         {
             var member = QueryableHelpers.ResolvePathForExpression(parameter, part.Path);
-            var constant = part.ConvertConstantToLeftOperator ? QueryableHelpers.GetConstantSameAsLeftOperator(member, part.Value) : Expression.Constant(part.Value);
+            var constant = QueryableHelpers.ResolveConstant(member, part.Value, part.ConvertStrategy);
             var expression = QueryableHelpers.GetConditionExpressionForMember(parameter, member, part.ConditionOperator, constant);
             return expression;
         }

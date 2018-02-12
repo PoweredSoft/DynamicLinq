@@ -11,9 +11,10 @@ namespace PoweredSoft.DynamicLinq.Extensions
 {
     public static class QueryableExtensions
     {
-        public static IQueryable<T> Where<T>(this IQueryable<T> query, string path, ConditionOperators conditionOperator, object value, bool convertConstantToLeftOperator = true)
+        public static IQueryable<T> Where<T>(this IQueryable<T> query, string path, ConditionOperators conditionOperator, object value, 
+            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
         {
-            query = query.Query(qb => qb.Compare(path, conditionOperator, value, convertConstantToLeftOperator: convertConstantToLeftOperator));
+            query = query.Query(qb => qb.Compare(path, conditionOperator, value, convertStrategy: convertStrategy));
             return query;
         }
         

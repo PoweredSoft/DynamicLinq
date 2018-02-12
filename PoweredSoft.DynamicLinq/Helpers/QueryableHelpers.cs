@@ -80,5 +80,16 @@ namespace PoweredSoft.DynamicLinq.Helpers
             object convertedValue = TypeHelpers.ConvertFrom(memberType, value);
             return Expression.Constant(convertedValue);
         }
+
+        public static ConstantExpression ResolveConstant(Expression member, object value, QueryConvertStrategy convertStrategy)
+        {
+            if (convertStrategy == QueryConvertStrategy.LeaveAsIs)
+                return Expression.Constant(value);
+
+            if (convertStrategy == QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
+                return QueryableHelpers.GetConstantSameAsLeftOperator(member, value);
+
+            throw new NotSupportedException($"{convertStrategy} supplied is not recognized");
+        }
     }
 }

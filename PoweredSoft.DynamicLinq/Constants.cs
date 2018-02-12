@@ -19,6 +19,12 @@ namespace PoweredSoft.DynamicLinq
         EndsWith
     }
 
+    public enum QueryConvertStrategy
+    {
+        LeaveAsIs,
+        ConvertConstantToComparedPropertyOrField
+    }
+
     internal static class Constants
     {
         internal static readonly MethodInfo ContainsMethod = typeof(string).GetMethod("Contains");

@@ -12,8 +12,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public ConditionOperators ConditionOperator { get; set; }
         public object Value { get; set; }
         public bool And { get; set; }
-        public bool ConvertConstantToLeftOperator { get; set; }
-
+        public QueryConvertStrategy ConvertStrategy { get; set; }
         public List<QueryFilterPart> Parts { get; set; } = new List<QueryFilterPart>();
     }
 }
