@@ -29,7 +29,7 @@ query = query.ThenBy("Id");
 
 ### Collection Filtering
 You don't have to Worry about it.
-The libary will do it for you.
+The library will do it for you.
 ```csharp
 var query = authors.AsQueryable();
 query = query.Query(qb =>
