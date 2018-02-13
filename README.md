@@ -40,7 +40,7 @@ query = query.Query(qb =>
 });
 ```
 
-### Null Checking automaticly (practical for in memory dynamic queries)
+### Null Checking is automatic (practical for in memory dynamic queries)
 ```csharp
 var query = authors.AsQueryable();
 query = query.Query(qb =>
