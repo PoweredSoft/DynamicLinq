@@ -142,33 +142,8 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 return lambda;
             }
             
-            // TODO special handling for collections.
             if (IsEnumerable(memberExpression))
             {
-                /* //// first recursion.
-    //var typeOfClass = typeof(Author);
-    //var parameter = Expression.Parameter(typeOfClass, "t");
-    //var posts = Expression.PropertyOrField(parameter, "Posts");
-
-    //// second recursion
-    //{
-    //    var subListType = posts.Type.GetGenericArguments().First();
-
-    //    var innerParam = Expression.Parameter(subListType, "t2");
-    //    var field = Expression.PropertyOrField(innerParam, "Title");
-    //    var innerCondition = PoweredSoft.DynamicLinq.Helpers.QueryableHelpers.GetConditionExpressionForMember(innerParam, field, ConditionOperators.Equal, Expression.Constant("Match"));
-    //    var lambda = Expression.Lambda(innerCondition, innerParam);
-
-    //    // any
-    //    var anyMethod = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public).First(t => t.Name == "All" && t.GetParameters().Count() == 2);
-    //    var genericAnyMethod = anyMethod.MakeGenericMethod(subListType);
-    //    var subExpression = Expression.Call(genericAnyMethod, posts, lambda);
-
-    //    var finalLambda = Expression.Lambda<Func<Author, bool>>(subExpression, parameter);
-    //    query = query.Where(finalLambda);
-    //}
- */
-
                 var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
                 var innerParameter = Expression.Parameter(listGenericArgumentType, $"t{++recursionStep}");
                 var innerLambda = InternalCreateFilterExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling);
