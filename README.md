@@ -27,6 +27,16 @@ query = query.OrderByDescending("AuthorId");
 query = query.ThenBy("Id");
 ```
 
+Null Checking automaticly (practical for in memory dynamic queries)
+```csharp
+var query = authors.AsQueryable();
+query = query.Query(qb =>
+{
+    qb.NullChecking();
+    qb.And("Posts.Comments.Email", ConditionOperators.Equal, "john.doe@me.com", collectionHandling: QueryCollectionHandling.Any);
+});
+```
+
 Using Query Builder
 ```csharp
 // subject.
