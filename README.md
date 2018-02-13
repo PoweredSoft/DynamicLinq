@@ -2,7 +2,7 @@
 Adds extensions to Linq to offer dynamic queryables.
 
 
-# Samples
+## Samples
 Complex Query
 ```csharp
 query = query.Query(q =>
@@ -16,18 +16,31 @@ query = query.Query(q =>
 });
 ```
 
-Simple Query
+###Simple Query
 ```csharp
 query.Where("FirstName", ConditionOperators.Equal, "David");
 ```
 
-Simple Sorting
+###Simple Sorting
 ```csharp
 query = query.OrderByDescending("AuthorId");
 query = query.ThenBy("Id");
 ```
 
-Null Checking automaticly (practical for in memory dynamic queries)
+###Collection Filtering
+You don't have to Worry about it.
+The libary will do it for you.
+```csharp
+var query = authors.AsQueryable();
+query = query.Query(qb =>
+{
+    qb.NullChecking();
+	// you can specify here which collection handling you wish to use Any and All is supported for now.
+    qb.And("Posts.Comments.Email", ConditionOperators.Equal, "john.doe@me.com", collectionHandling: QueryCollectionHandling.Any);
+});
+```
+
+###Null Checking automaticly (practical for in memory dynamic queries)
 ```csharp
 var query = authors.AsQueryable();
 query = query.Query(qb =>
@@ -37,7 +50,7 @@ query = query.Query(qb =>
 });
 ```
 
-Using Query Builder
+###Using Query Builder
 ```csharp
 // subject.
 var posts = new List<Post>()
