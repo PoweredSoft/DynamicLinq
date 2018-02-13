@@ -10,6 +10,7 @@ namespace PoweredSoft.DynamicLinq
     public enum ConditionOperators 
     {
         Equal,
+        NotEqual,
         GreaterThan,
         GreaterThanOrEqual,
         LessThan,
@@ -25,7 +26,7 @@ namespace PoweredSoft.DynamicLinq
         ConvertConstantToComparedPropertyOrField
     }
 
-    public enum QueryCollectionCondition
+    public enum QueryCollectionHandling
     {
         Any,
         All

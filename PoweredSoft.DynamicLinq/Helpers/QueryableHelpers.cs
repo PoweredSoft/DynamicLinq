@@ -26,6 +26,8 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             if (conditionOperator == ConditionOperators.Equal)
                 ret = Expression.Equal(member, constant);
+            else if (conditionOperator == ConditionOperators.NotEqual)
+                ret = Expression.NotEqual(member, constant);
             else if (conditionOperator == ConditionOperators.GreaterThan)
                 ret = Expression.GreaterThan(member, constant);
             else if (conditionOperator == ConditionOperators.GreaterThanOrEqual)
@@ -119,8 +121,8 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return query;
         }
 
-        internal static Expression InternalCreateFilterExpression(int recursionStep, Type type, ParameterExpression parameter, Expression current, List<string> parts, 
-            ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, QueryCollectionCondition collectionHandling)
+        internal static Expression InternalCreateFilterExpression(int recursionStep, Type type, ParameterExpression parameter, Expression current, List<string> parts,
+            ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, QueryCollectionHandling collectionHandling, bool nullChecking)
         {
             var partStr = parts.First();
             var isLast = parts.Count == 1;
@@ -130,8 +132,9 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             // TODO : maybe support that last part is collection but what do we do?
             // not supported yet.
-            if (isLast && IsEnumerable(memberExpression))
-                throw new NotSupportedException("Last part must not be a collection");
+            if (isLast && IsEnumerable(memberExpression) && value != null)
+                throw new NotSupportedException("Can only compare collection to null");
+
 
             // create the expression and return it.
             if (isLast)
@@ -141,30 +144,49 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 var lambda = Expression.Lambda(filterExpression, parameter);
                 return lambda;
             }
-            
+
+            // null check.
+            Expression nullCheckExpression = null;
+            if (nullChecking)
+                nullCheckExpression = Expression.NotEqual(memberExpression, Expression.Constant(null));
+
             if (IsEnumerable(memberExpression))
             {
                 var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
                 var innerParameter = Expression.Parameter(listGenericArgumentType, $"t{++recursionStep}");
-                var innerLambda = InternalCreateFilterExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling);
+                var innerLambda = InternalCreateFilterExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking);
 
                 // the collection method.
                 var collectionMethod = GetCollectionMethod(collectionHandling);
                 var genericMethod = collectionMethod.MakeGenericMethod(listGenericArgumentType);
                 var callResult = Expression.Call(genericMethod, memberExpression, innerLambda);
-                var expressionResult = Expression.Lambda(callResult, parameter);
-                return expressionResult;
-            }
 
-            // standard property or field.
-            return InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling);
+                if (nullCheckExpression != null)
+                {
+                    var nullCheckResult = Expression.AndAlso(nullCheckExpression, callResult);
+                    return Expression.Lambda(nullCheckResult, parameter);
+                }
+
+                return Expression.Lambda(callResult, parameter);
+            }
+            else
+            {
+                if (nullCheckExpression != null)
+                {
+                    var pathExpr = InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking);
+                    var nullCheckResult = Expression.AndAlso(nullCheckExpression, pathExpr);
+                    return nullCheckResult;
+                }
+
+                return InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking);
+            }
         }
 
-        public static MethodInfo GetCollectionMethod(QueryCollectionCondition collectionHandling)
+        public static MethodInfo GetCollectionMethod(QueryCollectionHandling collectionHandling)
         {
-            if (collectionHandling == QueryCollectionCondition.All)
+            if (collectionHandling == QueryCollectionHandling.All)
                 return Constants.AllMethod;
-            else if (collectionHandling == QueryCollectionCondition.Any)
+            else if (collectionHandling == QueryCollectionHandling.Any)
                 return Constants.AnyMethod;
 
             throw new NotSupportedException($"{collectionHandling} is not supported");
@@ -174,14 +196,15 @@ namespace PoweredSoft.DynamicLinq.Helpers
             ConditionOperators condition, 
             object value, 
             QueryConvertStrategy convertStrategy, 
-            QueryCollectionCondition collectionHandling = QueryCollectionCondition.Any,
-            ParameterExpression parameter = null)
+            QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any,
+            ParameterExpression parameter = null,
+            bool nullChecking = false)
         {
             if (parameter == null)
                 parameter = Expression.Parameter(typeof(T), "t");
 
             var parts = path.Split('.').ToList();
-            var result = InternalCreateFilterExpression(1, typeof(T), parameter, parameter, parts, condition, value, convertStrategy, collectionHandling);
+            var result = InternalCreateFilterExpression(1, typeof(T), parameter, parameter, parts, condition, value, convertStrategy, collectionHandling, nullChecking);
             var ret = result as Expression<Func<T, bool>>;
             return ret;
         }

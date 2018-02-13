@@ -15,6 +15,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public Type QueryableType { get; set; }
 
+        public bool IsNullCheckingEnabled { get; protected set; } = false;
+
         public List<QueryBuilderFilter> Filters { get; protected set; } = new List<QueryBuilderFilter>();
 
         public List<QueryBuilderSort> Sorts { get; protected set; } = new List<QueryBuilderSort>();
@@ -24,9 +26,15 @@ namespace PoweredSoft.DynamicLinq.Fluent
             Query = query;
         }
 
+        public QueryBuilder<T> NullChecking(bool check = true)
+        {
+            IsNullCheckingEnabled = check;
+            return this;
+        }
+
         public virtual QueryBuilder<T> Compare(string path, ConditionOperators conditionOperators, object value, 
             QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, 
-            bool and = true)
+            bool and = true, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any)
         {
             Filters.Add(new QueryBuilderFilter
             {
@@ -34,7 +42,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 ConditionOperator = conditionOperators,
                 Path = path,
                 Value = value,
-                ConvertStrategy = convertStrategy
+                ConvertStrategy = convertStrategy,
+                CollectionHandling = collectionHandling
             });
 
             return this;
@@ -55,6 +64,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
         {
             // create query builder for same type.
             var qb = new QueryBuilder<T>(Query);
+            qb.NullChecking(IsNullCheckingEnabled);
 
             // callback.
             subQuery(qb);
@@ -69,11 +79,13 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return this;
         }
 
-        public QueryBuilder<T> And(string path, ConditionOperators conditionOperator, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
-            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, and: true);
+        public QueryBuilder<T> And(string path, ConditionOperators conditionOperator, object value, 
+            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any)
+            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, and: true);
 
-        public QueryBuilder<T> Or(string path, ConditionOperators conditionOperator, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
-            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, and: false);
+        public QueryBuilder<T> Or(string path, ConditionOperators conditionOperator, object value, 
+            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any)
+            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, and: false);
 
         public QueryBuilder<T> And(Action<QueryBuilder<T>> subQuery)
             => SubQuery(subQuery, true);
@@ -189,9 +201,9 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 else
                 {
                     if (filter.And)
-                        temp = Expression.Lambda<Func<T, bool>>(Expression.And(temp.Body, innerExpression.Body), parameter);
+                        temp = Expression.Lambda<Func<T, bool>>(Expression.AndAlso(temp.Body, innerExpression.Body), parameter);
                     else
-                        temp = Expression.Lambda<Func<T, bool>>(Expression.Or(temp.Body, innerExpression.Body), parameter);
+                        temp = Expression.Lambda<Func<T, bool>>(Expression.OrElse(temp.Body, innerExpression.Body), parameter);
                 }
                     
             });
@@ -207,7 +219,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 filter.Value,
                 filter.ConvertStrategy,
                 filter.CollectionHandling,
-                parameter: parameter
+                parameter: parameter,
+                nullChecking: IsNullCheckingEnabled
             );
 
             return ret;
