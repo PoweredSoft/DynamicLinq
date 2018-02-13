@@ -1,6 +1,8 @@
 # DynamicLinq
 Adds extensions to Linq to offer dynamic queryables.
 
+## Roadmap
+Check "Projects" section of github to see whats going on.
 
 ## Samples
 Complex Query
