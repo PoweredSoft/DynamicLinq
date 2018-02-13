@@ -13,6 +13,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public object Value { get; set; }
         public bool And { get; set; }
         public QueryConvertStrategy ConvertStrategy { get; set; }
-        public List<QueryBuilderFilter> Parts { get; set; } = new List<QueryBuilderFilter>();
+        public List<QueryBuilderFilter> Filters { get; set; } = new List<QueryBuilderFilter>();
+        public QueryCollectionCondition CollectionHandling { get;  set; }
     }
 }

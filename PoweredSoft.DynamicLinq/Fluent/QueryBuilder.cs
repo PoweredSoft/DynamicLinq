@@ -62,7 +62,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             // create a query part.
             var part = new QueryBuilderFilter();
             part.And = and;
-            part.Parts = qb.Filters;
+            part.Filters = qb.Filters;
             Filters.Add(part);
             
             //return self.
@@ -154,42 +154,63 @@ namespace PoweredSoft.DynamicLinq.Fluent
         protected virtual IQueryable<T> BuildFilters(IQueryable<T> query)
         {
             if (Filters == null || Filters?.Count() == 0)
-                return query;              
+                return query;
 
-            var parameter = Expression.Parameter(typeof(T), "t");
-            var expression = BuildFilterExpression(parameter, Filters);
-            var lambda = Expression.Lambda<Func<T, bool>>(expression, parameter);
-            query = query.Where(lambda);
+            // shared parameter.
+            var sharedParameter = Expression.Parameter(typeof(T), "t");
+
+            // build the expression.
+            var filterExpressionMerged = BuildFilterExpression(sharedParameter, Filters);
+            
+            // make changes on the query.
+            query = query.Where(filterExpressionMerged);
+
             return query;
         }
 
-        protected virtual Expression BuildFilterExpression(ParameterExpression parameter, List<QueryBuilderFilter> filters)
+        protected virtual Expression<Func<T, bool>> BuildFilterExpression(ParameterExpression parameter, List<QueryBuilderFilter> filters)
         {
-            Expression ret = null;
+            Expression<Func<T, bool>> temp = null;
+
+            
 
             filters.ForEach(filter =>
             {
-                Expression innerExpression;
-                if (filter.Parts?.Any() == true)
-                    innerExpression = BuildFilterExpression(parameter, filter.Parts);
+                Expression<Func<T, bool>> innerExpression;
+                if (filter.Filters?.Any() == true)
+                    innerExpression = BuildFilterExpression(parameter, filter.Filters);
                 else
                     innerExpression = BuildFilterExpression(parameter, filter);
 
-                if (ret != null)
-                    ret = filter.And ? Expression.And(ret, innerExpression) : Expression.Or(ret, innerExpression);
+                if (temp == null)
+                {
+                    temp = innerExpression;
+                }
                 else
-                    ret = innerExpression;
+                {
+                    if (filter.And)
+                        temp = Expression.Lambda<Func<T, bool>>(Expression.And(temp.Body, innerExpression.Body), parameter);
+                    else
+                        temp = Expression.Lambda<Func<T, bool>>(Expression.Or(temp.Body, innerExpression.Body), parameter);
+                }
+                    
             });
 
-            return ret;
+            return temp;
         }
 
-        protected virtual Expression BuildFilterExpression(ParameterExpression parameter, QueryBuilderFilter filter)
+        protected virtual Expression<Func<T, bool>> BuildFilterExpression(ParameterExpression parameter, QueryBuilderFilter filter)
         {
-            var member = QueryableHelpers.ResolvePathForExpression(parameter, filter.Path);
-            var constant = QueryableHelpers.ResolveConstant(member, filter.Value, filter.ConvertStrategy);
-            var expression = QueryableHelpers.GetConditionExpressionForMember(parameter, member, filter.ConditionOperator, constant);
-            return expression;
+            var ret = QueryableHelpers.CreateFilterExpression<T>(
+                filter.Path,
+                filter.ConditionOperator,
+                filter.Value,
+                filter.ConvertStrategy,
+                filter.CollectionHandling,
+                parameter: parameter
+            );
+
+            return ret;
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -116,6 +117,104 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             query = query.Provider.CreateQuery<T>(resultExpression);
             return query;
+        }
+
+        internal static Expression InternalCreateFilterExpression(int recursionStep, Type type, ParameterExpression parameter, Expression current, List<string> parts, 
+            ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, QueryCollectionCondition collectionHandling)
+        {
+            var partStr = parts.First();
+            var isLast = parts.Count == 1;
+
+            // the member expression.
+            var memberExpression = Expression.PropertyOrField(current, partStr);
+
+            // TODO : maybe support that last part is collection but what do we do?
+            // not supported yet.
+            if (isLast && IsEnumerable(memberExpression))
+                throw new NotSupportedException("Last part must not be a collection");
+
+            // create the expression and return it.
+            if (isLast)
+            {
+                var constant = QueryableHelpers.ResolveConstant(memberExpression, value, convertStrategy);
+                var filterExpression = QueryableHelpers.GetConditionExpressionForMember(parameter, memberExpression, condition, constant);
+                var lambda = Expression.Lambda(filterExpression, parameter);
+                return lambda;
+            }
+            
+            // TODO special handling for collections.
+            if (IsEnumerable(memberExpression))
+            {
+                /* //// first recursion.
+    //var typeOfClass = typeof(Author);
+    //var parameter = Expression.Parameter(typeOfClass, "t");
+    //var posts = Expression.PropertyOrField(parameter, "Posts");
+
+    //// second recursion
+    //{
+    //    var subListType = posts.Type.GetGenericArguments().First();
+
+    //    var innerParam = Expression.Parameter(subListType, "t2");
+    //    var field = Expression.PropertyOrField(innerParam, "Title");
+    //    var innerCondition = PoweredSoft.DynamicLinq.Helpers.QueryableHelpers.GetConditionExpressionForMember(innerParam, field, ConditionOperators.Equal, Expression.Constant("Match"));
+    //    var lambda = Expression.Lambda(innerCondition, innerParam);
+
+    //    // any
+    //    var anyMethod = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public).First(t => t.Name == "All" && t.GetParameters().Count() == 2);
+    //    var genericAnyMethod = anyMethod.MakeGenericMethod(subListType);
+    //    var subExpression = Expression.Call(genericAnyMethod, posts, lambda);
+
+    //    var finalLambda = Expression.Lambda<Func<Author, bool>>(subExpression, parameter);
+    //    query = query.Where(finalLambda);
+    //}
+ */
+
+                var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
+                var innerParameter = Expression.Parameter(listGenericArgumentType, $"t{++recursionStep}");
+                var innerLambda = InternalCreateFilterExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling);
+
+                // the collection method.
+                var collectionMethod = GetCollectionMethod(collectionHandling);
+                var genericMethod = collectionMethod.MakeGenericMethod(listGenericArgumentType);
+                var callResult = Expression.Call(genericMethod, memberExpression, innerLambda);
+                var expressionResult = Expression.Lambda(callResult, parameter);
+                return expressionResult;
+            }
+
+            // standard property or field.
+            return InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling);
+        }
+
+        public static MethodInfo GetCollectionMethod(QueryCollectionCondition collectionHandling)
+        {
+            if (collectionHandling == QueryCollectionCondition.All)
+                return Constants.AllMethod;
+            else if (collectionHandling == QueryCollectionCondition.Any)
+                return Constants.AnyMethod;
+
+            throw new NotSupportedException($"{collectionHandling} is not supported");
+        }
+
+        public static Expression<Func<T, bool>> CreateFilterExpression<T>(string path, 
+            ConditionOperators condition, 
+            object value, 
+            QueryConvertStrategy convertStrategy, 
+            QueryCollectionCondition collectionHandling = QueryCollectionCondition.Any,
+            ParameterExpression parameter = null)
+        {
+            if (parameter == null)
+                parameter = Expression.Parameter(typeof(T), "t");
+
+            var parts = path.Split('.').ToList();
+            var result = InternalCreateFilterExpression(1, typeof(T), parameter, parameter, parts, condition, value, convertStrategy, collectionHandling);
+            var ret = result as Expression<Func<T, bool>>;
+            return ret;
+        }
+
+        public static bool IsEnumerable(MemberExpression member)
+        {
+            var ret = member.Type.FullName.StartsWith("System.Collection");
+            return ret;
         }
     }
 }
