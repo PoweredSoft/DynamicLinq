@@ -16,18 +16,18 @@ query = query.Query(q =>
 });
 ```
 
-#Simple Query
+### Simple Query
 ```csharp
 query.Where("FirstName", ConditionOperators.Equal, "David");
 ```
 
-#Simple Sorting
+### Simple Sorting
 ```csharp
 query = query.OrderByDescending("AuthorId");
 query = query.ThenBy("Id");
 ```
 
-#Collection Filtering
+### Collection Filtering
 You don't have to Worry about it.
 The libary will do it for you.
 ```csharp
@@ -40,7 +40,7 @@ query = query.Query(qb =>
 });
 ```
 
-#Null Checking automaticly (practical for in memory dynamic queries)
+### Null Checking automaticly (practical for in memory dynamic queries)
 ```csharp
 var query = authors.AsQueryable();
 query = query.Query(qb =>
@@ -50,7 +50,7 @@ query = query.Query(qb =>
 });
 ```
 
-#Using Query Builder
+### Using Query Builder
 ```csharp
 // subject.
 var posts = new List<Post>()
