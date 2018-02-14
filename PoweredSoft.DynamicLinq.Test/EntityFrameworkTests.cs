@@ -40,16 +40,7 @@ namespace PoweredSoft.DynamicLinq.Test
                             {
                                 DisplayName = "Nice Guy",
                                 Email = "nice.guy@lol.com",
-                                CommentText = "Best of luck!",
-                                //Comments = new List<Comment>()
-                                //{
-                                //    new Comment()
-                                //    {
-                                //        DisplayName = "David Lebee",
-                                //        Email = "david@poweredsoft.com",
-                                //        CommentText = "Thanks!"
-                                //    }
-                                //}
+                                CommentText = "Best of luck!"
                             }
                         }
                     },
@@ -167,6 +158,21 @@ namespace PoweredSoft.DynamicLinq.Test
             var author = query.FirstOrDefault();
 
             Assert.AreEqual(author?.FirstName, "David");
+        }
+
+        [TestMethod]
+        public void TestSort()
+        {
+            var context = new BlogContext(testConnectionString);
+            SeedForTests(context);
+
+            var query = context.Posts.AsQueryable();
+            var dq = query.OrderBy("Title").ThenByDescending("Content").ToList();
+            var sq = query.OrderBy(t => t.Title).ThenByDescending(t => t.Content).ToList();
+
+            Assert.AreEqual(dq.Count, sq.Count);
+            for (var i = 0; i < dq.Count; i++)
+                Assert.AreEqual(dq[i].Id, sq[i].Id);
         }
     }
 }
