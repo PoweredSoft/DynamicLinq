@@ -9,7 +9,7 @@ using PoweredSoft.DynamicLinq.Extensions;
 namespace PoweredSoft.DynamicLinq.Test
 {
     [TestClass]
-    public class QueryTests
+    public class SimpleQueryTests
     {
         [TestMethod]
         public void Equal()

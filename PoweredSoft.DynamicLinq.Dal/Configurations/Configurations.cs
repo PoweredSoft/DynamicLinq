@@ -60,14 +60,12 @@ namespace PoweredSoft.DynamicLinq.Dal.Configurations
             ToTable("Comment", schema);
             HasKey(t => t.Id);
             Property(t => t.Id).HasColumnName("Id").HasColumnType("bigint").IsRequired().HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
-            Property(t => t.ParentCommentId).HasColumnName("ParentCommentId").HasColumnType("bigint").IsOptional();
             Property(t => t.PostId).HasColumnName("PostId").HasColumnType("bigint").IsRequired();
             Property(t => t.DisplayName).HasColumnName("DisplayName").HasColumnType("nvarchar").HasMaxLength(100).IsRequired();
             Property(t => t.Email).HasColumnName("Email").HasColumnType("nvarchar").IsOptional();
             Property(t => t.CommentText).HasColumnName("CommentText").HasColumnType("nvarchar").HasMaxLength(255).IsOptional();
 
             HasRequired(t => t.Post).WithMany(t => t.Comments).HasForeignKey(t => t.PostId).WillCascadeOnDelete(false);
-            HasOptional(t => t.ParentComment).WithMany(t => t.Comments).HasForeignKey(t => t.ParentCommentId).WillCascadeOnDelete(false);
         }
     }
 }
