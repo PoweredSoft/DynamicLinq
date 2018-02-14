@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PoweredSoft.DynamicLinq.Dal;
 using PoweredSoft.DynamicLinq.Dal.Pocos;
+using PoweredSoft.DynamicLinq.EntityFramework.Extensions;
 using PoweredSoft.DynamicLinq.Extensions;
 
 namespace PoweredSoft.DynamicLinq.Test
@@ -173,6 +175,18 @@ namespace PoweredSoft.DynamicLinq.Test
             Assert.AreEqual(dq.Count, sq.Count);
             for (var i = 0; i < dq.Count; i++)
                 Assert.AreEqual(dq[i].Id, sq[i].Id);
+        }
+
+        [TestMethod]
+        public void TestContextTypeLessHelper()
+        {
+            var context = new BlogContext(testConnectionString);
+            SeedForTests(context);
+
+            var queryable = context.Query(typeof(Author), q => q.Compare("FirstName", ConditionOperators.Equal, "David"));
+            var result = queryable.ToListAsync().Result;
+            var first = result.FirstOrDefault() as Author;
+            Assert.AreEqual(first?.FirstName, "David");
         }
     }
 }

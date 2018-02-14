@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C16927E7-1358-4B9D-BDD7-149E505DE6CC}</ProjectGuid>
+    <ProjectGuid>{15587E3C-D4BB-474C-A4AC-4E6305F92BCE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PoweredSoft.DynamicLinq.Dal</RootNamespace>
-    <AssemblyName>PoweredSoft.DynamicLinq.Dal</AssemblyName>
+    <RootNamespace>PoweredSoft.DynamicLinq.EntityFramework</RootNamespace>
+    <AssemblyName>PoweredSoft.DynamicLinq.EntityFramework</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -48,17 +47,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlogContext.cs" />
-    <Compile Include="Configurations\Configurations.cs" />
-    <Compile Include="Pocos\Post.cs" />
-    <Compile Include="Pocos\Author.cs" />
-    <Compile Include="Pocos\Comment.cs" />
+    <Compile Include="Extensions\DbContextExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PoweredSoft.DynamicLinq\PoweredSoft.DynamicLinq.csproj">
+      <Project>{2ABC5A60-B549-4ECD-BEF4-31CA7BA4EF06}</Project>
+      <Name>PoweredSoft.DynamicLinq</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

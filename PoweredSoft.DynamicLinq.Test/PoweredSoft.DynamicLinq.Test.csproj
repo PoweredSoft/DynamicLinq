@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PoweredSoft.DynamicLinq.Test</RootNamespace>
     <AssemblyName>PoweredSoft.DynamicLinq.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
@@ -19,6 +19,7 @@
     <TestProjectType>UnitTest</TestProjectType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -72,6 +73,10 @@
     <ProjectReference Include="..\PoweredSoft.DynamicLinq.Dal\PoweredSoft.DynamicLinq.Dal.csproj">
       <Project>{C16927E7-1358-4B9D-BDD7-149E505DE6CC}</Project>
       <Name>PoweredSoft.DynamicLinq.Dal</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PoweredSoft.DynamicLinq.EntityFramework\PoweredSoft.DynamicLinq.EntityFramework.csproj">
+      <Project>{15587e3c-d4bb-474c-a4ac-4e6305f92bce}</Project>
+      <Name>PoweredSoft.DynamicLinq.EntityFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\PoweredSoft.DynamicLinq\PoweredSoft.DynamicLinq.csproj">
       <Project>{2abc5a60-b549-4ecd-bef4-31ca7ba4ef06}</Project>
