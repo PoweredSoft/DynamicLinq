@@ -132,8 +132,9 @@ namespace PoweredSoft.DynamicLinq.Test
             SeedForTests(context);
 
             var query = context.Posts.AsQueryable();
-            query = query.Where("Author.FirstName", ConditionOperators.Contains, "David");
-            Assert.AreEqual(2, query.Count());
+            query = query.Include("Author").Where("Author.FirstName", ConditionOperators.Contains, "David");
+            var post = query.FirstOrDefault();
+            Assert.AreEqual("David", post?.Author?.FirstName);
         }
 
         [TestMethod]
