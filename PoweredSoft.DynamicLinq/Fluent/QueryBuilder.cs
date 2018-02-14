@@ -9,89 +9,16 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
-    public class QueryBuilder<T>
+    public class QueryBuilder<T> : QueryBuilderBase
     {
         public IQueryable<T> Query { get; set; }
 
         public Type QueryableType { get; set; }
-
-        public bool IsNullCheckingEnabled { get; protected set; } = false;
-
-        public List<QueryBuilderFilter> Filters { get; protected set; } = new List<QueryBuilderFilter>();
-
-        public List<QueryBuilderSort> Sorts { get; protected set; } = new List<QueryBuilderSort>();
-
+       
         public QueryBuilder(IQueryable<T> query)
         {
             Query = query;
         }
-
-        public QueryBuilder<T> NullChecking(bool check = true)
-        {
-            IsNullCheckingEnabled = check;
-            return this;
-        }
-
-        public virtual QueryBuilder<T> Compare(string path, ConditionOperators conditionOperators, object value, 
-            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, 
-            bool and = true, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any)
-        {
-            Filters.Add(new QueryBuilderFilter
-            {
-                And = and,
-                ConditionOperator = conditionOperators,
-                Path = path,
-                Value = value,
-                ConvertStrategy = convertStrategy,
-                CollectionHandling = collectionHandling
-            });
-
-            return this;
-        }
-
-        public virtual QueryBuilder<T> Sort(string path, SortOrder sortOrder, bool appendSort)
-        {
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                SortOrder = sortOrder,
-                AppendSort = appendSort
-            });
-            return this;
-        }
-
-        public virtual QueryBuilder<T> SubQuery(Action<QueryBuilder<T>> subQuery, bool and = true)
-        {
-            // create query builder for same type.
-            var qb = new QueryBuilder<T>(Query);
-            qb.NullChecking(IsNullCheckingEnabled);
-
-            // callback.
-            subQuery(qb);
-            
-            // create a query part.
-            var part = new QueryBuilderFilter();
-            part.And = and;
-            part.Filters = qb.Filters;
-            Filters.Add(part);
-            
-            //return self.
-            return this;
-        }
-
-        public QueryBuilder<T> And(string path, ConditionOperators conditionOperator, object value, 
-            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any)
-            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, and: true);
-
-        public QueryBuilder<T> Or(string path, ConditionOperators conditionOperator, object value, 
-            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any)
-            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, and: false);
-
-        public QueryBuilder<T> And(Action<QueryBuilder<T>> subQuery)
-            => SubQuery(subQuery, true);
-
-        public QueryBuilder<T> Or(Action<QueryBuilder<T>> subQuery)
-            => SubQuery(subQuery, false);
 
         public virtual IQueryable<T> Build()
         {
@@ -224,6 +151,11 @@ namespace PoweredSoft.DynamicLinq.Fluent
             );
 
             return ret;
+        }
+
+        protected override QueryBuilderBase GetSubQueryBuilder()
+        {
+            return new QueryBuilder<T>(Query);
         }
     }
 }
