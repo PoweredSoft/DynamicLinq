@@ -77,3 +77,15 @@ queryBuilder.And(subQuery =>
 
 query = queryBuilder.Build();
 ```
+
+### Entity Framework
+
+Using PoweredSoft.DynamicLinq.EntityFramework it adds an helper that allows you to do the following.
+
+```csharp
+var context = new <YOUR CONTEXT>();
+var queryable = context.Query(typeof(Author), q => q.Compare("FirstName", ConditionOperators.Equal, "David"));
+var result = queryable.ToListAsync().Result;
+var first = result.FirstOrDefault() as Author;
+Assert.AreEqual(first?.FirstName, "David");
+```
