@@ -84,5 +84,51 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public QueryBuilderBase Or(Action<QueryBuilderBase> subQuery)
             => SubQuery(subQuery, false);
+
+        public virtual QueryBuilderBase OrderBy(string path)
+        {
+            Sorts.Clear();
+            Sorts.Add(new QueryBuilderSort
+            {
+                Path = path,
+                SortOrder = SortOrder.Ascending,
+                AppendSort = false
+            });
+            return this;
+        }
+
+        public virtual QueryBuilderBase OrderByDescending(string path)
+        {
+            Sorts.Clear();
+            Sorts.Add(new QueryBuilderSort
+            {
+                Path = path,
+                SortOrder = SortOrder.Descending,
+                AppendSort = false
+            });
+            return this;
+        }
+
+        public virtual QueryBuilderBase ThenBy(string path)
+        {
+            Sorts.Add(new QueryBuilderSort
+            {
+                Path = path,
+                SortOrder = SortOrder.Ascending,
+                AppendSort = true
+            });
+            return this;
+        }
+
+        public virtual QueryBuilderBase ThenByDescending(string path)
+        {
+            Sorts.Add(new QueryBuilderSort
+            {
+                Path = path,
+                SortOrder = SortOrder.Descending,
+                AppendSort = true
+            });
+            return this;
+        }
     }
 }

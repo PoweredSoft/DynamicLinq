@@ -34,52 +34,6 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return query;
         }
 
-        public virtual QueryBuilder<T> OrderBy(string path)
-        {
-            Sorts.Clear();
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                SortOrder = SortOrder.Ascending,
-                AppendSort = false
-            });
-            return this;
-        }
-
-        public virtual QueryBuilder<T> OrderByDescending(string path)
-        {
-            Sorts.Clear();
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                SortOrder = SortOrder.Descending,
-                AppendSort = false
-            });
-            return this;
-        }
-
-        public virtual QueryBuilder<T> ThenBy(string path)
-        {
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                SortOrder = SortOrder.Ascending,
-                AppendSort = true
-            });
-            return this;
-        }
-
-        public virtual QueryBuilder<T> ThenByDescending(string path)
-        {
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                SortOrder = SortOrder.Descending,
-                AppendSort = true
-            });
-            return this;
-        }
-
         protected virtual IQueryable<T> BuildSorts(IQueryable<T> query)
         {
             Sorts.ForEach(sort =>
