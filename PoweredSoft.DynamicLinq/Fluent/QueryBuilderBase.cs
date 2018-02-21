@@ -1,7 +1,6 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,12 +38,12 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return this;
         }
 
-        public virtual QueryBuilderBase Sort(string path, SortOrder sortOrder, bool appendSort)
+        public virtual QueryBuilderBase Sort(string path, QuerySortDirection sortDirection, bool appendSort)
         {
             Sorts.Add(new QueryBuilderSort
             {
                 Path = path,
-                SortOrder = sortOrder,
+                sortDirection = sortDirection,
                 AppendSort = appendSort
             });
             return this;
@@ -91,7 +90,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             Sorts.Add(new QueryBuilderSort
             {
                 Path = path,
-                SortOrder = SortOrder.Ascending,
+                sortDirection = QuerySortDirection.Ascending,
                 AppendSort = false
             });
             return this;
@@ -103,7 +102,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             Sorts.Add(new QueryBuilderSort
             {
                 Path = path,
-                SortOrder = SortOrder.Descending,
+                sortDirection = QuerySortDirection.Descending,
                 AppendSort = false
             });
             return this;
@@ -114,7 +113,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             Sorts.Add(new QueryBuilderSort
             {
                 Path = path,
-                SortOrder = SortOrder.Ascending,
+                sortDirection = QuerySortDirection.Ascending,
                 AppendSort = true
             });
             return this;
@@ -125,7 +124,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             Sorts.Add(new QueryBuilderSort
             {
                 Path = path,
-                SortOrder = SortOrder.Descending,
+                sortDirection = QuerySortDirection.Descending,
                 AppendSort = true
             });
             return this;

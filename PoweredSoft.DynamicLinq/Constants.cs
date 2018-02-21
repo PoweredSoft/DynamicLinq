@@ -32,6 +32,12 @@ namespace PoweredSoft.DynamicLinq
         All
     }
 
+    public enum QuerySortDirection
+    {
+        Ascending,
+        Descending
+    }
+
     internal static class Constants
     {
         internal static readonly MethodInfo ContainsMethod = typeof(string).GetMethod("Contains");

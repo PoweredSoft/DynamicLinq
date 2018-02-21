@@ -2,7 +2,6 @@
 using PoweredSoft.DynamicLinq.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -29,10 +28,10 @@ namespace PoweredSoft.DynamicLinq.Extensions
             return ret;
         }
 
-        public static IQueryable<T> Sort<T>(this IQueryable<T> query, string path, SortOrder sortOrder, bool appendSort)
+        public static IQueryable<T> Sort<T>(this IQueryable<T> query, string path, QuerySortDirection sortDirection, bool appendSort)
         {
             var qb = new QueryBuilder<T>(query);
-            qb.Sort(path, sortOrder, appendSort);
+            qb.Sort(path, sortDirection, appendSort);
             var ret = qb.Build();
             return ret;
         }

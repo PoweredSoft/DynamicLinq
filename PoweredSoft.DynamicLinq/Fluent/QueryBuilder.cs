@@ -1,7 +1,6 @@
 ﻿using PoweredSoft.DynamicLinq.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -38,7 +37,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
         {
             Sorts.ForEach(sort =>
             {
-                query = QueryableHelpers.CreateSortExpression(query, sort.Path, sort.SortOrder, sort.AppendSort);
+                query = QueryableHelpers.CreateSortExpression(query, sort.Path, sort.sortDirection, sort.AppendSort);
             });
 
             return query;

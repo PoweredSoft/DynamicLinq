@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -96,13 +95,13 @@ namespace PoweredSoft.DynamicLinq.Helpers
             throw new NotSupportedException($"{convertStrategy} supplied is not recognized");
         }
 
-        public static IQueryable<T> CreateSortExpression<T>(IQueryable<T> query, string sortPath, SortOrder sortOrder, bool appendSort = true)
+        public static IQueryable<T> CreateSortExpression<T>(IQueryable<T> query, string sortPath, QuerySortDirection sortDirection, bool appendSort = true)
         {
             var parameter = Expression.Parameter(typeof(T), "t");
             var member = QueryableHelpers.ResolvePathForExpression(parameter, sortPath);
 
             string sortCommand = null;
-            if (sortOrder == SortOrder.Descending)
+            if (sortDirection == QuerySortDirection.Descending)
                 sortCommand = appendSort == false ? "OrderByDescending" : "ThenByDescending";
             else
                 sortCommand = appendSort == false ? "OrderBy" : "ThenBy";
