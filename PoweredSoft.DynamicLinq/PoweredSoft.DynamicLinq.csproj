@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Company>Powered Softwares Inc.</Company>
+    <Authors>David Lebée</Authors>
+    <Copyright></Copyright>
+    <Product>DynamicLinq by PoweredSoft</Product>
+    <Description>Allows uers to make dynamic query over a IQueryable&lt;T&gt;</Description>
+    <RepositoryUrl>https://github.com/PoweredSoft/DynamicLinq</RepositoryUrl>
+    <RepositoryType>github</RepositoryType>
+    <PackageTags>dynamic linq queryable</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
