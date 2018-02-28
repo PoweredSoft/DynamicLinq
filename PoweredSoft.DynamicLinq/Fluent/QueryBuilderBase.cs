@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
-    public abstract class QueryBuilderBase
+    public abstract partial class QueryBuilderBase
     {
         public bool IsNullCheckingEnabled { get; protected set; } = false;
 
@@ -68,21 +68,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
             //return self.
             return this;
-        }
-
-        public QueryBuilderBase And(string path, ConditionOperators conditionOperator, object value,
-            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any)
-            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, and: true);
-
-        public QueryBuilderBase Or(string path, ConditionOperators conditionOperator, object value,
-            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any)
-            => Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, and: false);
-
-        public QueryBuilderBase And(Action<QueryBuilderBase> subQuery)
-            => SubQuery(subQuery, true);
-
-        public QueryBuilderBase Or(Action<QueryBuilderBase> subQuery)
-            => SubQuery(subQuery, false);
+        }        
 
         public virtual QueryBuilderBase OrderBy(string path)
         {
