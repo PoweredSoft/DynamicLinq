@@ -61,6 +61,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComplexQueriesTests.cs" />
+    <Compile Include="Helpers\QueryableAssert.cs" />
+    <Compile Include="ShortcutTests.cs" />
     <Compile Include="SimpleQueriesTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HelpersTests.cs" />
