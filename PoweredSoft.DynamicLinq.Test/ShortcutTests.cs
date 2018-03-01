@@ -74,42 +74,110 @@ namespace PoweredSoft.DynamicLinq.Test
             var q1 = Persons.AsQueryable().Query(t => t.GreaterThan("Age", 28));
             var q1b = Persons.AsQueryable().Where(t => t.Age > 28);
             QueryableAssert.AreEqual(q1, q1b);
+
+            var q2 = Persons.AsQueryable().Query(t => t.GreaterThan("Age", 28).AndGreaterThan("Age", 50));
+            var q2b = Persons.AsQueryable().Where(t => t.Age > 28 && t.Age > 50);
+            QueryableAssert.AreEqual(q2, q2b);
+
+            var q3 = Persons.AsQueryable().Query(t => t.GreaterThan("Age", 28).OrGreaterThan("Age", 50));
+            var q3b = Persons.AsQueryable().Where(t => t.Age > 28 || t.Age > 50);
+            QueryableAssert.AreEqual(q3, q3b);
         }
 
         [TestMethod]
         public void GreatThanOrEqual()
         {
+            var q1 = Persons.AsQueryable().Query(t => t.GreaterThanOrEqual("Age", 28));
+            var q1b = Persons.AsQueryable().Where(t => t.Age >= 28);
+            QueryableAssert.AreEqual(q1, q1b);
 
+            var q2 = Persons.AsQueryable().Query(t => t.GreaterThanOrEqual("Age", 28).AndGreaterThanOrEqual("Age", 50));
+            var q2b = Persons.AsQueryable().Where(t => t.Age >= 28 && t.Age >= 50);
+            QueryableAssert.AreEqual(q2, q2b);
+
+            var q3 = Persons.AsQueryable().Query(t => t.GreaterThanOrEqual("Age", 28).OrGreaterThanOrEqual("Age", 50));
+            var q3b = Persons.AsQueryable().Where(t => t.Age >= 28 || t.Age >= 50);
+            QueryableAssert.AreEqual(q3, q3b);                  
         }
 
         [TestMethod]
         public void LessThan()
         {
+            var q1 = Persons.AsQueryable().Query(t => t.LessThan("Age", 50));
+            var q1b = Persons.AsQueryable().Where(t => t.Age < 50);
+            QueryableAssert.AreEqual(q1, q1b);
 
+            var q2 = Persons.AsQueryable().Query(t => t.LessThan("Age", 28).AndLessThan("Age", 50));
+            var q2b = Persons.AsQueryable().Where(t => t.Age < 28 && t.Age < 50);
+            QueryableAssert.AreEqual(q2, q2b);
+
+            var q3 = Persons.AsQueryable().Query(t => t.LessThan("Age", 28).OrLessThan("Age", 50));
+            var q3b = Persons.AsQueryable().Where(t => t.Age < 28 || t.Age < 50);
+            QueryableAssert.AreEqual(q3, q3b);
         }
 
         [TestMethod]
         public void LessThanOrEqual()
         {
+            var q1 = Persons.AsQueryable().Query(t => t.LessThanOrEqual("Age", 50));
+            var q1b = Persons.AsQueryable().Where(t => t.Age <= 50);
+            QueryableAssert.AreEqual(q1, q1b);
 
+            var q2 = Persons.AsQueryable().Query(t => t.LessThanOrEqual("Age", 28).AndLessThanOrEqual("Age", 50));
+            var q2b = Persons.AsQueryable().Where(t => t.Age <= 28 && t.Age <= 50);
+            QueryableAssert.AreEqual(q2, q2b);
+
+            var q3 = Persons.AsQueryable().Query(t => t.LessThanOrEqual("Age", 28).OrLessThanOrEqual("Age", 50));
+            var q3b = Persons.AsQueryable().Where(t => t.Age <= 28 || t.Age <= 50);
+            QueryableAssert.AreEqual(q3, q3b);
         }
 
         [TestMethod]
         public void StartsWith()
         {
+            var q1 = Persons.AsQueryable().Query(t => t.StartsWith("FirstName", "Mi"));
+            var q1b = Persons.AsQueryable().Where(t => t.FirstName.StartsWith("Mi"));
+            QueryableAssert.AreEqual(q1, q1b);
 
+            var q2 = Persons.AsQueryable().Query(t => t.StartsWith("FirstName", "Mi").AndStartsWith("LastName", "Vi"));
+            var q2b = Persons.AsQueryable().Where(t => t.FirstName.StartsWith("Mi") && t.LastName.StartsWith("Vi"));
+            QueryableAssert.AreEqual(q2, q2b);
+
+            var q3 = Persons.AsQueryable().Query(t => t.StartsWith("FirstName", "Mi").OrStartsWith("FirstName", "Da"));
+            var q3b = Persons.AsQueryable().Where(t => t.FirstName.StartsWith("Mi") || t.FirstName.StartsWith("Da"));
+            QueryableAssert.AreEqual(q3, q3b);
         }
 
         [TestMethod]
         public void EndsWith()
         {
+            var q1 = Persons.AsQueryable().Query(t => t.EndsWith("LastName", "ee"));
+            var q1b = Persons.AsQueryable().Where(t => t.LastName.EndsWith("ee"));
+            QueryableAssert.AreEqual(q1, q1b);
 
+            var q2 = Persons.AsQueryable().Query(t => t.EndsWith("LastName", "ee").AndEndsWith("FirstName", "vid"));
+            var q2b = Persons.AsQueryable().Where(t => t.LastName.EndsWith("ee") && t.FirstName.EndsWith("vid"));
+            QueryableAssert.AreEqual(q2, q2b);
+
+            var q3 = Persons.AsQueryable().Query(t => t.EndsWith("LastName", "ee").OrEndsWith("LastName", "ar"));
+            var q3b = Persons.AsQueryable().Where(t => t.LastName.EndsWith("ee") || t.LastName.EndsWith("ar"));
+            QueryableAssert.AreEqual(q3, q3b);
         }
 
         [TestMethod]
         public void Contains()
         {
+            var q1 = Persons.AsQueryable().Query(t => t.Contains("LastName", "ee"));
+            var q1b = Persons.AsQueryable().Where(t => t.LastName.Contains("ee"));
+            QueryableAssert.AreEqual(q1, q1b);
 
+            var q2 = Persons.AsQueryable().Query(t => t.Contains("LastName", "ee").AndContains("FirstName", "vid"));
+            var q2b = Persons.AsQueryable().Where(t => t.LastName.Contains("ee") && t.FirstName.Contains("vid"));
+            QueryableAssert.AreEqual(q2, q2b);
+
+            var q3 = Persons.AsQueryable().Query(t => t.Contains("LastName", "ee").OrContains("LastName", "ar"));
+            var q3b = Persons.AsQueryable().Where(t => t.LastName.Contains("ee") || t.LastName.Contains("ar"));
+            QueryableAssert.AreEqual(q3, q3b);
         }
     }
 }
