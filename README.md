@@ -20,6 +20,13 @@ query = query.Query(q =>
 });
 ```
 
+### Shortcuts
+Shortcuts allow to avoid specifying the condition operator by having it handy in the method name
+```csharp
+queryable.Query(t => t.Contains("FirstName", "Dav").OrContains("FirstName", "Jo"));
+```
+You may visit this test for more examples: https://github.com/PoweredSoft/DynamicLinq/blob/master/PoweredSoft.DynamicLinq.Test/ShortcutTests.cs
+
 ### Simple Query
 ```csharp
 query.Where("FirstName", ConditionOperators.Equal, "David");
