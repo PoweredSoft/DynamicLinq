@@ -9,8 +9,11 @@ https://github.com/PoweredSoft/DynamicLinq/projects/1
 ## Download
 Full Version | NuGet | NuGet Install
 ------------ | :-------------: | :-------------:
-PoweredSoft.DynamicLinq | <a href="https://www.nuget.org/packages/PoweredSoft.DynamicLinq/" target="_blank"><img src="https://nuget.org/Content/gallery/img/default-package-icon.svg" alt="download" /></a> | ```PM> Install-Package PoweredSoft.DynamicLinq```
-PoweredSoft.DynamicLinq.EntityFramework | <a href="https://www.nuget.org/packages/PoweredSoft.EntityFramework/" target="_blank"><img src="https://nuget.org/Content/gallery/img/default-package-icon.svg" alt="download" /></a> | ```PM> Install-Package PoweredSoft.DynamicLinq.EntityFramework```
+PoweredSoft.DynamicLinq | <a href="https://www.nuget.org/packages/PoweredSoft.DynamicLinq/" target="_blank">[![NuGet](https://img.shields.io/nuget/v/PoweredSoft.DynamicLinq.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/PoweredSoft.DynamicLinq/)</a> | ```PM> Install-Package PoweredSoft.DynamicLinq```
+PoweredSoft.DynamicLinq.EntityFramework | <a href="https://www.nuget.org/packages/PoweredSoft.EntityFramework/" target="_blank">[![NuGet](https://img.shields.io/nuget/v/PoweredSoft.DynamicLinq.EntityFramework.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/PoweredSoft.DynamicLinq.EntityFramework/)</a> | ```PM> Install-Package PoweredSoft.DynamicLinq.EntityFramework```
+
+
+
 
 ## Samples
 Complex Query
