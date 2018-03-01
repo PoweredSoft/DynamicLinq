@@ -6,6 +6,12 @@ Check "Projects" section of github to see whats going on.
 
 https://github.com/PoweredSoft/DynamicLinq/projects/1
 
+## Download
+Full Version | NuGet | NuGet Install
+------------ | :-------------: | :-------------:
+PoweredSoft.DynamicLinq | <a href="https://www.nuget.org/packages/PoweredSoft.DynamicLinq/" target="_blank"><img src="https://nuget.org/Content/gallery/img/default-package-icon.svg" alt="download" /></a> | ```PM> Install-Package PoweredSoft.DynamicLinq```
+PoweredSoft.DynamicLinq.EntityFramework | <a href="https://www.nuget.org/packages/PoweredSoft.EntityFramework/" target="_blank"><img src="https://nuget.org/Content/gallery/img/default-package-icon.svg" alt="download" /></a> | ```PM> Install-Package PoweredSoft.DynamicLinq```
+
 ## Samples
 Complex Query
 ```csharp
