@@ -7,10 +7,14 @@
     <Authors>David Lebée</Authors>
     <Copyright></Copyright>
     <Product>DynamicLinq by PoweredSoft</Product>
-    <Description>Allows uers to make dynamic query over a IQueryable&lt;T&gt;</Description>
+    <Description>Allows users to make dynamic query over a IQueryable&lt;T&gt;</Description>
     <RepositoryUrl>https://github.com/PoweredSoft/DynamicLinq</RepositoryUrl>
     <RepositoryType>github</RepositoryType>
     <PackageTags>dynamic linq queryable</PackageTags>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+    <FileVersion>1.0.0.1</FileVersion>
+    <Version>1.0.2</Version>
+    <PackageProjectUrl>https://github.com/PoweredSoft/DynamicLinq</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
