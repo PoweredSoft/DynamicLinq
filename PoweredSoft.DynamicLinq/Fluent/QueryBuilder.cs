@@ -100,7 +100,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 filter.ConvertStrategy,
                 filter.CollectionHandling,
                 parameter: parameter,
-                nullChecking: IsNullCheckingEnabled
+                nullChecking: IsNullCheckingEnabled,
+                stringComparision: filter.StringComparisation
             );
 
             return ret;

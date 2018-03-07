@@ -10,7 +10,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
 {
     public static class QueryableHelpers
     {
-        public static Expression GetConditionExpressionForMember(ParameterExpression parameter, Expression member, ConditionOperators conditionOperator, ConstantExpression constant)
+        public static Expression GetConditionExpressionForMember(ParameterExpression parameter, Expression member, ConditionOperators conditionOperator, ConstantExpression constant, StringComparison? stringComparision)
         {
             if (parameter == null)
                 throw new ArgumentNullException("parameter");
@@ -21,12 +21,25 @@ namespace PoweredSoft.DynamicLinq.Helpers
             if (constant == null)
                 throw new ArgumentNullException("constant");
 
+
+            Type stringType = typeof(string);
+
             Expression ret = null;
 
             if (conditionOperator == ConditionOperators.Equal)
-                ret = Expression.Equal(member, constant);
+            {
+                if (member.Type == stringType && stringComparision.HasValue)
+                    ret = Expression.Call(member, Constants.StringEqualWithComparisation, constant, Expression.Constant(stringComparision.Value));
+                else
+                    ret = Expression.Equal(member, constant);
+            }
             else if (conditionOperator == ConditionOperators.NotEqual)
-                ret = Expression.NotEqual(member, constant);
+            {
+                if (member.Type == stringType && stringComparision.HasValue)
+                    ret = Expression.Not(Expression.Call(member, Constants.StringEqualWithComparisation, constant, Expression.Constant(stringComparision.Value)));
+                else
+                    ret = Expression.NotEqual(member, constant);
+            }
             else if (conditionOperator == ConditionOperators.GreaterThan)
                 ret = Expression.GreaterThan(member, constant);
             else if (conditionOperator == ConditionOperators.GreaterThanOrEqual)
@@ -36,11 +49,26 @@ namespace PoweredSoft.DynamicLinq.Helpers
             else if (conditionOperator == ConditionOperators.LessThanOrEqual)
                 ret = Expression.LessThanOrEqual(member, constant);
             else if (conditionOperator == ConditionOperators.Contains)
-                ret = Expression.Call(member, Constants.ContainsMethod, constant);
+            {
+                if (member.Type == stringType && stringComparision.HasValue)
+                    ret = Expression.GreaterThan(Expression.Call(member, Constants.IndexOfMethod, constant, Expression.Constant(stringComparision.Value)), Expression.Constant(-1));
+                else
+                    ret = Expression.Call(member, Constants.ContainsMethod, constant);
+            }
             else if (conditionOperator == ConditionOperators.StartsWith)
-                ret = Expression.Call(member, Constants.StartsWithMethod, constant);
+            {
+                if (member.Type == stringType && stringComparision.HasValue)
+                    ret = Expression.Call(member, Constants.StartsWithMethodWithComparisation, constant, Expression.Constant(stringComparision.Value));
+                else
+                    ret = Expression.Call(member, Constants.StartsWithMethod, constant);
+            }
             else if (conditionOperator == ConditionOperators.EndsWith)
-                ret = Expression.Call(member, Constants.EndsWithMethod, constant);
+            {
+                if (member.Type == stringType && stringComparision.HasValue)
+                    ret = Expression.Call(member, Constants.EndsWithMethodWithComparisation, constant, Expression.Constant(stringComparision.Value));
+                else
+                    ret = Expression.Call(member, Constants.EndsWithMethod, constant);
+            }
             else
                 throw new ArgumentException("conditionOperator", "Must supply a known condition operator");
 
@@ -124,7 +152,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
         }
 
         internal static Expression InternalCreateFilterExpression(int recursionStep, Type type, ParameterExpression parameter, Expression current, List<string> parts,
-            ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, QueryCollectionHandling collectionHandling, bool nullChecking)
+            ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, QueryCollectionHandling collectionHandling, bool nullChecking, StringComparison? stringComparison)
         {
             var partStr = parts.First();
             var isLast = parts.Count == 1;
@@ -142,7 +170,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             if (isLast)
             {
                 var constant = QueryableHelpers.ResolveConstant(memberExpression, value, convertStrategy);
-                var filterExpression = QueryableHelpers.GetConditionExpressionForMember(parameter, memberExpression, condition, constant);
+                var filterExpression = QueryableHelpers.GetConditionExpressionForMember(parameter, memberExpression, condition, constant, stringComparison);
                 var lambda = Expression.Lambda(filterExpression, parameter);
                 return lambda;
             }
@@ -156,7 +184,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
                 var innerParameter = Expression.Parameter(listGenericArgumentType, $"t{++recursionStep}");
-                var innerLambda = InternalCreateFilterExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking);
+                var innerLambda = InternalCreateFilterExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
 
                 // the collection method.
                 var collectionMethod = GetCollectionMethod(collectionHandling);
@@ -175,12 +203,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 if (nullCheckExpression != null)
                 {
-                    var pathExpr = InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking);
+                    var pathExpr = InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
                     var nullCheckResult = Expression.AndAlso(nullCheckExpression, pathExpr);
                     return nullCheckResult;
                 }
 
-                return InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking);
+                return InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
             }
         }
 
@@ -200,13 +228,14 @@ namespace PoweredSoft.DynamicLinq.Helpers
             QueryConvertStrategy convertStrategy, 
             QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any,
             ParameterExpression parameter = null,
-            bool nullChecking = false)
+            bool nullChecking = false,
+            StringComparison? stringComparision = null)
         {
             if (parameter == null)
                 parameter = Expression.Parameter(typeof(T), "t");
 
             var parts = path.Split('.').ToList();
-            var result = InternalCreateFilterExpression(1, typeof(T), parameter, parameter, parts, condition, value, convertStrategy, collectionHandling, nullChecking);
+            var result = InternalCreateFilterExpression(1, typeof(T), parameter, parameter, parts, condition, value, convertStrategy, collectionHandling, nullChecking, stringComparision);
             var ret = result as Expression<Func<T, bool>>;
             return ret;
         }

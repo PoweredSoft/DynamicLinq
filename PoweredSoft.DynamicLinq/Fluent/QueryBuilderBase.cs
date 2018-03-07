@@ -23,7 +23,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public virtual QueryBuilderBase Compare(string path, ConditionOperators conditionOperators, object value,
             QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
-            bool and = true, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any)
+            bool and = true, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
         {
             Filters.Add(new QueryBuilderFilter
             {
@@ -32,7 +32,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 Path = path,
                 Value = value,
                 ConvertStrategy = convertStrategy,
-                CollectionHandling = collectionHandling
+                CollectionHandling = collectionHandling,
+                StringComparisation = stringComparision
             });
 
             return this;

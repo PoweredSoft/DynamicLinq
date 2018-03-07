@@ -1,0 +1,102 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PoweredSoft.DynamicLinq.Extensions;
+using PoweredSoft.DynamicLinq.Test.Helpers;
+
+namespace PoweredSoft.DynamicLinq.Test
+{
+    [TestClass]
+    public class StringComparisionTests
+    {
+        internal List<MockPersonObject> Persons = new List<MockPersonObject>
+        {
+            new MockPersonObject { FirstName = "David", LastName = "Lebee", Age = 28 },
+            new MockPersonObject { FirstName = "Michaela", LastName = "Vickar", Age = 27 },
+            new MockPersonObject { FirstName = "John", LastName = "Doe", Age = 28 },
+            new MockPersonObject { FirstName = "Chuck", LastName = "Norris", Age = 50 },
+            new MockPersonObject { FirstName = "Michael", LastName = "Jackson", Age = 58 }
+        };
+
+        [TestMethod]
+        public void Equal()
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            // case sensitive.
+            a = Persons.AsQueryable().Query(t => t.Equal("FirstName", "David", stringComparision: null));
+            b = Persons.AsQueryable().Where(t => t.FirstName == "David");
+            QueryableAssert.AreEqual(a, b, "CaseSensitive");
+
+            // not case sensitive
+            a = Persons.AsQueryable().Query(t => t.Equal("FirstName", "DAVID", stringComparision: StringComparison.OrdinalIgnoreCase));
+            b = Persons.AsQueryable().Where(t => t.FirstName.Equals("DAVID", StringComparison.OrdinalIgnoreCase));
+            QueryableAssert.AreEqual(a, b, "CaseInsensitive");
+        }
+
+        [TestMethod]
+        public void NotEqual()
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            // case sensitive.
+            a = Persons.AsQueryable().Query(t => t.NotEqual("FirstName", "David", stringComparision: null));
+            b = Persons.AsQueryable().Where(t => t.FirstName != "David");
+            QueryableAssert.AreEqual(a, b, "CaseSensitive");
+
+            // not case sensitive
+            a = Persons.AsQueryable().Query(t => t.NotEqual("FirstName", "DAVID", stringComparision: StringComparison.OrdinalIgnoreCase));
+            b = Persons.AsQueryable().Where(t => !t.FirstName.Equals("DAVID", StringComparison.OrdinalIgnoreCase));
+            QueryableAssert.AreEqual(a, b, "CaseInsensitive");
+        }
+
+        [TestMethod]
+        public void Contains()
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            // case sensitive.
+            a = Persons.AsQueryable().Query(t => t.Contains("FirstName", "vi", stringComparision: null));
+            b = Persons.AsQueryable().Where(t => t.FirstName.Contains("vi"));
+            QueryableAssert.AreEqual(a, b, "CaseSensitive");
+
+            // not case sensitive
+            a = Persons.AsQueryable().Query(t => t.Contains("FirstName", "VI", stringComparision: StringComparison.OrdinalIgnoreCase));
+            b = Persons.AsQueryable().Where(t => t.FirstName.IndexOf("VI", StringComparison.OrdinalIgnoreCase) > -1);
+            QueryableAssert.AreEqual(a, b, "CaseInsensitive");
+        }
+
+        [TestMethod]
+        public void StartsWith()
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            // case sensitive.
+            a = Persons.AsQueryable().Query(t => t.StartsWith("FirstName", "Da", stringComparision: null));
+            b = Persons.AsQueryable().Where(t => t.FirstName.StartsWith("Da"));
+            QueryableAssert.AreEqual(a, b, "CaseSensitive");
+
+            // not case sensitive
+            a = Persons.AsQueryable().Query(t => t.StartsWith("FirstName", "DA", stringComparision: StringComparison.OrdinalIgnoreCase));
+            b = Persons.AsQueryable().Where(t => t.FirstName.StartsWith("DA", StringComparison.OrdinalIgnoreCase));
+            QueryableAssert.AreEqual(a, b, "CaseInsensitive");
+        }
+
+        [TestMethod]
+        public void EndsWith()
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            // case sensitive.
+            a = Persons.AsQueryable().Query(t => t.EndsWith("FirstName", "vid", stringComparision: null));
+            b = Persons.AsQueryable().Where(t => t.FirstName.EndsWith("vid"));
+            QueryableAssert.AreEqual(a, b, "CaseSensitive");
+
+            // not case sensitive
+            a = Persons.AsQueryable().Query(t => t.EndsWith("FirstName", "VID", stringComparision: StringComparison.OrdinalIgnoreCase));
+            b = Persons.AsQueryable().Where(t => t.FirstName.EndsWith("VID", StringComparison.OrdinalIgnoreCase));
+            QueryableAssert.AreEqual(a, b, "CaseInsensitive");
+        }
+    }
+}

@@ -37,5 +37,17 @@ namespace PoweredSoft.DynamicLinq.Test.Helpers
         {
             Assert.IsFalse(_sameList(a, b));
         }
+
+        public static void AreEqual<T>(IQueryable<T> a, IQueryable<T> b, string message)
+            where T : class
+        {
+            Assert.IsTrue(_sameList(a, b), message);
+        }
+
+        public static void AreNotEqual<T>(IQueryable<T> a, IQueryable<T> b, string message)
+            where T : class
+        {
+            Assert.IsFalse(_sameList(a, b), message);
+        }
     }
 }
