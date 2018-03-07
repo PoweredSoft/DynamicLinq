@@ -17,7 +17,9 @@ namespace PoweredSoft.DynamicLinq
         LessThanOrEqual,
         Contains,
         StartsWith,
-        EndsWith
+        EndsWith,
+        In,
+        NotIn
     }
 
     public enum QueryConvertStrategy

@@ -118,5 +118,27 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public QueryBuilderBase OrEndsWith(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
             => Or(path, ConditionOperators.EndsWith, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
         #endregion
+
+        #region In
+        public QueryBuilderBase In(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
+            => And(path, ConditionOperators.In, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
+
+        public QueryBuilderBase AndIn(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
+            => And(path, ConditionOperators.In, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
+
+        public QueryBuilderBase OrIn(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
+            => Or(path, ConditionOperators.In, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
+        #endregion
+
+        #region NotIn
+        public QueryBuilderBase NotIn(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
+            => And(path, ConditionOperators.NotIn, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
+
+        public QueryBuilderBase AndNotIn(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
+            => And(path, ConditionOperators.NotIn, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
+
+        public QueryBuilderBase OrNotIn(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
+            => Or(path, ConditionOperators.NotIn, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
+        #endregion
     }
 }

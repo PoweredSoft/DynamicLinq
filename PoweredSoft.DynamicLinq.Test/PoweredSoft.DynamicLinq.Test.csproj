@@ -63,6 +63,7 @@
     <Compile Include="ComplexQueriesTests.cs" />
     <Compile Include="ConstantTests.cs" />
     <Compile Include="Helpers\QueryableAssert.cs" />
+    <Compile Include="InTests.cs" />
     <Compile Include="ShortcutTests.cs" />
     <Compile Include="SimpleQueriesTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

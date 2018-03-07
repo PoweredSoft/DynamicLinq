@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -151,6 +152,17 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return query;
         }
 
+        /*
+         * var methodInfo = typeof(List<Guid>).GetMethod("Contains", new Type[] { typeof(Guid) });
+                var list = Expression.Constant(ids);
+                var param = Expression.Parameter(typeof(T), "t");
+                var value = Expression.PropertyOrField(param, idField);
+                var body = Expression.Call(list, methodInfo, value);
+                var lambda = Expression.Lambda<Func<T, bool>>(body, param);
+                query = query.Where(lambda);
+
+         */
+
         internal static Expression InternalCreateFilterExpression(int recursionStep, Type type, ParameterExpression parameter, Expression current, List<string> parts,
             ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, QueryCollectionHandling collectionHandling, bool nullChecking, StringComparison? stringComparison)
         {
@@ -169,10 +181,17 @@ namespace PoweredSoft.DynamicLinq.Helpers
             // create the expression and return it.
             if (isLast)
             {
-                var constant = QueryableHelpers.ResolveConstant(memberExpression, value, convertStrategy);
-                var filterExpression = QueryableHelpers.GetConditionExpressionForMember(parameter, memberExpression, condition, constant, stringComparison);
-                var lambda = Expression.Lambda(filterExpression, parameter);
-                return lambda;
+                if (condition == ConditionOperators.In || condition == ConditionOperators.NotIn)
+                {
+                    return InAndNotIn(parameter, condition, value, convertStrategy, memberExpression);
+                }
+                else
+                {
+                    var constant = QueryableHelpers.ResolveConstant(memberExpression, value, convertStrategy);
+                    var filterExpression = QueryableHelpers.GetConditionExpressionForMember(parameter, memberExpression, condition, constant, stringComparison);
+                    var lambda = Expression.Lambda(filterExpression, parameter);
+                    return lambda;
+                }
             }
 
             // null check.
@@ -210,6 +229,42 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
                 return InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
             }
+        }
+
+        public static Expression InAndNotIn(ParameterExpression parameter, ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, MemberExpression memberExpression)
+        {
+            var enumerableValue = value as IEnumerable;
+            if (enumerableValue == null)
+                throw new Exception($"to use {ConditionOperators.In} your value must at least be IEnumerable");
+
+            var enumerableType = GetEnumerableType(enumerableValue);
+            var finalType = convertStrategy == QueryConvertStrategy.ConvertConstantToComparedPropertyOrField ? memberExpression.Type : enumerableType;
+            var genericListOfEnumerableType = typeof(List<>).MakeGenericType(memberExpression.Type);
+            var containsMethod = genericListOfEnumerableType.GetMethod("Contains", new Type[] { finalType });
+            var list = Activator.CreateInstance(genericListOfEnumerableType) as IList;
+            foreach (var o in enumerableValue)
+            {
+                if (convertStrategy == QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
+                    list.Add(TypeHelpers.ConvertFrom(memberExpression.Type, o));
+                else
+                    list.Add(o);
+            }
+
+            var body = Expression.Call(Expression.Constant(list), containsMethod, memberExpression) as Expression;
+
+            if (condition == ConditionOperators.NotIn)
+                body = Expression.Not(body);
+
+            var lambda = Expression.Lambda(body, parameter);
+            return lambda;
+        }
+
+        private static Type GetEnumerableType(IEnumerable enumerableValue)
+        {
+            foreach (var o in enumerableValue)
+                return o.GetType();
+
+            return null;
         }
 
         public static MethodInfo GetCollectionMethod(QueryCollectionHandling collectionHandling)
