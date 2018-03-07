@@ -12,9 +12,10 @@ namespace PoweredSoft.DynamicLinq.Extensions
     public static class QueryableExtensions
     {
         public static IQueryable<T> Where<T>(this IQueryable<T> query, string path, ConditionOperators conditionOperator, object value, 
-            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
+            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, 
+            QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
         {
-            query = query.Query(qb => qb.Compare(path, conditionOperator, value, convertStrategy: convertStrategy));
+            query = query.Query(qb => qb.Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision));
             return query;
         }
         
