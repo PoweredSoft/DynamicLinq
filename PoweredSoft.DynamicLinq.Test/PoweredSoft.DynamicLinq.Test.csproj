@@ -70,6 +70,7 @@
     <Compile Include="HelpersTests.cs" />
     <Compile Include="EntityFrameworkTests.cs" />
     <Compile Include="StringComparision.cs" />
+    <Compile Include="TestData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

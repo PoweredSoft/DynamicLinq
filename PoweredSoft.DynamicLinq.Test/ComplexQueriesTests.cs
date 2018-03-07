@@ -101,65 +101,7 @@ namespace PoweredSoft.DynamicLinq.Test
         [TestMethod]
         public void TestAutomaticNullChecking()
         {
-            var authors = new List<Author>()
-            {
-                new Author
-                {
-                    Id = 1,
-                    FirstName = "David",
-                    LastName = "Lebee",
-                    Posts = new List<Post>
-                    {
-                        new Post
-                        {
-                            Id = 1,
-                            AuthorId = 1,
-                            Title = "Match",
-                            Content = "ABC",
-                            Comments = new List<Comment>()
-                            {
-                                new Comment()
-                                {
-                                    Id = 1,
-                                    DisplayName = "John Doe",
-                                    CommentText = "!@#$!@#!@#",
-                                    Email = "john.doe@me.com"
-                                }
-                            }
-                        },
-                        new Post
-                        {
-                            Id = 2,
-                            AuthorId = 1,
-                            Title = "Match",
-                            Content = "ABC"
-                        }
-                    }
-                },
-                new Author
-                {
-                    Id = 2,
-                    FirstName = "Chuck",
-                    LastName = "Norris",
-                    Posts = new List<Post>
-                    {
-                        new Post
-                        {
-                            Id = 3,
-                            AuthorId = 2,
-                            Title = "Match",
-                            Content = "ASD"
-                        },
-                        new Post
-                        {
-                            Id = 4,
-                            AuthorId = 2,
-                            Title = "DontMatch",
-                            Content = "ASD"
-                        }
-                    }
-                }
-            };
+            var authors = TestData.Authors;
 
             // the query.
             var query = authors.AsQueryable();

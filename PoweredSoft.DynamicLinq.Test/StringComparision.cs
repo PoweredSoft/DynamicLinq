@@ -10,14 +10,7 @@ namespace PoweredSoft.DynamicLinq.Test
     [TestClass]
     public class StringComparisionTests
     {
-        internal List<MockPersonObject> Persons = new List<MockPersonObject>
-        {
-            new MockPersonObject { FirstName = "David", LastName = "Lebee", Age = 28 },
-            new MockPersonObject { FirstName = "Michaela", LastName = "Vickar", Age = 27 },
-            new MockPersonObject { FirstName = "John", LastName = "Doe", Age = 28 },
-            new MockPersonObject { FirstName = "Chuck", LastName = "Norris", Age = 50 },
-            new MockPersonObject { FirstName = "Michael", LastName = "Jackson", Age = 58 }
-        };
+        internal List<MockPersonObject> Persons => TestData.Persons;
 
         [TestMethod]
         public void Equal()
