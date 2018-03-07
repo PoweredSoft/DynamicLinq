@@ -11,9 +11,9 @@
     <RepositoryUrl>https://github.com/PoweredSoft/DynamicLinq</RepositoryUrl>
     <RepositoryType>github</RepositoryType>
     <PackageTags>dynamic linq queryable</PackageTags>
-    <AssemblyVersion>1.0.0.1</AssemblyVersion>
-    <FileVersion>1.0.0.1</FileVersion>
-    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.0.3</AssemblyVersion>
+    <FileVersion>1.0.0.3</FileVersion>
+    <Version>1.0.3</Version>
     <PackageProjectUrl>https://github.com/PoweredSoft/DynamicLinq</PackageProjectUrl>
   </PropertyGroup>
 
