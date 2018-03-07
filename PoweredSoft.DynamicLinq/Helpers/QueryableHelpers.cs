@@ -81,13 +81,16 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             // attempt a conversion.
             object convertedValue = TypeHelpers.ConvertFrom(memberType, value);
-            return Expression.Constant(convertedValue);
+            return Expression.Constant(convertedValue, memberType);
         }
 
         public static ConstantExpression ResolveConstant(Expression member, object value, QueryConvertStrategy convertStrategy)
         {
             if (convertStrategy == QueryConvertStrategy.LeaveAsIs)
                 return Expression.Constant(value);
+
+            if (convertStrategy == QueryConvertStrategy.SpecifyType)
+                return Expression.Constant(value, member.Type);
 
             if (convertStrategy == QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
                 return QueryableHelpers.GetConstantSameAsLeftOperator(member, value);

@@ -23,7 +23,8 @@ namespace PoweredSoft.DynamicLinq
     public enum QueryConvertStrategy
     {
         LeaveAsIs,
-        ConvertConstantToComparedPropertyOrField
+        ConvertConstantToComparedPropertyOrField,
+        SpecifyType
     }
 
     public enum QueryCollectionHandling
