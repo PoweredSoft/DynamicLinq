@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PoweredSoft.DynamicLinq.Extensions
+namespace PoweredSoft.DynamicLinq
 {
     public static class QueryableExtensions
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PoweredSoft.DynamicLinq.Extensions;
+using PoweredSoft.DynamicLinq;
 using PoweredSoft.DynamicLinq.Test.Helpers;
 
 namespace PoweredSoft.DynamicLinq.Test

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PoweredSoft.DynamicLinq.Dal.Pocos;
-using PoweredSoft.DynamicLinq.Extensions;
+using PoweredSoft.DynamicLinq;
 
 namespace PoweredSoft.DynamicLinq.Test
 {

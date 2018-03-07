@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PoweredSoft.DynamicLinq.Dal.Pocos;
-using PoweredSoft.DynamicLinq.Extensions;
 
 namespace PoweredSoft.DynamicLinq.Test
 {

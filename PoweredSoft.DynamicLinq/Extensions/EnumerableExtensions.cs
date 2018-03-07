@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PoweredSoft.DynamicLinq.Extensions
+namespace PoweredSoft.DynamicLinq
 {
     public static class EnumerableExtensions
     {

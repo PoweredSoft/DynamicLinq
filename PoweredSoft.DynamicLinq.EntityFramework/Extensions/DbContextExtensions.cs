@@ -5,10 +5,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using PoweredSoft.DynamicLinq.Extensions;
 using PoweredSoft.DynamicLinq.Fluent;
 
-namespace PoweredSoft.DynamicLinq.EntityFramework.Extensions
+namespace PoweredSoft.DynamicLinq.EntityFramework
 {
     public static class DbContextExtensions
     {

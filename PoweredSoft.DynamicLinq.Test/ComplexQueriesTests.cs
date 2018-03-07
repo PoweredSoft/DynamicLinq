@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PoweredSoft.DynamicLinq.Dal.Pocos;
-using PoweredSoft.DynamicLinq.Extensions;
 using PoweredSoft.DynamicLinq.Fluent;
 using PoweredSoft.DynamicLinq.Helpers;
 using System;
