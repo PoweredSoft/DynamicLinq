@@ -13,8 +13,6 @@ PoweredSoft.DynamicLinq | <a href="https://www.nuget.org/packages/PoweredSoft.Dy
 PoweredSoft.DynamicLinq.EntityFramework | <a href="https://www.nuget.org/packages/PoweredSoft.EntityFramework/" target="_blank">[![NuGet](https://img.shields.io/nuget/v/PoweredSoft.DynamicLinq.EntityFramework.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/PoweredSoft.DynamicLinq.EntityFramework/)</a> | ```PM> Install-Package PoweredSoft.DynamicLinq.EntityFramework```
 
 
-
-
 ## Samples
 Complex Query
 ```csharp
@@ -40,6 +38,20 @@ You may visit this test for more examples: https://github.com/PoweredSoft/Dynami
 ```csharp
 query.Where("FirstName", ConditionOperators.Equal, "David");
 ```
+
+### In Support
+You can filter with a list, this will generate a contains with your list.
+```csharp
+var ageGroup = new List<int>() { 28, 27, 50 };
+Persons.AsQueryable().Query(t => t.In("Age", ageGroup));
+```
+
+### String Comparision Support
+```csharp
+Persons.AsQueryable().Query(t => t.Equal("FirstName", "DAVID", stringComparision: StringComparison.OrdinalIgnoreCase));
+```
+You may visit this test for more examples:
+https://github.com/PoweredSoft/DynamicLinq/blob/master/PoweredSoft.DynamicLinq.Test/StringComparision.cs
 
 ### Simple Sorting
 ```csharp
