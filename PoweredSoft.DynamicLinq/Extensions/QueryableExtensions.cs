@@ -18,8 +18,9 @@ namespace PoweredSoft.DynamicLinq
             query = query.Query(qb => qb.Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision));
             return query;
         }
-        
-     
+
+        public static IQueryable<T> Where<T>(this IQueryable<T> query, Action<QueryBuilder<T>> callback)
+            => query.Query(callback);
 
         public static IQueryable<T> Query<T> (this IQueryable<T> query, Action<QueryBuilder<T>> callback)
         {

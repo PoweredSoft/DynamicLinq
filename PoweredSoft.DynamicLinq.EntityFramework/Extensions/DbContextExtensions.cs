@@ -30,5 +30,11 @@ namespace PoweredSoft.DynamicLinq.EntityFramework
             query = query.Query(callback);
             return query;
         }
+
+        public static IQueryable Where(this DbContext context, Type pocoType, Action<QueryBuilderBase> callback)
+            => context.Query(pocoType, callback);
+
+        public static IQueryable<T> Where<T>(this DbContext context, Action<QueryBuilderBase> callback)
+           where T : class => context.Query<T>(callback);
     }
 }

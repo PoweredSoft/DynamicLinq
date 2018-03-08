@@ -112,7 +112,14 @@ namespace PoweredSoft.DynamicLinq.Test
                 qb.And("Posts.Comments.Email", ConditionOperators.Equal, "john.doe@me.com", collectionHandling: QueryCollectionHandling.Any);
             });
 
+            var query2 = query.Where(qb =>
+            {
+                qb.NullChecking();
+                qb.And("Posts.Comments.Email", ConditionOperators.Equal, "john.doe@me.com", collectionHandling: QueryCollectionHandling.Any);
+            });
+
             Assert.AreEqual(1, query.Count());
+            Assert.AreEqual(1, query2.Count());
         }
 
     }
