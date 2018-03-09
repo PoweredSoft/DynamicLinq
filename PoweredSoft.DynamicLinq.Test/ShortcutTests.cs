@@ -7,15 +7,6 @@ using PoweredSoft.DynamicLinq.Test.Helpers;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
-    internal class MockPersonObject
-    {
-        public string FirstName { get; set; }
-
-        public string LastName { get; set; }
-
-        public int Age { get; set; }
-    }
-
     [TestClass]
     public class ShortcutTests
     {
