@@ -43,6 +43,7 @@ namespace PoweredSoft.DynamicLinq
 
     internal static class Constants
     {
+        internal static readonly MethodInfo GroupByMethod = typeof(Queryable).GetMethods().First(t => t.Name == "GroupBy");
         internal static readonly MethodInfo StringEqualWithComparisation = typeof(string).GetMethod("Equals", new Type[] { typeof(string), typeof(StringComparison) });
         internal static readonly MethodInfo ContainsMethod = typeof(string).GetMethod("Contains");
         internal static readonly MethodInfo StartsWithMethod = typeof(string).GetMethod("StartsWith", new Type[] { typeof(string) });

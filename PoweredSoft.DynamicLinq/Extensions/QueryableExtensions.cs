@@ -69,5 +69,18 @@ namespace PoweredSoft.DynamicLinq
             var ret = qb.Build();
             return ret;
         }
+  
+        public static IQueryable GroupBy<T>(this IQueryable<T> query, string path)
+            where T : class
+        {
+            var ret = query.GroupBy(typeof(T), path); 
+            return ret as IQueryable;
+        }
+
+        public static IQueryable GroupBy(this IQueryable query, Type type, string path)
+        {
+            var ret = QueryableHelpers.GroupBy(query, type, path);
+            return ret;
+        }
     }
 }

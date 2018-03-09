@@ -14,31 +14,51 @@ namespace PoweredSoft.DynamicLinq.Test
         public void WantedSyntax()
         {
             var regularSyntax = TestData.Sales
-                .GroupBy(t => t.ClientId)
-                .Select(t => new
-                {
-                    TheClientId = t.Key,
-                    Count = t.Count(),
-                    CountClientId = t.Count(t2 => t2.ClientId > 1),
-                    LongCount = t.LongCount(),
-                    NetSales = t.Sum(t2 => t2.NetSales),
-                    TaxAverage = t.Average(t2 => t2.Tax),
-                    Sales = t.ToList()
-                });
-            /*
+                .GroupBy(t => t.ClientId);
+
             var dynamicSyntax = TestData.Sales
-                .GroupBy("ClientId")
-                .Select(t =>
+                .AsQueryable()
+                .GroupBy("ClientId");
+
+            /*
+
+            var regularSyntax2 = TestData.Sales
+                .GroupBy(t => new
                 {
-                    t.PropertyFromKey("TheClientId", "ClientId");
-                    t.Count("Count");
-                    // don't have to implement right away.
-                    t.Count("CountClientId", "ClientId", ConditionOperators.GreaterThan, 1);
-                    t.LongCount("LongCount");
-                    t.Sum("NetSales");
-                    t.Average("TaxAverage", "Tax");
-                    t.ToList("Sales");
-                });*/
+                    t.ClientId,
+                    t.NetSales
+                });
+
+            var dynamicSyntax2 = TestData.Sales
+                .AsQueryable()
+                .GroupBy("ClientId", "NetSales");*/
+
+            /*
+            .Select(t => new
+            {
+                TheClientId = t.Key,
+                Count = t.Count(),
+                CountClientId = t.Count(t2 => t2.ClientId > 1),
+                LongCount = t.LongCount(),
+                NetSales = t.Sum(t2 => t2.NetSales),
+                TaxAverage = t.Average(t2 => t2.Tax),
+                Sales = t.ToList()
+            });*/
+
+
+
+            /*
+            .Select(t =>
+            {
+                t.PropertyFromKey("TheClientId", "ClientId");
+                t.Count("Count");
+                // don't have to implement right away.
+                t.Count("CountClientId", "ClientId", ConditionOperators.GreaterThan, 1);
+                t.LongCount("LongCount");
+                t.Sum("NetSales");
+                t.Average("TaxAverage", "Tax");
+                t.ToList("Sales");
+            });*/
         }
     }
 }
