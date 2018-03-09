@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection.Emit;
+using System.Reflection;
 
 namespace PoweredSoft.DynamicLinq.Helpers
 {
     public static class TypeHelpers
     {
+        internal static Lazy<AssemblyName> DynamicAssemblyName = new Lazy<AssemblyName>(() => new AssemblyName("PoweredSoft.DynamicLinq.DynamicTypes"));
+        internal static Lazy<AssemblyBuilder> DynamicAssembly = new Lazy<AssemblyBuilder>(() => AssemblyBuilder.DefineDynamicAssembly(DynamicAssemblyName.Value, AssemblyBuilderAccess.Run));
+        internal static Lazy<ModuleBuilder> DynamicModule = new Lazy<ModuleBuilder>(() => DynamicAssembly.Value.DefineDynamicModule("PoweredSoft.DynamicLinq.DynamicTypes"));
+
         public static object ConvertFrom(Type type, object source)
         {
             object ret = null;
@@ -27,6 +33,46 @@ namespace PoweredSoft.DynamicLinq.Helpers
             // the ret.
             ret = Convert.ChangeType(source, notNullableType);
             return ret;
+        }
+
+        internal static TypeInfo CreateSimpleAnonymousType(List<(Type type, string name)> fields)
+        {
+            // DYNAMIC TYPE CREATION
+            var typeName = $"PSDLProxy_{Guid.NewGuid().ToString("N")}";
+            var dynamicType = DynamicModule.Value.DefineType(typeName, TypeAttributes.Class | TypeAttributes.Public);
+            fields.ForEach(field =>
+            {
+                CreatePropertyOnType(dynamicType, field.name, field.type);
+            });
+            var ret = dynamicType.CreateTypeInfo();
+            return ret;
+        }
+
+        internal static void CreatePropertyOnType(TypeBuilder typeBuilder, string propertyName, Type propertyType)
+        {
+            // Generate a property called "Name"
+            var field = typeBuilder.DefineField("_" + propertyName, propertyType, FieldAttributes.Private);
+            var attributes = MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig;
+
+            // generate property
+            var propertyBuilder = typeBuilder.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
+
+            // Generate getter method
+            var getter = typeBuilder.DefineMethod("get_" + propertyName, attributes, propertyType, Type.EmptyTypes);
+            var il = getter.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);        // Push "this" on the stack
+            il.Emit(OpCodes.Ldfld, field);   // Load the field "_Name"
+            il.Emit(OpCodes.Ret);            // Return
+            propertyBuilder.SetGetMethod(getter);
+
+            // Generate setter method
+            var setter = typeBuilder.DefineMethod("set_" + propertyName, attributes, null, new[] { propertyType });
+            il = setter.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);        // Push "this" on the stack
+            il.Emit(OpCodes.Ldarg_1);        // Push "value" on the stack
+            il.Emit(OpCodes.Stfld, field);   // Set the field "_Name" to "value"
+            il.Emit(OpCodes.Ret);            // Return
+            propertyBuilder.SetSetMethod(setter);
         }
     }
 }

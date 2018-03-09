@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoweredSoft.DynamicLinq;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
@@ -12,7 +13,7 @@ namespace PoweredSoft.DynamicLinq.Test
     {
         [TestMethod]
         public void WantedSyntax()
-        {
+        {/*
             var regularSyntax = TestData.Sales
                 .GroupBy(t => t.ClientId);
 
@@ -20,18 +21,18 @@ namespace PoweredSoft.DynamicLinq.Test
                 .AsQueryable()
                 .GroupBy("ClientId");
 
-            /*
+            
 
             var regularSyntax2 = TestData.Sales
                 .GroupBy(t => new
                 {
                     t.ClientId,
-                    t.NetSales
-                });
+                    B = t.NetSales
+                });*/
 
             var dynamicSyntax2 = TestData.Sales
                 .AsQueryable()
-                .GroupBy("ClientId", "NetSales");*/
+                .GroupBy(t => t.Path("ClientId").Path("NetSales", "B"));
 
             /*
             .Select(t => new

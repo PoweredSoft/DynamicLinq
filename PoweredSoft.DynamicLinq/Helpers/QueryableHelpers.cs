@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using System.Reflection.Emit;
+
 
 namespace PoweredSoft.DynamicLinq.Helpers
 {
@@ -77,6 +77,28 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return ret;            
         }
 
+        internal static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts)
+        {
+            // EXPRESSION
+            var parameter = Expression.Parameter(type, "t");
+            var partExpressions = new List<Expression>();
+
+            var fields = new List<(Type type, string propertyName)>();
+
+            // resolve part expression and create the fields inside the anonymous type.
+            parts.ForEach(part =>
+            {
+                var partExpression = ResolvePathForExpression(parameter, part.path);
+                fields.Add((partExpression.Type, part.propertyName));
+                partExpressions.Add(partExpression);
+            });
+
+            var anonymousType = TypeHelpers.CreateSimpleAnonymousType(fields);
+
+
+            return query;
+        }
+
         public static IQueryable GroupBy(IQueryable query, Type type, string path)
         {
             var parameter = Expression.Parameter(type, "t");
@@ -86,31 +108,6 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var groupByEpression = Expression.Call(genericMethod, query.Expression, lambda);
             var result = query.Provider.CreateQuery(groupByEpression);
             return result;
-        }
-
-        private static IQueryable GroupByAnonymousObject(IQueryable query, Type type, ParameterExpression parameter, List<Expression> fields) 
-        {
-            throw new NotSupportedException();
-            /*
-            var dynamicAssemblyName = new AssemblyName("PoweredSoft.DynamicLinq.DynamicTypes");
-            var dynamicAssembly = AssemblyBuilder.DefineDynamicAssembly(dynamicAssemblyName, System.Reflection.Emit.AssemblyBuilderAccess.Run);
-            System.Reflection.Emit.ModuleBuilder dynamicModule = dynamicAssembly.DefineDynamicModule("TempAssembly");
-
-            TypeBuilder dynamicAnonymousType = dynamicModule.DefineType("AnonymousType", TypeAttributes.Public);
-
-            int i = 0;
-            fields.ForEach(field =>
-            {
-                var fieldName = $"A_{++i}"; // tODO
-                dynamicAnonymousType.DefineField(fieldName.
-            });
-
-            dynamicAnonymousType.DefineField(, typeof(TFieldA), FieldAttributes.Public);
-            dynamicAnonymousType.DefineField(fieldNameB, typeof(TFieldB), FieldAttributes.Public);
-
-            return dynamicAnonymousType.CreateType();
-
-            throw new NotImplementedException();   */
         }
 
         /// <summary>

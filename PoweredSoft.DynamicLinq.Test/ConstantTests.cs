@@ -35,9 +35,8 @@ namespace PoweredSoft.DynamicLinq.Test
 
                 Assert.Fail("Should have thrown an exception");
             }
-            catch(Exception ex)
+            catch
             {
-                
             }
 
             Assert.IsTrue(Posts.AsQueryable().Query(t => t.Equal("Id", 1, QueryConvertStrategy.LeaveAsIs)).Any());

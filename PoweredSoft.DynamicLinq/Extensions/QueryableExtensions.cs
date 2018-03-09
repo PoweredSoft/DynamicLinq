@@ -69,18 +69,24 @@ namespace PoweredSoft.DynamicLinq
             var ret = qb.Build();
             return ret;
         }
-  
+
         public static IQueryable GroupBy<T>(this IQueryable<T> query, string path)
-            where T : class
-        {
-            var ret = query.GroupBy(typeof(T), path); 
-            return ret as IQueryable;
-        }
+            => QueryableHelpers.GroupBy(query, typeof(T), path);
 
         public static IQueryable GroupBy(this IQueryable query, Type type, string path)
+            => QueryableHelpers.GroupBy(query, type, path);
+
+        public static IQueryable GroupBy<T>(this IQueryable<T> query, Action<GroupBuilder> callback)
+            => query.GroupBy(typeof(T), callback);
+
+        public static IQueryable GroupBy(this IQueryable query, Type type, Action<GroupBuilder> callback)
         {
-            var ret = QueryableHelpers.GroupBy(query, type, path);
-            return ret;
+            var groupBuilder = new GroupBuilder();
+            callback(groupBuilder);
+            if (groupBuilder.Empty)
+                throw new Exception("No group specified, please specify at least one group");
+
+            return QueryableHelpers.GroupBy(query, type, groupBuilder.Parts);
         }
     }
 }

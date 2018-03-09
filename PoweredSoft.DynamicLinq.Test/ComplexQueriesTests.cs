@@ -1,7 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PoweredSoft.DynamicLinq.Dal.Pocos;
-using PoweredSoft.DynamicLinq.Fluent;
-using PoweredSoft.DynamicLinq.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -10,6 +7,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PoweredSoft.DynamicLinq;
+using PoweredSoft.DynamicLinq.Dal.Pocos;
+using PoweredSoft.DynamicLinq.Fluent;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
@@ -82,7 +82,7 @@ namespace PoweredSoft.DynamicLinq.Test
 
             // the query.
             var query = posts.AsQueryable();
-            var queryBuilder = new QueryBuilder<Post>(query);
+            var queryBuilder = new PoweredSoft.DynamicLinq.Fluent.QueryBuilder<Post>(query);
 
             // add some sorting.
             queryBuilder
