@@ -77,7 +77,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return ret;            
         }
 
-        internal static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts)
+        public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts)
         {
             // EXPRESSION
             var parameter = Expression.Parameter(type, "t");
@@ -95,6 +95,10 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             var anonymousType = TypeHelpers.CreateSimpleAnonymousType(fields);
 
+            var constructorTypes = fields.Select(t => t.type).ToArray();
+            var constructor = anonymousType.GetConstructor(constructorTypes);
+            var newExpression = Expression.New(constructor, partExpressions);
+            var genericMethod = Constants.GroupByMethod.MakeGenericMethod(type, anonymousType);
 
             return query;
         }

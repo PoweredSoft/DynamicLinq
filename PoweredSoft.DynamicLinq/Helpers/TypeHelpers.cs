@@ -35,6 +35,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return ret;
         }
 
+        /// <summary>
+        /// Use this to create anonymous type concstructor for LINQ queries :)
+        /// https://stackoverflow.com/questions/6879279/using-typebuilder-to-create-a-pass-through-constructor-for-the-base-class
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
         internal static TypeInfo CreateSimpleAnonymousType(List<(Type type, string name)> fields)
         {
             // DYNAMIC TYPE CREATION
