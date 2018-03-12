@@ -50,8 +50,32 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 CreatePropertyOnType(dynamicType, field.name, field.type);
             });
+            CreateConstructorWithAllPropsOnType(dynamicType, fields);
             var ret = dynamicType.CreateTypeInfo();
             return ret;
+        }
+
+        private static void CreateConstructorWithAllPropsOnType(TypeBuilder dynamicType, List<(Type type, string name)> fields)
+        {
+            var ctor = dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, fields.Select(t => t.type).ToArray());
+            var parameters = fields
+                .Select((field, i) =>
+               {
+                   return ctor.DefineParameter(i++, ParameterAttributes.None, $"{field.name}_1");
+               })
+               .ToList();
+
+            var emitter = ctor.GetILGenerator();
+            emitter.Emit(OpCodes.Nop);
+
+            // Load `this` and call base constructor with arguments
+            emitter.Emit(OpCodes.Ldarg_0);
+            for (var i = 1; i <= parameters.Count; ++i)
+            {
+                emitter.Emit(OpCodes.Ldarg, i);
+            }
+            emitter.Emit(OpCodes.Call, ctor);
+            emitter.Emit(OpCodes.Ret);
         }
 
         internal static void CreatePropertyOnType(TypeBuilder typeBuilder, string propertyName, Type propertyType)

@@ -99,8 +99,10 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var constructor = anonymousType.GetConstructor(constructorTypes);
             var newExpression = Expression.New(constructor, partExpressions);
             var genericMethod = Constants.GroupByMethod.MakeGenericMethod(type, anonymousType);
-
-            return query;
+            var lambda = Expression.Lambda(newExpression, parameter);
+            var groupByExpression = Expression.Call(genericMethod, query.Expression, lambda);
+            var result = query.Provider.CreateQuery(groupByExpression);
+            return result;
         }
 
         public static IQueryable GroupBy(IQueryable query, Type type, string path)
