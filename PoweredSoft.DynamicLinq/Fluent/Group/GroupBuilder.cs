@@ -10,6 +10,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public List<(string path, string propertyName)> Parts { get; set; } = new List<(string path, string propertyName)>();
         public Type Type { get; set; }
         public bool Empty => !Parts.Any();
+        public Type EqualityComparerType { get; set; }
 
         public GroupBuilder Path(string path, string propertyName = null)
         {
@@ -35,6 +36,12 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public GroupBuilder UseType(Type type)
         {
             Type = type;
+            return this;
+        }
+
+        public GroupBuilder EqualityComparer(Type type)
+        {
+            EqualityComparerType = type;
             return this;
         }
     }

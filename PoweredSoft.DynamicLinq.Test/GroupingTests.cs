@@ -8,10 +8,22 @@ using PoweredSoft.DynamicLinq;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
-    internal class TestStructure
+    internal class TestStructureCompare : IEqualityComparer<TestStructure> 
     {
-        public long ClientId { get; set; }
-        public decimal B { get; set; }
+        public bool Equals(TestStructure x, TestStructure y)
+        {
+            return x?.ClientId == y?.ClientId;
+        }
+
+        public int GetHashCode(TestStructure obj)
+        {
+            return obj.ClientId;
+        }
+    }
+
+    internal class TestStructure 
+    {
+        public int ClientId { get; set; }
     }
 
     [TestClass]
@@ -42,7 +54,22 @@ namespace PoweredSoft.DynamicLinq.Test
 
             var dynamicSyntax3 = TestData.Sales
                 .AsQueryable()
-                .GroupBy(t => t.UseType(typeof(TestStructure)).Path("ClientId").Path("NetSales", "B"));
+                .GroupBy(t => t.UseType(typeof(TestStructure)).EqualityComparer(typeof(TestStructureCompare)).Path("ClientId"));
+
+            var tryAs = dynamicSyntax3 as EnumerableQuery<IGrouping<TestStructure, MockSale>>;
+            var list = tryAs.Select(t => new
+            {
+                Key = t.Key,
+                Data = t.ToList()
+            }).ToList();
+
+            var list2 = TestData.Sales.GroupBy(t => new TestStructure { ClientId = t.ClientId }, new TestStructureCompare()).Select(t => new
+            {
+                Key = t.Key,
+                Data = t.ToList()
+            }).ToList();
+
+            int i = 0;
 
 
             /*
@@ -57,8 +84,6 @@ namespace PoweredSoft.DynamicLinq.Test
                 Sales = t.ToList()
             });*/
 
-
-
             /*
             .Select(t =>
             {
@@ -71,6 +96,11 @@ namespace PoweredSoft.DynamicLinq.Test
                 t.Average("TaxAverage", "Tax");
                 t.ToList("Sales");
             });*/
+        }
+
+        private object compare(MockSale arg)
+        {
+            throw new NotImplementedException();
         }
     }
 }

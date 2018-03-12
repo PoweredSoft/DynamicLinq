@@ -19,7 +19,7 @@ namespace PoweredSoft.DynamicLinq.Test
     internal class MockSale
     {
         public long Id { get; set; }
-        public long ClientId { get; set; }
+        public int ClientId { get; set; }
         public MockClient Client { get; set; }
         public decimal GrossSales { get; set; }
         public decimal NetSales { get; set; }

@@ -77,7 +77,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return ret;            
         }
 
-        public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts, Type groupToType = null)
+        public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts, Type groupToType = null, Type equalityCompareType = null)
         {
             // EXPRESSION
             var parameter = Expression.Parameter(type, "t");
@@ -93,8 +93,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 partExpressions.Add((partExpression, part.propertyName));
             });
 
-            var anonymousType = groupToType ?? TypeHelpers.CreateSimpleAnonymousType(fields);
-
+            var keyType = groupToType ?? TypeHelpers.CreateSimpleAnonymousType(fields);
 
             /*
             var constructorTypes = fields.Select(t => t.type).ToArray();
@@ -105,12 +104,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var groupByExpression = Expression.Call(genericMethod, query.Expression, lambda);
             var result = query.Provider.CreateQuery(groupByExpression);*/
 
-            var ctor = Expression.New(anonymousType);
-            var bindings = partExpressions.Select(partExpression => Expression.Bind(anonymousType.GetProperty(partExpression.propertyName), partExpression.expression)).ToList();
+            var ctor = Expression.New(keyType);
+            var bindings = partExpressions.Select(partExpression => Expression.Bind(keyType.GetProperty(partExpression.propertyName), partExpression.expression)).ToList();
             var mi = Expression.MemberInit(ctor, bindings.ToArray());
             var lambda = Expression.Lambda(mi, parameter);
-            var genericMethod = Constants.GroupByMethod.MakeGenericMethod(type, anonymousType);
-            var groupByExpression = Expression.Call(genericMethod, query.Expression, lambda);
+            var genericMethod = equalityCompareType == null ? Constants.GroupByMethod.MakeGenericMethod(type, keyType) : Constants.GroupByMethodWithEqualityComparer.MakeGenericMethod(type, keyType); //, Activator.CreateInstance(equalityCompareType));
+            var groupByExpression = equalityCompareType == null ? Expression.Call(genericMethod, query.Expression, lambda) : Expression.Call(genericMethod, query.Expression, lambda, Expression.New(equalityCompareType));
             var result = query.Provider.CreateQuery(groupByExpression);
             return result;
         }
