@@ -8,6 +8,12 @@ using PoweredSoft.DynamicLinq;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
+    internal class TestStructure
+    {
+        public long ClientId { get; set; }
+        public decimal B { get; set; }
+    }
+
     [TestClass]
     public class GroupingTests
     {
@@ -33,6 +39,11 @@ namespace PoweredSoft.DynamicLinq.Test
             var dynamicSyntax2 = TestData.Sales
                 .AsQueryable()
                 .GroupBy(t => t.Path("ClientId").Path("NetSales", "B"));
+
+            var dynamicSyntax3 = TestData.Sales
+                .AsQueryable()
+                .GroupBy(t => t.UseType(typeof(TestStructure)).Path("ClientId").Path("NetSales", "B"));
+
 
             /*
             .Select(t => new

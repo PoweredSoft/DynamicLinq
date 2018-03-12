@@ -86,7 +86,7 @@ namespace PoweredSoft.DynamicLinq
             if (groupBuilder.Empty)
                 throw new Exception("No group specified, please specify at least one group");
 
-            return QueryableHelpers.GroupBy(query, type, groupBuilder.Parts);
+            return QueryableHelpers.GroupBy(query, type, groupBuilder.Parts, groupBuilder.Type);
         }
     }
 }

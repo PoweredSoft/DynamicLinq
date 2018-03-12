@@ -36,8 +36,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
         }
 
         /// <summary>
-        /// Use this to create anonymous type concstructor for LINQ queries :)
-        /// https://stackoverflow.com/questions/6879279/using-typebuilder-to-create-a-pass-through-constructor-for-the-base-class
+        /// Use this to create anonymous type
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
@@ -50,11 +49,16 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 CreatePropertyOnType(dynamicType, field.name, field.type);
             });
+            // not needed at the end.
             // CreateConstructorWithAllPropsOnType(dynamicType, fields);
             var ret = dynamicType.CreateTypeInfo();
             return ret;
         }
 
+        /* 
+         * concstructor 
+         * https://stackoverflow.com/questions/6879279/using-typebuilder-to-create-a-pass-through-constructor-for-the-base-class
+         * works but wasn't needed at the end.
         private static void CreateConstructorWithAllPropsOnType(TypeBuilder dynamicType, List<(Type type, string name)> fields)
         {
             var ctor = dynamicType.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, fields.Select(t => t.type).ToArray());
@@ -76,7 +80,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             }
             emitter.Emit(OpCodes.Call, ctor);
             emitter.Emit(OpCodes.Ret);
-        }
+        }*/
 
         internal static void CreatePropertyOnType(TypeBuilder typeBuilder, string propertyName, Type propertyType)
         {

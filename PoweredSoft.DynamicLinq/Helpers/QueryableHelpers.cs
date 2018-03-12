@@ -77,7 +77,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return ret;            
         }
 
-        public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts)
+        public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts, Type groupToType = null)
         {
             // EXPRESSION
             var parameter = Expression.Parameter(type, "t");
@@ -93,7 +93,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 partExpressions.Add((partExpression, part.propertyName));
             });
 
-            var anonymousType = TypeHelpers.CreateSimpleAnonymousType(fields);
+            var anonymousType = groupToType ?? TypeHelpers.CreateSimpleAnonymousType(fields);
 
 
             /*

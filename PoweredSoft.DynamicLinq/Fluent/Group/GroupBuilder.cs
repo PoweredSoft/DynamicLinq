@@ -8,6 +8,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
     public class GroupBuilder
     {
         public List<(string path, string propertyName)> Parts { get; set; } = new List<(string path, string propertyName)>();
+        public Type Type { get; set; }
         public bool Empty => !Parts.Any();
 
         public GroupBuilder Path(string path, string propertyName = null)
@@ -28,6 +29,12 @@ namespace PoweredSoft.DynamicLinq.Fluent
             }
 
             Parts.Add((path, propertyName));
+            return this;
+        }
+
+        public GroupBuilder UseType(Type type)
+        {
+            Type = type;
             return this;
         }
     }
