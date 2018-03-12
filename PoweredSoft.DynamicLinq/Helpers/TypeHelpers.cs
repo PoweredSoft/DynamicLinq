@@ -50,7 +50,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 CreatePropertyOnType(dynamicType, field.name, field.type);
             });
-            CreateConstructorWithAllPropsOnType(dynamicType, fields);
+            // CreateConstructorWithAllPropsOnType(dynamicType, fields);
             var ret = dynamicType.CreateTypeInfo();
             return ret;
         }

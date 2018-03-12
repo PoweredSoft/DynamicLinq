@@ -81,7 +81,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
         {
             // EXPRESSION
             var parameter = Expression.Parameter(type, "t");
-            var partExpressions = new List<Expression>();
+            var partExpressions = new List<(Expression expression, string propertyName)>();
 
             var fields = new List<(Type type, string propertyName)>();
 
@@ -90,16 +90,26 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 var partExpression = ResolvePathForExpression(parameter, part.path);
                 fields.Add((partExpression.Type, part.propertyName));
-                partExpressions.Add(partExpression);
+                partExpressions.Add((partExpression, part.propertyName));
             });
 
             var anonymousType = TypeHelpers.CreateSimpleAnonymousType(fields);
 
+
+            /*
             var constructorTypes = fields.Select(t => t.type).ToArray();
             var constructor = anonymousType.GetConstructor(constructorTypes);
             var newExpression = Expression.New(constructor, partExpressions);
             var genericMethod = Constants.GroupByMethod.MakeGenericMethod(type, anonymousType);
             var lambda = Expression.Lambda(newExpression, parameter);
+            var groupByExpression = Expression.Call(genericMethod, query.Expression, lambda);
+            var result = query.Provider.CreateQuery(groupByExpression);*/
+
+            var ctor = Expression.New(anonymousType);
+            var bindings = partExpressions.Select(partExpression => Expression.Bind(anonymousType.GetProperty(partExpression.propertyName), partExpression.expression)).ToList();
+            var mi = Expression.MemberInit(ctor, bindings.ToArray());
+            var lambda = Expression.Lambda(mi, parameter);
+            var genericMethod = Constants.GroupByMethod.MakeGenericMethod(type, anonymousType);
             var groupByExpression = Expression.Call(genericMethod, query.Expression, lambda);
             var result = query.Provider.CreateQuery(groupByExpression);
             return result;
