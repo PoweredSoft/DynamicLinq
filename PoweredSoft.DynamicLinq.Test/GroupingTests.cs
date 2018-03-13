@@ -84,7 +84,7 @@ namespace PoweredSoft.DynamicLinq.Test
                 Sales = t.ToList()
             });*/
 
-            /*
+            
             .Select(t =>
             {
                 t.PropertyFromKey("TheClientId", "ClientId");
@@ -95,7 +95,7 @@ namespace PoweredSoft.DynamicLinq.Test
                 t.Sum("NetSales");
                 t.Average("TaxAverage", "Tax");
                 t.ToList("Sales");
-            });*/
+            });
         }
 
         private object compare(MockSale arg)

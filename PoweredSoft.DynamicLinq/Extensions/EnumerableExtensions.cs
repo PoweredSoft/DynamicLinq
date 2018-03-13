@@ -1,5 +1,6 @@
 ﻿using PoweredSoft.DynamicLinq.Fluent;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,5 +34,17 @@ namespace PoweredSoft.DynamicLinq
 
         public static IEnumerable<T> ThenByDescending<T>(this IEnumerable<T> list, string path)
             => list.AsQueryable().ThenByDescending(path);
+
+        public static IQueryable GroupBy<T>(this IEnumerable<T> list, string path)
+            => list.AsQueryable().GroupBy(typeof(T), path);
+
+        public static IQueryable GroupBy(this IEnumerable list, Type type, string path)
+            => list.AsQueryable().GroupBy(type, path);
+
+        public static IQueryable GroupBy<T>(this IEnumerable<T> list, Action<GroupBuilder> callback)
+            => list.AsQueryable().GroupBy(typeof(T), callback);
+
+        public static IQueryable GroupBy(this IEnumerable list, Type type, Action<GroupBuilder> callback)
+            => list.AsQueryable().GroupBy(type, callback);
     }
 }
