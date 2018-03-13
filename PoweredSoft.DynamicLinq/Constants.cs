@@ -41,6 +41,16 @@ namespace PoweredSoft.DynamicLinq
         Descending
     }
 
+    public enum SelectTypes
+    {
+        Key,
+        Count,
+        LongCount,
+        Sum,
+        Average,
+        ToList
+    }
+
     internal static class Constants
     {
         internal static readonly MethodInfo GroupByMethod = typeof(Queryable).GetMethods().First(t => t.Name == "GroupBy");

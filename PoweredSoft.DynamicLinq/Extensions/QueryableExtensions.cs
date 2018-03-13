@@ -88,5 +88,15 @@ namespace PoweredSoft.DynamicLinq
 
             return QueryableHelpers.GroupBy(query, type, groupBuilder.Parts, groupBuilder.Type, groupBuilder.EqualityComparerType);
         }
+
+        public static IQueryable Select(this IQueryable query, Action<SelectBuilder> callback)
+        {
+            var sb = new SelectBuilder();
+            callback(sb);
+            if (sb.Empty)
+                throw new Exception("No select specified, please specify at least one select path");
+
+            return query;
+        }
     }
 }

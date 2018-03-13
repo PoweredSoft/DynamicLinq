@@ -48,6 +48,7 @@ namespace PoweredSoft.DynamicLinq.Test
                     B = t.NetSales
                 });*/
 
+            /*
             var dynamicSyntax2 = TestData.Sales
                 .AsQueryable()
                 .GroupBy(t => t.Path("ClientId").Path("NetSales", "B"));
@@ -69,7 +70,7 @@ namespace PoweredSoft.DynamicLinq.Test
                 Data = t.ToList()
             }).ToList();
 
-            int i = 0;
+            int i = 0;*/
 
 
             /*
@@ -84,18 +85,18 @@ namespace PoweredSoft.DynamicLinq.Test
                 Sales = t.ToList()
             });*/
 
-            
-            .Select(t =>
-            {
-                t.PropertyFromKey("TheClientId", "ClientId");
-                t.Count("Count");
-                // don't have to implement right away.
-                t.Count("CountClientId", "ClientId", ConditionOperators.GreaterThan, 1);
-                t.LongCount("LongCount");
-                t.Sum("NetSales");
-                t.Average("TaxAverage", "Tax");
-                t.ToList("Sales");
-            });
+            var dynamicSyntax2 = TestData.Sales
+               .AsQueryable()
+               .GroupBy(t => t.Path("ClientId"))
+               .Select(t =>
+               {
+                    t.Key("TheClientId", "ClientId");
+                    t.Count("Count");
+                    t.LongCount("LongCount");
+                    t.Sum("NetSales");
+                    t.Average("Tax", "TaxAverage");
+                    t.ToList("Sales");
+               });
         }
 
         private object compare(MockSale arg)
