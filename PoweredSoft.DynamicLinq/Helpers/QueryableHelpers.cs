@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PoweredSoft.DynamicLinq.DynamicType;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,7 +94,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 partExpressions.Add((partExpression, part.propertyName));
             });
 
-            var keyType = groupToType ?? TypeHelpers.CreateSimpleAnonymousType(fields);
+            var keyType = groupToType ?? DynamicClassFactory.CreateType(fields);
 
             /*
             var constructorTypes = fields.Select(t => t.type).ToArray();

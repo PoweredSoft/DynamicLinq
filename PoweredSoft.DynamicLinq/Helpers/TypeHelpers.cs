@@ -10,9 +10,10 @@ namespace PoweredSoft.DynamicLinq.Helpers
 {
     public static class TypeHelpers
     {
+        /*
         internal static Lazy<AssemblyName> DynamicAssemblyName = new Lazy<AssemblyName>(() => new AssemblyName("PoweredSoft.DynamicLinq.DynamicTypes"));
         internal static Lazy<AssemblyBuilder> DynamicAssembly = new Lazy<AssemblyBuilder>(() => AssemblyBuilder.DefineDynamicAssembly(DynamicAssemblyName.Value, AssemblyBuilderAccess.Run));
-        internal static Lazy<ModuleBuilder> DynamicModule = new Lazy<ModuleBuilder>(() => DynamicAssembly.Value.DefineDynamicModule("PoweredSoft.DynamicLinq.DynamicTypes"));
+        internal static Lazy<ModuleBuilder> DynamicModule = new Lazy<ModuleBuilder>(() => DynamicAssembly.Value.DefineDynamicModule("PoweredSoft.DynamicLinq.DynamicTypes"));*/
 
         public static object ConvertFrom(Type type, object source)
         {
@@ -35,6 +36,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return ret;
         }
 
+        /*
         /// <summary>
         /// Use this to create anonymous type
         /// </summary>
@@ -53,7 +55,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             // CreateConstructorWithAllPropsOnType(dynamicType, fields);
             var ret = dynamicType.CreateTypeInfo();
             return ret;
-        }
+        }*/
 
         /* 
          * concstructor 
@@ -82,6 +84,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             emitter.Emit(OpCodes.Ret);
         }*/
 
+            /*
         internal static void CreatePropertyOnType(TypeBuilder typeBuilder, string propertyName, Type propertyType)
         {
             // Generate a property called "Name"
@@ -108,5 +111,6 @@ namespace PoweredSoft.DynamicLinq.Helpers
             il.Emit(OpCodes.Ret);            // Return
             propertyBuilder.SetSetMethod(setter);
         }
+        */
     }
 }
