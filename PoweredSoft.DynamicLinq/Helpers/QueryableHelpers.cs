@@ -181,6 +181,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 var body = Expression.Call(typeof(Enumerable), "Sum", new[] { notGroupedType }, parameter, innerMemberLambda);
                 return body;
             }
+            else if (selectType == SelectTypes.ToList)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "ToList", new[] { notGroupedType }, parameter);
+                return body;
+            }
 
             throw new NotSupportedException($"unkown select type {selectType}");
         }

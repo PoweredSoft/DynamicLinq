@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PoweredSoft.DynamicLinq;
 using PoweredSoft.DynamicLinq.Dal;
+using System.Diagnostics;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
@@ -83,13 +84,14 @@ namespace PoweredSoft.DynamicLinq.Test
                     Count = t.Count(),
                 });*/
 
+            /*
             TestData.Sales.GroupBy(t => new { t.ClientId }).Select(t => new
             {
                 TheClientId = t.Key.ClientId,
                 Count = t.Count(),
                 LongCount = t.LongCount(),
                 TaxAverage = t.Average(t2 => t2.Tax)
-            });
+            });*/
 
             var dynamicSyntax2 = TestData.Sales
                .AsQueryable()
@@ -101,8 +103,9 @@ namespace PoweredSoft.DynamicLinq.Test
                     t.LongCount("LongCount");
                     t.Sum("NetSales");
                     t.Average("Tax", "TaxAverage");
-                    //t.ToList("Sales");
+                    t.ToList("Sales");
                });
+
 
             var result = dynamicSyntax2.ToObjectList();
         }
