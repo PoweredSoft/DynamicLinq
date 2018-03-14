@@ -10,8 +10,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
     {
         public string Path { get; set; }
 
-        public QuerySortDirection sortDirection { get; set; } = QuerySortDirection.Ascending;
+        public QueryOrderByDirection Direction { get; set; } = QueryOrderByDirection.Ascending;
 
-        public bool AppendSort { get; set; }
+        public bool Append { get; set; }
     }
 }

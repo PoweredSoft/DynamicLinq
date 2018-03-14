@@ -82,14 +82,14 @@ namespace PoweredSoft.DynamicLinq.Test
 
             // the query.
             var query = posts.AsQueryable();
-            var queryBuilder = new PoweredSoft.DynamicLinq.Fluent.OrderByBuilder<Post>(query);
+            var queryBuilder = new OrderByBuilder(query);
 
             // add some sorting.
             queryBuilder
                 .OrderByDescending("AuthorId")
                 .ThenBy("Id");
 
-            query = queryBuilder.Build();
+            query = queryBuilder.Build().Cast<Post>();
 
             var first = query.First();
             var second = query.Skip(1).First();

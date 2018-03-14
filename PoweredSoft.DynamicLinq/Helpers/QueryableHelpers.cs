@@ -270,13 +270,13 @@ namespace PoweredSoft.DynamicLinq.Helpers
             throw new NotSupportedException($"{convertStrategy} supplied is not recognized");
         }
 
-        public static IQueryable<T> CreateOrderByExpression<T>(IQueryable<T> query, string sortPath, QuerySortDirection sortDirection, bool appendSort = true)
+        public static IQueryable CreateOrderByExpression(IQueryable query, string sortPath, QueryOrderByDirection sortDirection, bool appendSort = true)
         {
-            var parameter = Expression.Parameter(typeof(T), "t");
+            var parameter = Expression.Parameter(query.ElementType, "t");
             var member = QueryableHelpers.ResolvePathForExpression(parameter, sortPath);
 
             string sortCommand = null;
-            if (sortDirection == QuerySortDirection.Descending)
+            if (sortDirection == QueryOrderByDirection.Descending)
                 sortCommand = appendSort == false ? "OrderByDescending" : "ThenByDescending";
             else
                 sortCommand = appendSort == false ? "OrderBy" : "ThenBy";
@@ -286,12 +286,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var resultExpression = Expression.Call
                     (typeof(Queryable),
                     sortCommand,
-                    new Type[] { typeof(T), member.Type },
+                    new Type[] { query.ElementType, member.Type },
                     query.Expression,
                     Expression.Quote(expression)
                 );
 
-            query = query.Provider.CreateQuery<T>(resultExpression);
+            query = query.Provider.CreateQuery(resultExpression);
             return query;
         }
 

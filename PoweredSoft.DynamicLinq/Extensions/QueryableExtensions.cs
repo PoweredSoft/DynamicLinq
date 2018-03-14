@@ -30,46 +30,48 @@ namespace PoweredSoft.DynamicLinq
             return ret;
         }
 
-        public static IQueryable<T> Sort<T>(this IQueryable<T> query, string path, QuerySortDirection sortDirection, bool appendSort)
+        // generic.
+        public static IQueryable<T> OrderBy<T>(this IQueryable<T> query, string path, QueryOrderByDirection direction, bool append)
         {
-            var qb = new OrderByBuilder<T>(query);
-            qb.Sort(path, sortDirection, appendSort);
-            var ret = qb.Build();
-            return ret;
+            IQueryable queryable = query;
+            query = queryable.OrderBy(path, direction, append) as IQueryable<T>;
+            return query;
         }
 
         public static IQueryable<T> OrderBy<T>(this IQueryable<T> query, string path)
-        {
-            var qb = new OrderByBuilder<T>(query);
-            qb.OrderBy(path);
-            var ret = qb.Build();
-            return ret;
-        }
+            => query.OrderBy(path, QueryOrderByDirection.Ascending, false);
 
         public static IQueryable<T> OrderByDescending<T>(this IQueryable<T> query, string path)
-        {
-            var qb = new OrderByBuilder<T>(query);
-            qb.OrderByDescending(path);
-            var ret = qb.Build();
-            return ret;
-        }
+            => query.OrderBy(path, QueryOrderByDirection.Descending, false);
 
         public static IQueryable<T> ThenBy<T>(this IQueryable<T> query, string path)
-        {
-            var qb = new OrderByBuilder<T>(query);
-            qb.ThenBy(path);
-            var ret = qb.Build();
-            return ret;
-        }
+            => query.OrderBy(path, QueryOrderByDirection.Ascending, true);
 
         public static IQueryable<T> ThenByDescending<T>(this IQueryable<T> query, string path)
+            => query.OrderBy(path, QueryOrderByDirection.Descending, true);
+
+        // non generic.
+        public static IQueryable OrderBy(this IQueryable query, string path, QueryOrderByDirection direction, bool append)
         {
-            var qb = new OrderByBuilder<T>(query);
-            qb.ThenByDescending(path);
+            var qb = new OrderByBuilder(query);
+            qb.OrderBy(path, direction, append);
             var ret = qb.Build();
             return ret;
         }
 
+        public static IQueryable OrderBy(this IQueryable query, string path)
+            => query.OrderBy(path, QueryOrderByDirection.Ascending, false);
+
+        public static IQueryable OrderByDescending(this IQueryable query, string path)
+            => query.OrderBy(path, QueryOrderByDirection.Descending, false);
+
+        public static IQueryable ThenBy(this IQueryable query, string path)
+            => query.OrderBy(path, QueryOrderByDirection.Ascending, true);
+
+        public static IQueryable ThenByDescending(this IQueryable query, string path)
+            => query.OrderBy(path, QueryOrderByDirection.Descending, true);
+
+        // group by
         public static IQueryable GroupBy<T>(this IQueryable<T> query, string path)
             => QueryableHelpers.GroupBy(query, typeof(T), path);
 

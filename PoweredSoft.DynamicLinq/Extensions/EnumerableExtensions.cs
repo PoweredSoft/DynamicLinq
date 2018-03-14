@@ -20,8 +20,8 @@ namespace PoweredSoft.DynamicLinq
         public static IEnumerable<T> Query<T>(this IEnumerable<T> list, Action<WhereBuilder<T>> callback)
             => list.AsQueryable().Query(callback);
 
-        public static IEnumerable<T> Sort<T>(this IEnumerable<T> list, string path, QuerySortDirection sortDirection, bool appendSort)
-            => list.AsQueryable().Sort(path, sortDirection, appendSort);
+        public static IEnumerable<T> Sort<T>(this IEnumerable<T> list, string path, QueryOrderByDirection sortDirection, bool appendSort)
+            => list.AsQueryable().OrderBy(path, sortDirection, appendSort);
 
         public static IEnumerable<T> OrderBy<T>(this IEnumerable<T> list, string path)
             => list.AsQueryable().OrderBy(path);

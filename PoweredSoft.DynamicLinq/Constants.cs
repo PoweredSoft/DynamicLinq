@@ -35,7 +35,7 @@ namespace PoweredSoft.DynamicLinq
         All
     }
 
-    public enum QuerySortDirection
+    public enum QueryOrderByDirection
     {
         Ascending,
         Descending
