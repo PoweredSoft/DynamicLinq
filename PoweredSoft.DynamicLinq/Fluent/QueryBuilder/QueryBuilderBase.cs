@@ -13,8 +13,6 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public List<QueryBuilderFilter> Filters { get; protected set; } = new List<QueryBuilderFilter>();
 
-        public List<QueryBuilderSort> Sorts { get; protected set; } = new List<QueryBuilderSort>();
-
         public virtual QueryBuilderBase NullChecking(bool check = true)
         {
             IsNullCheckingEnabled = check;
@@ -37,18 +35,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             });
 
             return this;
-        }
-
-        public virtual QueryBuilderBase Sort(string path, QuerySortDirection sortDirection, bool appendSort)
-        {
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                sortDirection = sortDirection,
-                AppendSort = appendSort
-            });
-            return this;
-        }
+        } 
 
         protected abstract QueryBuilderBase GetSubQueryBuilder();
 
@@ -70,51 +57,5 @@ namespace PoweredSoft.DynamicLinq.Fluent
             //return self.
             return this;
         }        
-
-        public virtual QueryBuilderBase OrderBy(string path)
-        {
-            Sorts.Clear();
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                sortDirection = QuerySortDirection.Ascending,
-                AppendSort = false
-            });
-            return this;
-        }
-
-        public virtual QueryBuilderBase OrderByDescending(string path)
-        {
-            Sorts.Clear();
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                sortDirection = QuerySortDirection.Descending,
-                AppendSort = false
-            });
-            return this;
-        }
-
-        public virtual QueryBuilderBase ThenBy(string path)
-        {
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                sortDirection = QuerySortDirection.Ascending,
-                AppendSort = true
-            });
-            return this;
-        }
-
-        public virtual QueryBuilderBase ThenByDescending(string path)
-        {
-            Sorts.Add(new QueryBuilderSort
-            {
-                Path = path,
-                sortDirection = QuerySortDirection.Descending,
-                AppendSort = true
-            });
-            return this;
-        }
     }
 }

@@ -82,7 +82,7 @@ namespace PoweredSoft.DynamicLinq.Test
 
             // the query.
             var query = posts.AsQueryable();
-            var queryBuilder = new PoweredSoft.DynamicLinq.Fluent.QueryBuilder<Post>(query);
+            var queryBuilder = new PoweredSoft.DynamicLinq.Fluent.SortBuilder<Post>(query);
 
             // add some sorting.
             queryBuilder

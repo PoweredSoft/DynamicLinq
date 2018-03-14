@@ -11,8 +11,6 @@ namespace PoweredSoft.DynamicLinq.Fluent
     public class QueryBuilder<T> : QueryBuilderBase
     {
         public IQueryable<T> Query { get; set; }
-
-        public Type QueryableType { get; set; }
        
         public QueryBuilder(IQueryable<T> query)
         {
@@ -24,27 +22,6 @@ namespace PoweredSoft.DynamicLinq.Fluent
             // the query.
             var query = Query;
 
-            // build the filters.
-            query = BuildFilters(query);
-
-            // build the sorts
-            query = BuildSorts(query);
-            
-            return query;
-        }
-
-        protected virtual IQueryable<T> BuildSorts(IQueryable<T> query)
-        {
-            Sorts.ForEach(sort =>
-            {
-                query = QueryableHelpers.CreateSortExpression(query, sort.Path, sort.sortDirection, sort.AppendSort);
-            });
-
-            return query;
-        }
-
-        protected virtual IQueryable<T> BuildFilters(IQueryable<T> query)
-        {
             if (Filters == null || Filters?.Count() == 0)
                 return query;
 
