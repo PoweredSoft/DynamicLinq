@@ -70,7 +70,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         protected virtual Expression<Func<T, bool>> BuildFilterExpression(ParameterExpression parameter, WhereBuilderCondition filter)
         {
-            var ret = QueryableHelpers.CreateFilterExpression<T>(
+            var ret = QueryableHelpers.CreateConditionExpression<T>(
                 filter.Path,
                 filter.ConditionOperator,
                 filter.Value,

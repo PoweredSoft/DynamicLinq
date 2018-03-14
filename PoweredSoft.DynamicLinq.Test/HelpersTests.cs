@@ -80,9 +80,9 @@ namespace PoweredSoft.DynamicLinq.Test
             // the query.
             var query = authors.AsQueryable();
 
-            var allExpression = QueryableHelpers.CreateFilterExpression<Author>("Posts.Title", ConditionOperators.Equal, "Match", QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling.All);
-            var anyExpression = QueryableHelpers.CreateFilterExpression<Author>("Posts.Title", ConditionOperators.Equal, "Match", QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling.Any);
-            var anyExpression2 = QueryableHelpers.CreateFilterExpression<Author>("Posts.Comments.Email", ConditionOperators.Equal, "John.doe@me.com", QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling.Any);
+            var allExpression = QueryableHelpers.CreateConditionExpression<Author>("Posts.Title", ConditionOperators.Equal, "Match", QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling.All);
+            var anyExpression = QueryableHelpers.CreateConditionExpression<Author>("Posts.Title", ConditionOperators.Equal, "Match", QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling.Any);
+            var anyExpression2 = QueryableHelpers.CreateConditionExpression<Author>("Posts.Comments.Email", ConditionOperators.Equal, "John.doe@me.com", QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling.Any);
             Assert.AreEqual(1, query.Count(allExpression));
             Assert.AreEqual(2, query.Count(anyExpression));
             Assert.AreEqual(1, query.Count(anyExpression2));

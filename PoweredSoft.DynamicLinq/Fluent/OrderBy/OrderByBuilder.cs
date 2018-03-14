@@ -21,7 +21,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
             Sorts.ForEach(sort =>
             {
-                query = QueryableHelpers.CreateSortExpression(query, sort.Path, sort.sortDirection, sort.AppendSort);
+                query = QueryableHelpers.CreateOrderByExpression(query, sort.Path, sort.sortDirection, sort.AppendSort);
             });
 
             return query;

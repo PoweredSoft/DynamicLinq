@@ -270,7 +270,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             throw new NotSupportedException($"{convertStrategy} supplied is not recognized");
         }
 
-        public static IQueryable<T> CreateSortExpression<T>(IQueryable<T> query, string sortPath, QuerySortDirection sortDirection, bool appendSort = true)
+        public static IQueryable<T> CreateOrderByExpression<T>(IQueryable<T> query, string sortPath, QuerySortDirection sortDirection, bool appendSort = true)
         {
             var parameter = Expression.Parameter(typeof(T), "t");
             var member = QueryableHelpers.ResolvePathForExpression(parameter, sortPath);
@@ -306,7 +306,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
          */
 
-        internal static Expression InternalCreateFilterExpression(int recursionStep, Type type, ParameterExpression parameter, Expression current, List<string> parts,
+        internal static Expression InternalCreateConditionExpression(int recursionStep, Type type, ParameterExpression parameter, Expression current, List<string> parts,
             ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, QueryCollectionHandling collectionHandling, bool nullChecking, StringComparison? stringComparison)
         {
             var partStr = parts.First();
@@ -346,7 +346,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
                 var innerParameter = Expression.Parameter(listGenericArgumentType, $"t{++recursionStep}");
-                var innerLambda = InternalCreateFilterExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
+                var innerLambda = InternalCreateConditionExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
 
                 // the collection method.
                 var collectionMethod = GetCollectionMethod(collectionHandling);
@@ -365,12 +365,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 if (nullCheckExpression != null)
                 {
-                    var pathExpr = InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
+                    var pathExpr = InternalCreateConditionExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
                     var nullCheckResult = Expression.AndAlso(nullCheckExpression, pathExpr);
                     return nullCheckResult;
                 }
 
-                return InternalCreateFilterExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
+                return InternalCreateConditionExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
             }
         }
 
@@ -422,7 +422,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
         
 
-        public static Expression<Func<T, bool>> CreateFilterExpression<T>(string path, 
+        public static Expression<Func<T, bool>> CreateConditionExpression<T>(string path, 
             ConditionOperators condition, 
             object value, 
             QueryConvertStrategy convertStrategy, 
@@ -435,7 +435,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 parameter = Expression.Parameter(typeof(T), "t");
 
             var parts = path.Split('.').ToList();
-            var result = InternalCreateFilterExpression(1, typeof(T), parameter, parameter, parts, condition, value, convertStrategy, collectionHandling, nullChecking, stringComparision);
+            var result = InternalCreateConditionExpression(1, typeof(T), parameter, parameter, parts, condition, value, convertStrategy, collectionHandling, nullChecking, stringComparision);
             var ret = result as Expression<Func<T, bool>>;
             return ret;
         }
