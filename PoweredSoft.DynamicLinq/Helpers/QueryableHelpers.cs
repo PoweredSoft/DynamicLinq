@@ -139,26 +139,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var mi = Expression.MemberInit(ctor, bindings);
             var lambda = Expression.Lambda(mi, parameter);
 
-            /*
-            public static IQueryable<TypeTwo> Tester(IQueryable<TypeOne> data)
-            {
-                var source = Expression.Parameter(typeof(TypeOne), "source");
-                var selector = Expression.Lambda<Func<TypeOne, TypeTwo>>(
-                    Expression.MemberInit(Expression.New(typeof(TypeTwo)),
-                        Expression.Bind(typeof(TypeTwo).GetProperty("TwoProp"), Expression.Property(source, "OneProp"))),
-                    source);
-                return data.Select(selector);
-            }*/
-
-            //public static IQueryable<TResult> Select<TSource, TResult>(this IQueryable<TSource> source, Expression<Func<TSource, TResult>> selector);
-
-
             var selectExpr = Expression.Call(typeof(Queryable), "Select", new[] { query.ElementType, typeToCreate }, query.Expression, lambda);
             var result = query.Provider.CreateQuery(selectExpr);
             return result;
         }
 
-        private static Expression CreateSelectExpression(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path)
+        private static Expression CreateSelectExpressionForGrouping(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path)
         {
             if (selectType == SelectTypes.Key)
             {
@@ -166,20 +152,54 @@ namespace PoweredSoft.DynamicLinq.Helpers
             }
             else if (selectType == SelectTypes.Count)
             {
-                // TODO: check if we need to ensure if grouped before getting second generic argument.
                 var notGroupedType = parameter.Type.GenericTypeArguments[1];
                 var body = Expression.Call(typeof(Enumerable), "Count", new[] { notGroupedType }, parameter);
                 return body;
             }
             else if (selectType == SelectTypes.LongCount)
             {
-                // TODO: check if we need to ensure if grouped before getting second generic argument.
                 var notGroupedType = parameter.Type.GenericTypeArguments[1];
                 var body = Expression.Call(typeof(Enumerable), "LongCount", new[] { notGroupedType }, parameter);
                 return body;
             }
+            else if (selectType == SelectTypes.Average)
+            {
+                /// https://stackoverflow.com/questions/25482097/call-enumerable-average-via-expression
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var innerParameter = Expression.Parameter(notGroupedType);
+                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
+                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
+                var body = Expression.Call(typeof(Enumerable), "Average", new[] { notGroupedType }, parameter, innerMemberLambda);
+                return body;
+            }
+            else if (selectType == SelectTypes.Sum)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var innerParameter = Expression.Parameter(notGroupedType);
+                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
+                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
+                var body = Expression.Call(typeof(Enumerable), "Sum", new[] { notGroupedType }, parameter, innerMemberLambda);
+                return body;
+            }
 
             throw new NotSupportedException($"unkown select type {selectType}");
+        }
+
+        private static Expression CreateSelectExpression(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path)
+        {
+            if (!IsGrouping(query))
+                throw new NotSupportedException("Select without grouping is not supported yet.");
+
+            return CreateSelectExpressionForGrouping(query, parameter, selectType, path);            
+        }
+
+        private static bool IsGrouping(IQueryable query)
+        {
+            // TODO needs to be alot better than this, but it will do for now.
+            if (query.ElementType.Name.Contains("IGrouping"))
+                return true;
+
+            return false;
         }
 
         public static IQueryable GroupBy(IQueryable query, Type type, string path)

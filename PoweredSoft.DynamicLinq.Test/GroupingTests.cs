@@ -83,37 +83,28 @@ namespace PoweredSoft.DynamicLinq.Test
                     Count = t.Count(),
                 });*/
 
-            BlogContext bc = null;
-            if (bc != null)
+            TestData.Sales.GroupBy(t => new { t.ClientId }).Select(t => new
             {
-                bc.Authors.GroupBy(t => new { t.LastName }).Select(t => new
-                {
-                    t.Key.LastName,
-                    Count = t.Count()
-
-                });
-            }
+                TheClientId = t.Key.ClientId,
+                Count = t.Count(),
+                LongCount = t.LongCount(),
+                TaxAverage = t.Average(t2 => t2.Tax)
+            });
 
             var dynamicSyntax2 = TestData.Sales
                .AsQueryable()
                .GroupBy(t => t.Path("ClientId"))
                .Select(t =>
                {
-                   t.Key("TheClientId", "ClientId");
-                   t.Count("Count");
-                   /*
+                    t.Key("TheClientId", "ClientId");
+                    t.Count("Count");
                     t.LongCount("LongCount");
                     t.Sum("NetSales");
                     t.Average("Tax", "TaxAverage");
-                    t.ToList("Sales");*/
+                    //t.ToList("Sales");
                });
 
             var result = dynamicSyntax2.ToObjectList();
-        }
-
-        private object compare(MockSale arg)
-        {
-            throw new NotImplementedException();
         }
     }
 }
