@@ -5,14 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace PoweredSoft.DynamicLinq.Helpers
 {
     public static class QueryableHelpers
     {
+        
+
+
         public static Expression GetConditionExpressionForMember(ParameterExpression parameter, Expression member, ConditionOperators conditionOperator, ConstantExpression constant, StringComparison? stringComparision)
         {
             if (parameter == null)
@@ -106,13 +107,79 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var result = query.Provider.CreateQuery(groupByExpression);*/
 
             var ctor = Expression.New(keyType);
-            var bindings = partExpressions.Select(partExpression => Expression.Bind(keyType.GetProperty(partExpression.propertyName), partExpression.expression)).ToList();
-            var mi = Expression.MemberInit(ctor, bindings.ToArray());
+            var bindings = partExpressions.Select(partExpression => Expression.Bind(keyType.GetProperty(partExpression.propertyName), partExpression.expression)).ToArray();
+            var mi = Expression.MemberInit(ctor, bindings);
             var lambda = Expression.Lambda(mi, parameter);
             var genericMethod = equalityCompareType == null ? Constants.GroupByMethod.MakeGenericMethod(type, keyType) : Constants.GroupByMethodWithEqualityComparer.MakeGenericMethod(type, keyType); //, Activator.CreateInstance(equalityCompareType));
             var groupByExpression = equalityCompareType == null ? Expression.Call(genericMethod, query.Expression, lambda) : Expression.Call(genericMethod, query.Expression, lambda, Expression.New(equalityCompareType));
             var result = query.Provider.CreateQuery(groupByExpression);
             return result;
+        }
+
+        public static IQueryable Select(IQueryable query, List<(SelectTypes selectType, string propertyName, string path)> parts, Type destinationType = null)
+        {
+            // create parameter.
+            var queryType = query.ElementType;
+            var parameter = Expression.Parameter(queryType, "t");
+
+            // establish which anynomous types we might need to create.
+            var fields = new List<(Type type, string propertyName)>();
+            var partExpressions = new List<(Expression expression, string propertyName)>();
+            parts.ForEach(part =>
+            {
+                var partBodyExpression = CreateSelectExpression(query, parameter, part.selectType, part.path);
+                fields.Add((partBodyExpression.Type, part.propertyName));
+                partExpressions.Add((partBodyExpression, part.propertyName));
+            });
+
+            // type to use.
+            var typeToCreate = destinationType ?? DynamicClassFactory.CreateType(fields);
+            var ctor = Expression.New(typeToCreate);
+            var bindings = partExpressions.Select(t => Expression.Bind(typeToCreate.GetProperty(t.propertyName), t.expression)).ToArray();
+            var mi = Expression.MemberInit(ctor, bindings);
+            var lambda = Expression.Lambda(mi, parameter);
+
+            /*
+            public static IQueryable<TypeTwo> Tester(IQueryable<TypeOne> data)
+            {
+                var source = Expression.Parameter(typeof(TypeOne), "source");
+                var selector = Expression.Lambda<Func<TypeOne, TypeTwo>>(
+                    Expression.MemberInit(Expression.New(typeof(TypeTwo)),
+                        Expression.Bind(typeof(TypeTwo).GetProperty("TwoProp"), Expression.Property(source, "OneProp"))),
+                    source);
+                return data.Select(selector);
+            }*/
+
+            //public static IQueryable<TResult> Select<TSource, TResult>(this IQueryable<TSource> source, Expression<Func<TSource, TResult>> selector);
+
+
+            var selectExpr = Expression.Call(typeof(Queryable), "Select", new[] { query.ElementType, typeToCreate }, query.Expression, lambda);
+            var result = query.Provider.CreateQuery(selectExpr);
+            return result;
+        }
+
+        private static Expression CreateSelectExpression(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path)
+        {
+            if (selectType == SelectTypes.Key)
+            {
+                return ResolvePathForExpression(parameter, path);
+            }
+            else if (selectType == SelectTypes.Count)
+            {
+                // TODO: check if we need to ensure if grouped before getting second generic argument.
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "Count", new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else if (selectType == SelectTypes.LongCount)
+            {
+                // TODO: check if we need to ensure if grouped before getting second generic argument.
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "LongCount", new[] { notGroupedType }, parameter);
+                return body;
+            }
+
+            throw new NotSupportedException($"unkown select type {selectType}");
         }
 
         public static IQueryable GroupBy(IQueryable query, Type type, string path)
@@ -326,6 +393,8 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             throw new NotSupportedException($"{collectionHandling} is not supported");
         }
+
+        
 
         public static Expression<Func<T, bool>> CreateFilterExpression<T>(string path, 
             ConditionOperators condition, 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PoweredSoft.DynamicLinq;
+using PoweredSoft.DynamicLinq.Dal;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
@@ -72,31 +73,42 @@ namespace PoweredSoft.DynamicLinq.Test
 
             int i = 0;*/
 
-
             /*
-            .Select(t => new
+            var dynamicSyntax3 = TestData.Sales
+               .AsQueryable()
+               .GroupBy(t => t.ClientId)
+                .Select(t => new
+                {
+                    TheClientId = t.Key,
+                    Count = t.Count(),
+                });*/
+
+            BlogContext bc = null;
+            if (bc != null)
             {
-                TheClientId = t.Key,
-                Count = t.Count(),
-                CountClientId = t.Count(t2 => t2.ClientId > 1),
-                LongCount = t.LongCount(),
-                NetSales = t.Sum(t2 => t2.NetSales),
-                TaxAverage = t.Average(t2 => t2.Tax),
-                Sales = t.ToList()
-            });*/
+                bc.Authors.GroupBy(t => new { t.LastName }).Select(t => new
+                {
+                    t.Key.LastName,
+                    Count = t.Count()
+
+                });
+            }
 
             var dynamicSyntax2 = TestData.Sales
                .AsQueryable()
                .GroupBy(t => t.Path("ClientId"))
                .Select(t =>
                {
-                    t.Key("TheClientId", "ClientId");
-                    t.Count("Count");
+                   t.Key("TheClientId", "ClientId");
+                   t.Count("Count");
+                   /*
                     t.LongCount("LongCount");
                     t.Sum("NetSales");
                     t.Average("Tax", "TaxAverage");
-                    t.ToList("Sales");
+                    t.ToList("Sales");*/
                });
+
+            var result = dynamicSyntax2.ToObjectList();
         }
 
         private object compare(MockSale arg)

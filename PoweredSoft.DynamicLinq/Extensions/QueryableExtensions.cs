@@ -96,7 +96,27 @@ namespace PoweredSoft.DynamicLinq
             if (sb.Empty)
                 throw new Exception("No select specified, please specify at least one select path");
 
-            return query;
+            return QueryableHelpers.Select(query, 
+                sb.Parts.Select(t => (selectType: t.SelectType, propertyName: t.PropertyName, path: t.Path)).ToList(), 
+                sb.DestinationType);
+        }
+
+        public static List<object> ToObjectList(this IQueryable query)
+        {
+            var ret = new List<object>();
+            foreach (var o in query)
+                ret.Add(o);
+
+            return ret;
+        }
+
+        public static List<dynamic> ToDynamicList(this IQueryable query)
+        {
+            var ret = new List<dynamic>();
+            foreach (var o in query)
+                ret.Add(o);
+
+            return ret;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
     public class SelectBuilder
     {
         public List<SelectPart> Parts = new List<SelectPart>();
-
+        public Type DestinationType { get; set; }
         public bool Empty => Parts?.Count == 0;
 
         protected void throwIfUsedOrEmpty(string propertyName)
