@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
-    public class QueryBuilder<T> : QueryBuilderBase
+    public class WhereBuilder<T> : WhereBuilderBase
     {
         public IQueryable<T> Query { get; set; }
        
-        public QueryBuilder(IQueryable<T> query)
+        public WhereBuilder(IQueryable<T> query)
         {
             Query = query;
         }
@@ -37,7 +37,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return query;
         }
 
-        protected virtual Expression<Func<T, bool>> BuildFilterExpression(ParameterExpression parameter, List<QueryBuilderFilter> filters)
+        protected virtual Expression<Func<T, bool>> BuildFilterExpression(ParameterExpression parameter, List<WhereBuilderCondition> filters)
         {
             Expression<Func<T, bool>> temp = null;
 
@@ -46,8 +46,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
             filters.ForEach(filter =>
             {
                 Expression<Func<T, bool>> innerExpression;
-                if (filter.Filters?.Any() == true)
-                    innerExpression = BuildFilterExpression(parameter, filter.Filters);
+                if (filter.Conditions?.Any() == true)
+                    innerExpression = BuildFilterExpression(parameter, filter.Conditions);
                 else
                     innerExpression = BuildFilterExpression(parameter, filter);
 
@@ -68,7 +68,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return temp;
         }
 
-        protected virtual Expression<Func<T, bool>> BuildFilterExpression(ParameterExpression parameter, QueryBuilderFilter filter)
+        protected virtual Expression<Func<T, bool>> BuildFilterExpression(ParameterExpression parameter, WhereBuilderCondition filter)
         {
             var ret = QueryableHelpers.CreateFilterExpression<T>(
                 filter.Path,
@@ -84,9 +84,9 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return ret;
         }
 
-        protected override QueryBuilderBase GetSubQueryBuilder()
+        protected override WhereBuilderBase GetSubQueryBuilder()
         {
-            return new QueryBuilder<T>(Query);
+            return new WhereBuilder<T>(Query);
         }
     }
 }

@@ -8,11 +8,11 @@ namespace PoweredSoft.DynamicLinq.Fluent
 {
     public class SortBuilderBase
     {
-        public List<QueryBuilderSort> Sorts { get; protected set; } = new List<QueryBuilderSort>();
+        public List<OrderByPart> Sorts { get; protected set; } = new List<OrderByPart>();
 
         public virtual SortBuilderBase Sort(string path, QuerySortDirection sortDirection, bool appendSort)
         {
-            Sorts.Add(new QueryBuilderSort
+            Sorts.Add(new OrderByPart
             {
                 Path = path,
                 sortDirection = sortDirection,
@@ -24,7 +24,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public virtual SortBuilderBase OrderBy(string path)
         {
             Sorts.Clear();
-            Sorts.Add(new QueryBuilderSort
+            Sorts.Add(new OrderByPart
             {
                 Path = path,
                 sortDirection = QuerySortDirection.Ascending,
@@ -36,7 +36,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public virtual SortBuilderBase OrderByDescending(string path)
         {
             Sorts.Clear();
-            Sorts.Add(new QueryBuilderSort
+            Sorts.Add(new OrderByPart
             {
                 Path = path,
                 sortDirection = QuerySortDirection.Descending,
@@ -47,7 +47,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public virtual SortBuilderBase ThenBy(string path)
         {
-            Sorts.Add(new QueryBuilderSort
+            Sorts.Add(new OrderByPart
             {
                 Path = path,
                 sortDirection = QuerySortDirection.Ascending,
@@ -58,7 +58,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public virtual SortBuilderBase ThenByDescending(string path)
         {
-            Sorts.Add(new QueryBuilderSort
+            Sorts.Add(new OrderByPart
             {
                 Path = path,
                 sortDirection = QuerySortDirection.Descending,
@@ -68,11 +68,11 @@ namespace PoweredSoft.DynamicLinq.Fluent
         }
     }
 
-    public class SortBuilder<T> : SortBuilderBase
+    public class OrderByBuilder<T> : SortBuilderBase
     {
         public IQueryable<T> Query { get; }
 
-        public SortBuilder(IQueryable<T> query)
+        public OrderByBuilder(IQueryable<T> query)
         {
             Query = query;
         }

@@ -7,23 +7,23 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
-    public abstract partial class QueryBuilderBase
+    public abstract partial class WhereBuilderBase
     {
         public bool IsNullCheckingEnabled { get; protected set; } = false;
 
-        public List<QueryBuilderFilter> Filters { get; protected set; } = new List<QueryBuilderFilter>();
+        public List<WhereBuilderCondition> Filters { get; protected set; } = new List<WhereBuilderCondition>();
 
-        public virtual QueryBuilderBase NullChecking(bool check = true)
+        public virtual WhereBuilderBase NullChecking(bool check = true)
         {
             IsNullCheckingEnabled = check;
             return this;
         }
 
-        public virtual QueryBuilderBase Compare(string path, ConditionOperators conditionOperators, object value,
+        public virtual WhereBuilderBase Compare(string path, ConditionOperators conditionOperators, object value,
             QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
             bool and = true, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
         {
-            Filters.Add(new QueryBuilderFilter
+            Filters.Add(new WhereBuilderCondition
             {
                 And = and,
                 ConditionOperator = conditionOperators,
@@ -37,9 +37,9 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return this;
         } 
 
-        protected abstract QueryBuilderBase GetSubQueryBuilder();
+        protected abstract WhereBuilderBase GetSubQueryBuilder();
 
-        public virtual QueryBuilderBase SubQuery(Action<QueryBuilderBase> subQuery, bool and = true)
+        public virtual WhereBuilderBase SubQuery(Action<WhereBuilderBase> subQuery, bool and = true)
         {
             // create query builder for same type.
             var qb = GetSubQueryBuilder();
@@ -49,9 +49,9 @@ namespace PoweredSoft.DynamicLinq.Fluent
             subQuery(qb);
 
             // create a query part.
-            var part = new QueryBuilderFilter();
+            var part = new WhereBuilderCondition();
             part.And = and;
-            part.Filters = qb.Filters;
+            part.Conditions = qb.Filters;
             Filters.Add(part);
 
             //return self.

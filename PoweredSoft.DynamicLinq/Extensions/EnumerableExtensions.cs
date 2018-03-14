@@ -14,10 +14,10 @@ namespace PoweredSoft.DynamicLinq
             QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
             => list.AsQueryable().Where(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
 
-        public static IEnumerable<T> Where<T>(this IEnumerable<T> list, Action<QueryBuilder<T>> callback)
+        public static IEnumerable<T> Where<T>(this IEnumerable<T> list, Action<WhereBuilder<T>> callback)
             => list.Query(callback);
 
-        public static IEnumerable<T> Query<T>(this IEnumerable<T> list, Action<QueryBuilder<T>> callback)
+        public static IEnumerable<T> Query<T>(this IEnumerable<T> list, Action<WhereBuilder<T>> callback)
             => list.AsQueryable().Query(callback);
 
         public static IEnumerable<T> Sort<T>(this IEnumerable<T> list, string path, QuerySortDirection sortDirection, bool appendSort)

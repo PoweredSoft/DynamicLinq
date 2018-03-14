@@ -56,7 +56,7 @@ namespace PoweredSoft.DynamicLinq.Test
 
             // the query.
             var query = posts.AsQueryable();
-            var queryBuilder = new QueryBuilder<Post>(query);
+            var queryBuilder = new WhereBuilder<Post>(query);
 
             queryBuilder.Compare("AuthorId", ConditionOperators.Equal, 1);
             queryBuilder.And(subQuery =>
@@ -82,7 +82,7 @@ namespace PoweredSoft.DynamicLinq.Test
 
             // the query.
             var query = posts.AsQueryable();
-            var queryBuilder = new PoweredSoft.DynamicLinq.Fluent.SortBuilder<Post>(query);
+            var queryBuilder = new PoweredSoft.DynamicLinq.Fluent.OrderByBuilder<Post>(query);
 
             // add some sorting.
             queryBuilder

@@ -19,12 +19,12 @@ namespace PoweredSoft.DynamicLinq
             return query;
         }
 
-        public static IQueryable<T> Where<T>(this IQueryable<T> query, Action<QueryBuilder<T>> callback)
+        public static IQueryable<T> Where<T>(this IQueryable<T> query, Action<WhereBuilder<T>> callback)
             => query.Query(callback);
 
-        public static IQueryable<T> Query<T> (this IQueryable<T> query, Action<QueryBuilder<T>> callback)
+        public static IQueryable<T> Query<T> (this IQueryable<T> query, Action<WhereBuilder<T>> callback)
         {
-            var queryBuilder = new QueryBuilder<T>(query);
+            var queryBuilder = new WhereBuilder<T>(query);
             callback(queryBuilder);
             var ret = queryBuilder.Build();
             return ret;
@@ -32,7 +32,7 @@ namespace PoweredSoft.DynamicLinq
 
         public static IQueryable<T> Sort<T>(this IQueryable<T> query, string path, QuerySortDirection sortDirection, bool appendSort)
         {
-            var qb = new SortBuilder<T>(query);
+            var qb = new OrderByBuilder<T>(query);
             qb.Sort(path, sortDirection, appendSort);
             var ret = qb.Build();
             return ret;
@@ -40,7 +40,7 @@ namespace PoweredSoft.DynamicLinq
 
         public static IQueryable<T> OrderBy<T>(this IQueryable<T> query, string path)
         {
-            var qb = new SortBuilder<T>(query);
+            var qb = new OrderByBuilder<T>(query);
             qb.OrderBy(path);
             var ret = qb.Build();
             return ret;
@@ -48,7 +48,7 @@ namespace PoweredSoft.DynamicLinq
 
         public static IQueryable<T> OrderByDescending<T>(this IQueryable<T> query, string path)
         {
-            var qb = new SortBuilder<T>(query);
+            var qb = new OrderByBuilder<T>(query);
             qb.OrderByDescending(path);
             var ret = qb.Build();
             return ret;
@@ -56,7 +56,7 @@ namespace PoweredSoft.DynamicLinq
 
         public static IQueryable<T> ThenBy<T>(this IQueryable<T> query, string path)
         {
-            var qb = new SortBuilder<T>(query);
+            var qb = new OrderByBuilder<T>(query);
             qb.ThenBy(path);
             var ret = qb.Build();
             return ret;
@@ -64,7 +64,7 @@ namespace PoweredSoft.DynamicLinq
 
         public static IQueryable<T> ThenByDescending<T>(this IQueryable<T> query, string path)
         {
-            var qb = new SortBuilder<T>(query);
+            var qb = new OrderByBuilder<T>(query);
             qb.ThenByDescending(path);
             var ret = qb.Build();
             return ret;

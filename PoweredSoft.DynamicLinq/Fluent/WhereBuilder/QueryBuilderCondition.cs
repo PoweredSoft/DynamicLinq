@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
-    public class QueryBuilderFilter
+    public class WhereBuilderCondition
     {
         public string Path { get; set; }
         public ConditionOperators ConditionOperator { get; set; }
         public object Value { get; set; }
         public bool And { get; set; }
         public QueryConvertStrategy ConvertStrategy { get; set; }
-        public List<QueryBuilderFilter> Filters { get; set; } = new List<QueryBuilderFilter>();
+        public List<WhereBuilderCondition> Conditions { get; set; } = new List<WhereBuilderCondition>();
         public QueryCollectionHandling CollectionHandling { get;  set; }
         public StringComparison? StringComparisation { get; set; } = null;
     }

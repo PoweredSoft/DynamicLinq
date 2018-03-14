@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
-    public class QueryBuilderSort
+    public class OrderByPart
     {
         public string Path { get; set; }
 
