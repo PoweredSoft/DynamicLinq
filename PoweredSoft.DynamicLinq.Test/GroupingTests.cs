@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using PoweredSoft.DynamicLinq;
 using PoweredSoft.DynamicLinq.Dal;
 using System.Diagnostics;
+using PoweredSoft.DynamicLinq.Test.Helpers;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
@@ -33,81 +34,46 @@ namespace PoweredSoft.DynamicLinq.Test
     {
         [TestMethod]
         public void WantedSyntax()
-        {/*
-            var regularSyntax = TestData.Sales
-                .GroupBy(t => t.ClientId);
-
-            var dynamicSyntax = TestData.Sales
-                .AsQueryable()
-                .GroupBy("ClientId");
-
-            
-
-            var regularSyntax2 = TestData.Sales
-                .GroupBy(t => new
-                {
-                    t.ClientId,
-                    B = t.NetSales
-                });*/
-
-            /*
-            var dynamicSyntax2 = TestData.Sales
-                .AsQueryable()
-                .GroupBy(t => t.Path("ClientId").Path("NetSales", "B"));
-
-            var dynamicSyntax3 = TestData.Sales
-                .AsQueryable()
-                .GroupBy(t => t.UseType(typeof(TestStructure)).EqualityComparer(typeof(TestStructureCompare)).Path("ClientId"));
-
-            var tryAs = dynamicSyntax3 as EnumerableQuery<IGrouping<TestStructure, MockSale>>;
-            var list = tryAs.Select(t => new
-            {
-                Key = t.Key,
-                Data = t.ToList()
-            }).ToList();
-
-            var list2 = TestData.Sales.GroupBy(t => new TestStructure { ClientId = t.ClientId }, new TestStructureCompare()).Select(t => new
-            {
-                Key = t.Key,
-                Data = t.ToList()
-            }).ToList();
-
-            int i = 0;*/
-
-            /*
-            var dynamicSyntax3 = TestData.Sales
-               .AsQueryable()
-               .GroupBy(t => t.ClientId)
+        {
+            var normalSyntax = TestData.Sales
+                .GroupBy(t => new { t.ClientId })
                 .Select(t => new
                 {
-                    TheClientId = t.Key,
+                    TheClientId = t.Key.ClientId,
                     Count = t.Count(),
-                });*/
+                    LongCount = t.LongCount(),
+                    NetSales = t.Sum(t2 => t2.NetSales),
+                    TaxAverage = t.Average(t2 => t2.Tax),
+                    Sales = t.ToList()
+                })
+                .ToList();
 
-            /*
-            TestData.Sales.GroupBy(t => new { t.ClientId }).Select(t => new
-            {
-                TheClientId = t.Key.ClientId,
-                Count = t.Count(),
-                LongCount = t.LongCount(),
-                TaxAverage = t.Average(t2 => t2.Tax)
-            });*/
-
-            var dynamicSyntax2 = TestData.Sales
+            var dynamicSyntax = TestData.Sales
                .AsQueryable()
                .GroupBy(t => t.Path("ClientId"))
                .Select(t =>
                {
-                    t.Key("TheClientId", "ClientId");
-                    t.Count("Count");
-                    t.LongCount("LongCount");
-                    t.Sum("NetSales");
-                    t.Average("Tax", "TaxAverage");
-                    t.ToList("Sales");
-               });
+                   t.Key("TheClientId", "ClientId");
+                   t.Count("Count");
+                   t.LongCount("LongCount");
+                   t.Sum("NetSales");
+                   t.Average("Tax", "TaxAverage");
+                   t.ToList("Sales");
+               })
+               .ToDynamicClassList();
 
+            Assert.AreEqual(normalSyntax.Count, dynamicSyntax.Count);
+            for(var i = 0; i < normalSyntax.Count; i++)
+            {
+                var left = normalSyntax[i];
+                var right = dynamicSyntax[i];
 
-            var result = dynamicSyntax2.ToObjectList();
+                Assert.AreEqual(left.TheClientId, right.GetDynamicPropertyValue("TheClientId"));
+                Assert.AreEqual(left.Count, right.GetDynamicPropertyValue("Count"));
+                Assert.AreEqual(left.LongCount, right.GetDynamicPropertyValue("LongCount"));
+                Assert.AreEqual(left.TaxAverage, right.GetDynamicPropertyValue("TaxAverage"));
+                QueryableAssert.AreEqual(left.Sales.AsQueryable(), right.GetDynamicPropertyValue<List<MockSale>>("Sales").AsQueryable());
+            }
         }
     }
 }

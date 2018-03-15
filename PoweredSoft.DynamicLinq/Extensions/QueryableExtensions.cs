@@ -11,8 +11,8 @@ namespace PoweredSoft.DynamicLinq
 {
     public static class QueryableExtensions
     {
-        public static IQueryable<T> Where<T>(this IQueryable<T> query, string path, ConditionOperators conditionOperator, object value, 
-            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, 
+        public static IQueryable<T> Where<T>(this IQueryable<T> query, string path, ConditionOperators conditionOperator, object value,
+            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
             QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
         {
             query = query.Query(qb => qb.Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision));
@@ -22,7 +22,7 @@ namespace PoweredSoft.DynamicLinq
         public static IQueryable<T> Where<T>(this IQueryable<T> query, Action<WhereBuilder> callback)
             => query.Query(callback);
 
-        public static IQueryable<T> Query<T> (this IQueryable<T> query, Action<WhereBuilder> callback)
+        public static IQueryable<T> Query<T>(this IQueryable<T> query, Action<WhereBuilder> callback)
         {
             var queryBuilder = new WhereBuilder(query);
             callback(queryBuilder);
@@ -113,6 +113,14 @@ namespace PoweredSoft.DynamicLinq
             foreach (var o in query)
                 ret.Add(o);
 
+            return ret;
+        }
+        public static List<DynamicClass> ToDynamicClassList(this IQueryable query)
+        {
+            if (!typeof(DynamicClass).IsAssignableFrom(query.ElementType))
+                throw new Exception($"{query.ElementType} does not inherit DynamicClass");
+
+            var ret = query.Cast<DynamicClass>().ToList();
             return ret;
         }
     }
