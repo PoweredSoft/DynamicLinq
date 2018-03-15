@@ -83,28 +83,23 @@ namespace PoweredSoft.DynamicLinq
 
         public static IQueryable GroupBy(this IQueryable query, Type type, Action<GroupBuilder> callback)
         {
-            var groupBuilder = new GroupBuilder();
+            var groupBuilder = new GroupBuilder(query);
             callback(groupBuilder);
-            if (groupBuilder.Empty)
-                throw new Exception("No group specified, please specify at least one group");
-
-            return QueryableHelpers.GroupBy(query, type, groupBuilder.Parts, groupBuilder.Type, groupBuilder.EqualityComparerType);
+            var ret = groupBuilder.Build();
+            return ret;
         }
 
         public static IQueryable Select(this IQueryable query, Action<SelectBuilder> callback)
         {
-            var sb = new SelectBuilder();
+            var sb = new SelectBuilder(query);
             callback(sb);
-            if (sb.Empty)
-                throw new Exception("No select specified, please specify at least one select path");
-
-            return QueryableHelpers.Select(query, 
-                sb.Parts.Select(t => (selectType: t.SelectType, propertyName: t.PropertyName, path: t.Path)).ToList(), 
-                sb.DestinationType);
+            var ret = sb.Build();
+            return ret;
         }
 
         public static List<object> ToObjectList(this IQueryable query)
         {
+            // Expression call tolist?
             var ret = new List<object>();
             foreach (var o in query)
                 ret.Add(o);

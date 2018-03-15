@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using PoweredSoft.DynamicLinq.Helpers;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
@@ -11,6 +12,13 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public Type Type { get; set; }
         public bool Empty => !Parts.Any();
         public Type EqualityComparerType { get; set; }
+
+        public IQueryable Query { get; protected set; }
+
+        public GroupBuilder(IQueryable query)
+        {
+            Query = query;
+        }
 
         public GroupBuilder Path(string path, string propertyName = null)
         {
@@ -43,6 +51,15 @@ namespace PoweredSoft.DynamicLinq.Fluent
         {
             EqualityComparerType = type;
             return this;
+        }
+
+        public virtual IQueryable Build()
+        {
+            if (Empty)
+                throw new Exception("No group specified, please specify at least one group");
+
+            var ret = QueryableHelpers.GroupBy(Query, Query.ElementType, Parts, Type, EqualityComparerType);
+            return ret;
         }
     }
 }

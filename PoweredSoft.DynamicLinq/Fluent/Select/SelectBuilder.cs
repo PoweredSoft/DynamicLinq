@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PoweredSoft.DynamicLinq.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,12 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public List<SelectPart> Parts = new List<SelectPart>();
         public Type DestinationType { get; set; }
         public bool Empty => Parts?.Count == 0;
+        public IQueryable Query { get; protected set; }
+
+        public SelectBuilder(IQueryable query)
+        {
+            Query = query;
+        }
 
         protected void throwIfUsedOrEmpty(string propertyName)
         {
@@ -107,6 +114,15 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 SelectType = SelectTypes.ToList
             });
             return this;
+        }
+
+        public virtual IQueryable Build()
+        {
+            if (Empty)
+                throw new Exception("No select specified, please specify at least one select path");
+
+            var partsTuple = Parts.Select(t => (selectType: t.SelectType, propertyName: t.PropertyName, path: t.Path)).ToList();
+            return QueryableHelpers.Select(Query, partsTuple, DestinationType);
         }
     }
 }
