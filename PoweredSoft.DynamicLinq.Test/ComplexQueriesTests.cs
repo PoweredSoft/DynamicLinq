@@ -56,7 +56,7 @@ namespace PoweredSoft.DynamicLinq.Test
 
             // the query.
             var query = posts.AsQueryable();
-            var queryBuilder = new WhereBuilder<Post>(query);
+            var queryBuilder = new WhereBuilder(query);
 
             queryBuilder.Compare("AuthorId", ConditionOperators.Equal, 1);
             queryBuilder.And(subQuery =>
@@ -65,7 +65,7 @@ namespace PoweredSoft.DynamicLinq.Test
                 subQuery.Or("Title", ConditionOperators.Contains, 3);
             });
 
-            query = queryBuilder.Build();
+            query = (IQueryable<Post>)queryBuilder.Build();
             Assert.AreEqual(2, query.Count());
         }
 

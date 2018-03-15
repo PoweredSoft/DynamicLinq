@@ -79,6 +79,8 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return ret;            
         }
 
+  
+
         public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts, Type groupToType = null, Type equalityCompareType = null)
         {
             // EXPRESSION
@@ -270,16 +272,16 @@ namespace PoweredSoft.DynamicLinq.Helpers
             throw new NotSupportedException($"{convertStrategy} supplied is not recognized");
         }
 
-        public static IQueryable CreateOrderByExpression(IQueryable query, string sortPath, QueryOrderByDirection sortDirection, bool appendSort = true)
+        public static IQueryable CreateOrderByExpression(IQueryable query, string path, QueryOrderByDirection direction, bool append = true)
         {
             var parameter = Expression.Parameter(query.ElementType, "t");
-            var member = QueryableHelpers.ResolvePathForExpression(parameter, sortPath);
+            var member = QueryableHelpers.ResolvePathForExpression(parameter, path);
 
             string sortCommand = null;
-            if (sortDirection == QueryOrderByDirection.Descending)
-                sortCommand = appendSort == false ? "OrderByDescending" : "ThenByDescending";
+            if (direction == QueryOrderByDirection.Descending)
+                sortCommand = append == false ? "OrderByDescending" : "ThenByDescending";
             else
-                sortCommand = appendSort == false ? "OrderBy" : "ThenBy";
+                sortCommand = append == false ? "OrderBy" : "ThenBy";
 
             var expression = Expression.Lambda(member, parameter);
 
@@ -420,9 +422,27 @@ namespace PoweredSoft.DynamicLinq.Helpers
             throw new NotSupportedException($"{collectionHandling} is not supported");
         }
 
-        
 
-        public static Expression<Func<T, bool>> CreateConditionExpression<T>(string path, 
+        public static Expression<Func<T, bool>> CreateConditionExpression<T>(
+            string path,
+            ConditionOperators condition,
+            object value,
+            QueryConvertStrategy convertStrategy,
+            QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any,
+            ParameterExpression parameter = null,
+            bool nullChecking = false,
+            StringComparison? stringComparision = null)
+        {
+            var ret = CreateConditionExpression(typeof(T), path, condition, value, convertStrategy,
+                collectionHandling: collectionHandling,
+                parameter: parameter,
+                nullChecking: nullChecking,
+                stringComparision: stringComparision) as Expression<Func<T, bool>>;
+            return ret;
+        }
+
+        public static Expression CreateConditionExpression(Type type, 
+            string path, 
             ConditionOperators condition, 
             object value, 
             QueryConvertStrategy convertStrategy, 
@@ -432,12 +452,11 @@ namespace PoweredSoft.DynamicLinq.Helpers
             StringComparison? stringComparision = null)
         {
             if (parameter == null)
-                parameter = Expression.Parameter(typeof(T), "t");
+                parameter = Expression.Parameter(type, "t");
 
             var parts = path.Split('.').ToList();
-            var result = InternalCreateConditionExpression(1, typeof(T), parameter, parameter, parts, condition, value, convertStrategy, collectionHandling, nullChecking, stringComparision);
-            var ret = result as Expression<Func<T, bool>>;
-            return ret;
+            var result = InternalCreateConditionExpression(1, type, parameter, parameter, parts, condition, value, convertStrategy, collectionHandling, nullChecking, stringComparision);
+            return result;
         }
 
         public static bool IsEnumerable(MemberExpression member)

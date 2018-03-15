@@ -11,19 +11,17 @@ namespace PoweredSoft.DynamicLinq.EntityFramework
 {
     public static class DbContextExtensions
     {
-        private static readonly MethodInfo QueryMethod = typeof(DbContextExtensions)
-            .GetMethods(BindingFlags.Static | BindingFlags.Public)
-            .First(t => t.Name == "Query" && t.IsGenericMethod);
-
-        public static IQueryable Query(this DbContext context, Type pocoType, Action<WhereBuilderBase> callback)
+        public static IQueryable Query(this DbContext context, Type pocoType, Action<WhereBuilder> callback)
         {
-            var method = QueryMethod.MakeGenericMethod(pocoType);
-            var invokeResult = method.Invoke(null, new object[] {context, callback});
-            var ret = invokeResult as IQueryable;
-            return ret;
+            var set = context.Set(pocoType);
+            var queryable = set.AsQueryable();
+            var builder = new WhereBuilder(queryable);
+            callback(builder);
+            var result = builder.Build();
+            return result;
         }
 
-        public static IQueryable<T> Query<T>(this DbContext context, Action<WhereBuilderBase> callback)
+        public static IQueryable<T> Query<T>(this DbContext context, Action<WhereBuilder> callback)
             where T : class
         {
             var query = context.Set<T>().AsQueryable();
@@ -31,10 +29,10 @@ namespace PoweredSoft.DynamicLinq.EntityFramework
             return query;
         }
 
-        public static IQueryable Where(this DbContext context, Type pocoType, Action<WhereBuilderBase> callback)
+        public static IQueryable Where(this DbContext context, Type pocoType, Action<WhereBuilder> callback)
             => context.Query(pocoType, callback);
 
-        public static IQueryable<T> Where<T>(this DbContext context, Action<WhereBuilderBase> callback)
+        public static IQueryable<T> Where<T>(this DbContext context, Action<WhereBuilder> callback)
            where T : class => context.Query<T>(callback);
     }
 }

@@ -19,15 +19,15 @@ namespace PoweredSoft.DynamicLinq
             return query;
         }
 
-        public static IQueryable<T> Where<T>(this IQueryable<T> query, Action<WhereBuilder<T>> callback)
+        public static IQueryable<T> Where<T>(this IQueryable<T> query, Action<WhereBuilder> callback)
             => query.Query(callback);
 
-        public static IQueryable<T> Query<T> (this IQueryable<T> query, Action<WhereBuilder<T>> callback)
+        public static IQueryable<T> Query<T> (this IQueryable<T> query, Action<WhereBuilder> callback)
         {
-            var queryBuilder = new WhereBuilder<T>(query);
+            var queryBuilder = new WhereBuilder(query);
             callback(queryBuilder);
             var ret = queryBuilder.Build();
-            return ret;
+            return (IQueryable<T>)ret;
         }
 
         // generic.
