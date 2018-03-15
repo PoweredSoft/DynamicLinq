@@ -39,6 +39,35 @@ You may visit this test for more examples: https://github.com/PoweredSoft/Dynami
 query.Where("FirstName", ConditionOperators.Equal, "David");
 ```
 
+### Grouping Support
+```csharp
+TestData.Sales
+	.AsQueryable()
+	.GroupBy(t => t.Path("ClientId"))
+	.Select(t =>
+	{
+	    t.Key("TheClientId", "ClientId");
+	    t.Count("Count");
+	    t.LongCount("LongCount");
+	    t.Sum("NetSales");
+	    t.Average("Tax", "TaxAverage");
+	    t.ToList("Sales");
+	});
+```	
+Is equivalent to
+```csharp
+TestSales
+	.GroupBy(t => new { t.ClientId })
+	.Select(t => new {
+	    TheClientId = t.Key.ClientId,
+	    Count = t.Count(),
+	    LongCount = t.LongCount(),
+	    NetSales = t.Sum(t2 => t2.NetSales),
+	    TaxAverage = t.Average(t2 => t2.Tax),
+	    Sales = t.ToList()
+	});
+```       
+
 ### In Support
 You can filter with a list, this will generate a contains with your list.
 ```csharp
