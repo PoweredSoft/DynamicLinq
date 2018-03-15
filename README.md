@@ -53,9 +53,9 @@ TestData.Sales
 	    t.Average("Tax", "TaxAverage");
 	    t.ToList("Sales");
 	});
-	
-equivalent to
-
+```	
+Is equivalent to
+```csharp
 TestSales
 	.GroupBy(t => new { t.ClientId })
 	.Select(t => new {
