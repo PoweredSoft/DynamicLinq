@@ -53,6 +53,19 @@ TestData.Sales
 	    t.Average("Tax", "TaxAverage");
 	    t.ToList("Sales");
 	});
+	
+equivalent to
+
+TestSales
+	.GroupBy(t => new { t.ClientId })
+	.Select(t => new {
+	    TheClientId = t.Key.ClientId,
+	    Count = t.Count(),
+	    LongCount = t.LongCount(),
+	    NetSales = t.Sum(t2 => t2.NetSales),
+	    TaxAverage = t.Average(t2 => t2.Tax),
+	    Sales = t.ToList()
+	});
 ```       
 
 ### In Support
