@@ -6,7 +6,7 @@ using System.Text;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
-    public class OrderByBuilder
+    public class OrderByBuilder : IQueryBuilder
     {
         public IQueryable Query { get; }
 

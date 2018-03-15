@@ -6,7 +6,7 @@ using PoweredSoft.DynamicLinq.Helpers;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
-    public class GroupBuilder
+    public class GroupBuilder : IQueryBuilder
     {
         public List<(string path, string propertyName)> Parts { get; set; } = new List<(string path, string propertyName)>();
         public Type Type { get; set; }

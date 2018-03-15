@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Fluent
 {
-    public partial class WhereBuilder
+    public partial class WhereBuilder : IQueryBuilder
     {
         public IQueryable Query { get; set; }
         public Type QueryableType { get; set; }

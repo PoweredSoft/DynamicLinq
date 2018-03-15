@@ -13,7 +13,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public SelectTypes SelectType { get; set; }
     }
 
-    public class SelectBuilder
+    public class SelectBuilder : IQueryBuilder
     {
         public List<SelectPart> Parts = new List<SelectPart>();
         public Type DestinationType { get; set; }
