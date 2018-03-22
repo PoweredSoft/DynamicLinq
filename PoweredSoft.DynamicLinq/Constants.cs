@@ -53,6 +53,12 @@ namespace PoweredSoft.DynamicLinq
         Path
     }
 
+    public enum SelectCollectionHandling
+    {
+        Select,
+        SelectMany
+    }
+
     internal static class Constants
     {
         internal static readonly MethodInfo GroupByMethod = typeof(Queryable).GetMethods().First(t => t.Name == "GroupBy");

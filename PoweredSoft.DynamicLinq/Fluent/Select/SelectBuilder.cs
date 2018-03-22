@@ -11,6 +11,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public string Path { get; set; }
         public string PropertyName { get; set; }
         public SelectTypes SelectType { get; set; }
+        public SelectCollectionHandling SelectCollectionHandling { get; set; }
     }
 
     public class SelectBuilder : IQueryBuilder
@@ -133,7 +134,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return this;
         }
 
-        public SelectBuilder PathToList(string path, string propertyName = null)
+        public SelectBuilder PathToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.Select)
         {
             if (propertyName == null)
                 propertyName = path.Split('.').LastOrDefault();
@@ -144,7 +145,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
             {
                 Path = path,
                 PropertyName = propertyName,
-                SelectType = SelectTypes.PathToList
+                SelectType = SelectTypes.PathToList,
+                SelectCollectionHandling = selectCollectionHandling
             });
 
             return this;
@@ -155,7 +157,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             if (Empty)
                 throw new Exception("No select specified, please specify at least one select path");
 
-            var partsTuple = Parts.Select(t => (selectType: t.SelectType, propertyName: t.PropertyName, path: t.Path)).ToList();
+            var partsTuple = Parts.Select(t => (selectType: t.SelectType, propertyName: t.PropertyName, path: t.Path, selectCollectionHandling: t.SelectCollectionHandling)).ToList();
             return QueryableHelpers.Select(Query, partsTuple, DestinationType);
         }
     }
