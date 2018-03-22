@@ -14,5 +14,6 @@ namespace PoweredSoft.DynamicLinq.Dal.Pocos
         public string Email { get; set; }
         public string CommentText { get; set; }
         public Post Post { get; set; }
+        public ICollection<CommentLike> CommentLikes { get; set; }
     }
 }

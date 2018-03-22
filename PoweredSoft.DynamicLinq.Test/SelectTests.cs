@@ -80,8 +80,20 @@ namespace PoweredSoft.DynamicLinq.Test
         [TestMethod]
         public void SelectNullChecking()
         {
-            // TODO: null checking in select operations :D
-            throw new Exception("TODO");
+            var query = TestData.Authors.AsQueryable();
+
+            query.Select(t => new
+            {
+                Comments = t.Posts == null ? null : t.Posts.SelectMany(t2 => t2.Comments).ToList()
+            });
+
+            var querySelect = query.Select(t =>
+            {
+                t.NullChecking(true);
+                t.PathToList("Posts.Comments", selectCollectionHandling: SelectCollectionHandling.SelectMany);
+            });
+
+            var list = querySelect.ToDynamicClassList();
         }
     }
 }

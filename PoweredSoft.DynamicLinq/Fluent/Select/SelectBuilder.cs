@@ -20,13 +20,20 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public Type DestinationType { get; set; }
         public bool Empty => Parts?.Count == 0;
         public IQueryable Query { get; protected set; }
+        public bool IsNullCheckingEnabled { get; protected set; }
 
         public SelectBuilder(IQueryable query)
         {
             Query = query;
         }
 
-        protected void throwIfUsedOrEmpty(string propertyName)
+        public SelectBuilder NullChecking(bool check = true)
+        {
+            IsNullCheckingEnabled = check;
+            return this;
+        }
+
+        protected void ThrowIfUsedOrEmpty(string propertyName)
         {
             if (string.IsNullOrEmpty(propertyName))
                 throw new ArgumentNullException($"{propertyName} cannot end up be empty.");
@@ -40,7 +47,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             if (propertyName == null)
                 propertyName = path.Split('.').LastOrDefault();
 
-            throwIfUsedOrEmpty(propertyName);
+            ThrowIfUsedOrEmpty(propertyName);
 
             Parts.Add(new SelectPart
             {
@@ -57,7 +64,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             if (propertyName == null)
                 propertyName = path.Split('.').LastOrDefault();
 
-            throwIfUsedOrEmpty(propertyName);
+            ThrowIfUsedOrEmpty(propertyName);
 
             Parts.Add(new SelectPart
             {
@@ -71,7 +78,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public SelectBuilder Count(string propertyName)
         {
-            throwIfUsedOrEmpty(propertyName);
+            ThrowIfUsedOrEmpty(propertyName);
             Parts.Add(new SelectPart
             {
                 PropertyName = propertyName,
@@ -82,7 +89,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public SelectBuilder LongCount(string propertyName)
         {
-            throwIfUsedOrEmpty(propertyName);
+            ThrowIfUsedOrEmpty(propertyName);
             Parts.Add(new SelectPart
             {
                 PropertyName = propertyName,
@@ -96,7 +103,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             if (propertyName == null)
                 propertyName = path.Split('.').LastOrDefault();
 
-            throwIfUsedOrEmpty(propertyName);
+            ThrowIfUsedOrEmpty(propertyName);
 
             Parts.Add(new SelectPart
             {
@@ -112,7 +119,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             if (propertyName == null)
                 propertyName = path.Split('.').LastOrDefault();
 
-            throwIfUsedOrEmpty(propertyName);
+            ThrowIfUsedOrEmpty(propertyName);
 
             Parts.Add(new SelectPart
             {
@@ -125,7 +132,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public SelectBuilder ToList(string propertyName)
         {
-            throwIfUsedOrEmpty(propertyName);
+            ThrowIfUsedOrEmpty(propertyName);
             Parts.Add(new SelectPart
             {
                 PropertyName = propertyName,
@@ -139,7 +146,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             if (propertyName == null)
                 propertyName = path.Split('.').LastOrDefault();
 
-            throwIfUsedOrEmpty(propertyName);
+            ThrowIfUsedOrEmpty(propertyName);
 
             Parts.Add(new SelectPart
             {
@@ -158,7 +165,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 throw new Exception("No select specified, please specify at least one select path");
 
             var partsTuple = Parts.Select(t => (selectType: t.SelectType, propertyName: t.PropertyName, path: t.Path, selectCollectionHandling: t.SelectCollectionHandling)).ToList();
-            return QueryableHelpers.Select(Query, partsTuple, DestinationType);
+            return QueryableHelpers.Select(Query, partsTuple, DestinationType, nullChecking: IsNullCheckingEnabled);
         }
     }
 }

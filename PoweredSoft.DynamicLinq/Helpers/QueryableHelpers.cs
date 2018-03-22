@@ -118,7 +118,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return result;
         }
 
-        public static IQueryable Select(IQueryable query, List<(SelectTypes selectType, string propertyName, string path, SelectCollectionHandling selectCollectionHandling)> parts, Type destinationType = null)
+        public static IQueryable Select(IQueryable query, List<(SelectTypes selectType, string propertyName, string path, SelectCollectionHandling selectCollectionHandling)> parts, Type destinationType = null, bool nullChecking = false)
         {
             // create parameter.
             var queryType = query.ElementType;
@@ -129,7 +129,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var partExpressions = new List<(Expression expression, string propertyName)>();
             parts.ForEach(part =>
             {
-                var partBodyExpression = CreateSelectExpression(query, parameter, part.selectType, part.path, part.selectCollectionHandling);
+                var partBodyExpression = CreateSelectExpression(query, parameter, part.selectType, part.path, part.selectCollectionHandling, nullChecking);
                 fields.Add((partBodyExpression.Type, part.propertyName));
                 partExpressions.Add((partBodyExpression, part.propertyName));
             });
@@ -146,7 +146,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return result;
         }
 
-        private static Expression CreateSelectExpressionForGrouping(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path, SelectCollectionHandling selectCollectionHandling)
+        private static Expression CreateSelectExpressionForGrouping(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
         {
             if (selectType == SelectTypes.Key)
             {
@@ -193,23 +193,23 @@ namespace PoweredSoft.DynamicLinq.Helpers
             throw new NotSupportedException($"unkown select type {selectType}");
         }
 
-        private static Expression CreateSelectExpression(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path, SelectCollectionHandling selectCollectionHandling)
+        private static Expression CreateSelectExpression(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
         {
             if (!IsGrouping(query))
-                return CreateSelectExpressionRegular(query, parameter, selectType, path, selectCollectionHandling);
+                return CreateSelectExpressionRegular(query, parameter, selectType, path, selectCollectionHandling, nullChecking);
 
-            return CreateSelectExpressionForGrouping(query, parameter, selectType, path, selectCollectionHandling);            
+            return CreateSelectExpressionForGrouping(query, parameter, selectType, path, selectCollectionHandling, nullChecking);            
         }
 
-        private static Expression CreateSelectExpressionRegular(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path, SelectCollectionHandling selectCollectionHandling)
+        private static Expression CreateSelectExpressionRegular(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
         {
             if (selectType == SelectTypes.Path)
             {
-                return ResolvePathForExpression(parameter, path, selectCollectionHandling);
+                return ResolvePathForExpression(parameter, path, selectCollectionHandling, nullChecking);
             }
             else if (selectType == SelectTypes.PathToList)
             {
-                var expr = ResolvePathForExpression(parameter, path, selectCollectionHandling);
+                var expr = ResolvePathForExpression(parameter, path, selectCollectionHandling, nullChecking);
                 var notGroupedType = expr.Type.GenericTypeArguments.FirstOrDefault();
                 if (notGroupedType == null)
                     throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");
@@ -241,7 +241,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return result;
         }
 
-        internal static Expression InternalResolvePathExpression(ParameterExpression param, List<string> parts, SelectCollectionHandling selectCollectionHandling)
+        internal static Expression InternalResolvePathExpression(int step, ParameterExpression param, List<string> parts, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
         {
             var isLast = parts.Count == 1;
             var currentPart = parts.First();
@@ -251,21 +251,41 @@ namespace PoweredSoft.DynamicLinq.Helpers
             if (isLast)
                 return memberExpression;
 
+            Expression ret = null;
+
             if (!IsEnumerable(memberExpression))
-                return InternalResolvePathExpression(param, parts.Skip(1).ToList(), selectCollectionHandling);
+            {
+                // TODO: null checking here too.
+                // should be easier then collection :=|
 
-            // enumerable.
-            var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
+                ret = InternalResolvePathExpression(step + 1, param, parts.Skip(1).ToList(), selectCollectionHandling, nullChecking);
+            }
+            else
+            {
+                // enumerable.
+                var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
 
-            // sub param.
-            var innerParam = Expression.Parameter(listGenericArgumentType);
-            var innerExpression = InternalResolvePathExpression(innerParam, parts.Skip(1).ToList(), selectCollectionHandling);
-            var lambda = Expression.Lambda(innerExpression, innerParam);
+                // sub param.
+                var innerParam = Expression.Parameter(listGenericArgumentType);
+                var innerExpression = InternalResolvePathExpression(step + 1, innerParam, parts.Skip(1).ToList(), selectCollectionHandling, nullChecking);
+                var lambda = Expression.Lambda(innerExpression, innerParam);
 
-            if (selectCollectionHandling == SelectCollectionHandling.Select)
-                return Expression.Call(typeof(Enumerable), "Select", new Type[] { listGenericArgumentType, innerExpression.Type }, memberExpression, lambda);
+                if (selectCollectionHandling == SelectCollectionHandling.Select)
+                    ret = Expression.Call(typeof(Enumerable), "Select", new Type[] { listGenericArgumentType, innerExpression.Type }, memberExpression, lambda);
+                else
+                    ret = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { listGenericArgumentType, innerExpression.Type.GenericTypeArguments.First() }, memberExpression, lambda);
+            }
 
-            return Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { listGenericArgumentType, innerExpression.Type.GenericTypeArguments.First() }, memberExpression, lambda);
+            if (nullChecking)
+            {
+                ret = Expression.Condition(
+                    Expression.Equal(memberExpression, Expression.Constant(null)),
+                    Expression.Constant(null, ret.Type),
+                    ret
+                );
+            }
+
+            return ret;            
         }
 
         /// <summary>
@@ -274,10 +294,10 @@ namespace PoweredSoft.DynamicLinq.Helpers
         /// <param name="param">Expression.Parameter(typeOfClassOrInterface)</param>
         /// <param name="path">the path you wish to resolve example Contact.Profile.FirstName</param>
         /// <returns></returns>
-        public static Expression ResolvePathForExpression(ParameterExpression param, string path, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.Select)
+        public static Expression ResolvePathForExpression(ParameterExpression param, string path, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.Select, bool nullChecking = false)
         {
             var parts = path.Split('.').ToList();
-            return InternalResolvePathExpression(param, parts, selectCollectionHandling);
+            return InternalResolvePathExpression(1, param, parts, selectCollectionHandling, nullChecking);
         }
 
         public static ConstantExpression GetConstantSameAsLeftOperator(Expression member, object value)

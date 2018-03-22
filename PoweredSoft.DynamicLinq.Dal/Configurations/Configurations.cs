@@ -68,4 +68,22 @@ namespace PoweredSoft.DynamicLinq.Dal.Configurations
             HasRequired(t => t.Post).WithMany(t => t.Comments).HasForeignKey(t => t.PostId).WillCascadeOnDelete(false);
         }
     }
+
+    public class CommentLikeConfiguration : EntityTypeConfiguration<CommentLike>
+    {
+        public CommentLikeConfiguration() : this("dbo")
+        {
+        }
+
+        public CommentLikeConfiguration(string schema)
+        {
+            ToTable("CommentLike", schema);
+            HasKey(t => t.Id);
+            Property(t => t.Id).HasColumnName("Id").HasColumnType("bigint").IsRequired().HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            Property(t => t.CommentId).HasColumnName("CommentId").HasColumnType("bigint").IsRequired();
+            Property(t => t.CreateTime).HasColumnName("CreateTime").HasColumnType("datetimeoffset").IsRequired();
+
+            HasRequired(t => t.Comment).WithMany(t => t.CommentLikes).HasForeignKey(t => t.CommentId).WillCascadeOnDelete(false);
+        }
+    }
 }

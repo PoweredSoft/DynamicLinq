@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="BlogContext.cs" />
     <Compile Include="Configurations\Configurations.cs" />
+    <Compile Include="Pocos\CommentLike.cs" />
     <Compile Include="Pocos\Post.cs" />
     <Compile Include="Pocos\Author.cs" />
     <Compile Include="Pocos\Comment.cs" />
