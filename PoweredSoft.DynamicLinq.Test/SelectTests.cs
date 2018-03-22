@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PoweredSoft.DynamicLinq.Dal.Pocos;
+using PoweredSoft.DynamicLinq.Test.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,49 +9,72 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
+    public class Mock
+    {
+        public int Id { get; set; }
+        public int ForeignId { get; set; }
+        public decimal Total { get; set; }
+
+        public List<MockB> Bs { get; set; } = new List<MockB>();
+    }
+
+    public class MockB
+    {
+        public List<string> FirstNames { get; set; }
+    }
+
     [TestClass]
     public class SelectTests
     {
         [TestMethod]
         public void TestSelect()
         {
-            var regularSyntaxA = TestData.Authors
+            var list = new List<Mock>()
+            {
+                new Mock{
+                    Id  = 1,
+                    ForeignId = 1,
+                    Total = 100,
+                    Bs = new List<MockB>() {
+                        new MockB { FirstNames =  new List<string>{"David", "John" } }
+                    }
+                },
+            };
+
+            var regularSyntaxA = list
                 .AsQueryable()
                 .Select(t => new
                 {
                     Id = t.Id,
-                    AuthorFirstName = t.FirstName,
-                    AuthorLastName = t.LastName,
-                    Posts = t.Posts.ToList(),
-                    Comments = t.Posts.Select(t2 => t2.Comments).ToList(),
-                    Comments2 = t.Posts.SelectMany(t2 => t2.Comments).ToList()
+                    FirstNames = t.Bs.SelectMany(t2 => t2.FirstNames).ToList(),
+                    FirstNamesLists = t.Bs.Select(t2 => t2.FirstNames).ToList()
                 });
             
-            //var regularSyntax = regularSyntaxA.ToList();
+            var regularSyntax = regularSyntaxA.ToList();
 
-            var dynamicSyntax = TestData.Authors
+            var dynamicSyntax = list
                 .AsQueryable()
                 .Select(t =>
                 {
                     t.Path("Id");
-                    t.Path("FirstName", "AuthorFirstName");
-                    t.Path("LastName", "AuthorLastName");
-                    t.PathToList("Posts");
-                    t.PathToList("Posts.Comments");
-                    t.PathToList("Posts.Comments", "Comments2", SelectCollectionHandling.SelectMany);
+                    t.PathToList("Bs.FirstNames", "FirstNames", SelectCollectionHandling.SelectMany);
+                    t.PathToList("Bs.FirstNames", "FirstNamesLists", SelectCollectionHandling.Select);
                 })
                 .ToDynamicClassList();
 
-            /*
             Assert.AreEqual(regularSyntax.Count, dynamicSyntax.Count);
             for(var i = 0; i < regularSyntax.Count; i++)
             {
-                Assert.AreEqual(regularSyntax[i].Id, dynamicSyntax[i].GetDynamicPropertyValue<long>("Id"));
-                Assert.AreEqual(regularSyntax[i].AuthorFirstName, dynamicSyntax[i].GetDynamicPropertyValue<string>("AuthorFirstName"));
-                Assert.AreEqual(regularSyntax[i].AuthorLastName, dynamicSyntax[i].GetDynamicPropertyValue<string>("AuthorLastName"));
-                Helpers.QueryableAssert.AreEqual(regularSyntax[i].Posts.AsQueryable(), dynamicSyntax[i].GetDynamicPropertyValue<List<Post>>("Posts").AsQueryable());
-                //Helpers.QueryableAssert.AreEqual(regularSyntax[i].Comments.AsQueryable(), dynamicSyntax[i].GetDynamicPropertyValue<List<Comment>>("Comments").AsQueryable());
-            }*/
+                Assert.AreEqual(regularSyntax[i].Id, dynamicSyntax[i].GetDynamicPropertyValue<int>("Id"));
+                QueryableAssert.AreEqual(regularSyntax[i].FirstNames.AsQueryable(), dynamicSyntax[i].GetDynamicPropertyValue<List<string>>("FirstNames").AsQueryable());
+
+
+                var left = regularSyntax[i].FirstNamesLists;
+                var right = dynamicSyntax[i].GetDynamicPropertyValue<List<List<string>>>("FirstNamesLists");
+                Assert.AreEqual(left.Count, right.Count);
+                for(var j = 0; j < left.Count; j++)
+                    QueryableAssert.AreEqual(left[j].AsQueryable(), right[j].AsQueryable());
+            }
         }
 
         [TestMethod]
