@@ -241,7 +241,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return result;
         }
 
-        internal static Expression InternalResolvePathExpression(int step, ParameterExpression param, List<string> parts, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
+        internal static Expression InternalResolvePathExpression(int step, Expression param, List<string> parts, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
         {
             var isLast = parts.Count == 1;
             var currentPart = parts.First();
@@ -258,7 +258,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 // TODO: null checking here too.
                 // should be easier then collection :=|
 
-                ret = InternalResolvePathExpression(step + 1, param, parts.Skip(1).ToList(), selectCollectionHandling, nullChecking);
+                ret = InternalResolvePathExpression(step + 1, memberExpression, parts.Skip(1).ToList(), selectCollectionHandling, nullChecking);
             }
             else
             {
