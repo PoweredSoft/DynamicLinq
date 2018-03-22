@@ -51,6 +51,23 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return this;
         }
 
+        public SelectBuilder Path(string path, string propertyName = null)
+        {
+            if (propertyName == null)
+                propertyName = path.Split('.').LastOrDefault();
+
+            throwIfUsedOrEmpty(propertyName);
+
+            Parts.Add(new SelectPart
+            {
+                Path = path, 
+                PropertyName = propertyName,
+                SelectType = SelectTypes.Path
+            });
+
+            return this;
+        }
+
         public SelectBuilder Count(string propertyName)
         {
             throwIfUsedOrEmpty(propertyName);
@@ -113,6 +130,23 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 PropertyName = propertyName,
                 SelectType = SelectTypes.ToList
             });
+            return this;
+        }
+
+        public SelectBuilder PathToList(string path, string propertyName = null)
+        {
+            if (propertyName == null)
+                propertyName = path.Split('.').LastOrDefault();
+
+            throwIfUsedOrEmpty(propertyName);
+
+            Parts.Add(new SelectPart
+            {
+                Path = path,
+                PropertyName = propertyName,
+                SelectType = SelectTypes.PathToList
+            });
+
             return this;
         }
 

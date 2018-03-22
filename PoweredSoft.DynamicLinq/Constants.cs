@@ -48,7 +48,9 @@ namespace PoweredSoft.DynamicLinq
         LongCount,
         Sum,
         Average,
-        ToList
+        ToList,
+        PathToList,
+        Path
     }
 
     internal static class Constants

@@ -196,9 +196,29 @@ namespace PoweredSoft.DynamicLinq.Helpers
         private static Expression CreateSelectExpression(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path)
         {
             if (!IsGrouping(query))
-                throw new NotSupportedException("Select without grouping is not supported yet.");
+                return CreateSelectExpressionRegular(query, parameter, selectType, path);
 
             return CreateSelectExpressionForGrouping(query, parameter, selectType, path);            
+        }
+
+        private static Expression CreateSelectExpressionRegular(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path)
+        {
+            if (selectType == SelectTypes.Path)
+            {
+                return ResolvePathForExpression(parameter, path);
+            }
+            else if (selectType == SelectTypes.PathToList)
+            {
+                var expr = ResolvePathForExpression(parameter, path);
+                var notGroupedType = expr.Type.GenericTypeArguments.FirstOrDefault();
+                if (notGroupedType == null)
+                    throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");
+                
+                var body = Expression.Call(typeof(Enumerable), "ToList", new[] { notGroupedType }, expr);
+                return body;
+            }
+
+            throw new NotSupportedException($"unkown select type {selectType}");
         }
 
         private static bool IsGrouping(IQueryable query)

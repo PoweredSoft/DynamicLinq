@@ -66,6 +66,7 @@
     <Compile Include="GroupingTests.cs" />
     <Compile Include="Helpers\QueryableAssert.cs" />
     <Compile Include="InTests.cs" />
+    <Compile Include="SelectTests.cs" />
     <Compile Include="ShortcutTests.cs" />
     <Compile Include="SimpleQueriesTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
