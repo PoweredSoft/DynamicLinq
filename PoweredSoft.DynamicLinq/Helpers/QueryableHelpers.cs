@@ -213,8 +213,8 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 var notGroupedType = expr.Type.GenericTypeArguments.FirstOrDefault();
                 if (notGroupedType == null)
                     throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");
-                
-                var body = Expression.Call(typeof(Enumerable), "ToList", new[] { notGroupedType }, expr);
+
+                var body = Expression.Call(typeof(Enumerable), "ToList", new[] { notGroupedType }, expr) as Expression;
                 return body;
             }
 

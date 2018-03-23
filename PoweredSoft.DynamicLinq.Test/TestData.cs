@@ -168,6 +168,12 @@ namespace PoweredSoft.DynamicLinq.Test
                         Content = "ASD"
                     }
                 }
+            },
+            new Author
+            {
+                Id = 3,
+                FirstName = "Mark",
+                LastName = "Ronson"
             }
         };
     }

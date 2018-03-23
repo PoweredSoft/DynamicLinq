@@ -82,10 +82,14 @@ namespace PoweredSoft.DynamicLinq.Test
         {
             var query = TestData.Authors.AsQueryable();
 
-            query.Select(t => new
+            var qs = query.Select(t => new
             {
-                Comments = t.Posts == null ? null : t.Posts.SelectMany(t2 => t2.Comments).ToList()
+                CommentLikes = t.Posts == null ? 
+                    new List<CommentLike>() :
+                    t.Posts.Where(t2 => t2.Comments != null).SelectMany(t2 => t2.Comments.Where(t3 => t3.CommentLikes != null).SelectMany(t3 => t3.CommentLikes)).ToList()
             });
+
+            var a = qs.ToList();
 
             var querySelect = query.Select(t =>
             {
