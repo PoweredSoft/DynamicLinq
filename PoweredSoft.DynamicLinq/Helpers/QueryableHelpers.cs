@@ -150,7 +150,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
         {
             if (selectType == SelectTypes.Key)
             {
-                return ResolvePathForExpression(parameter, path, selectCollectionHandling);
+                return ResolvePathForExpression(parameter, path);
             }
             else if (selectType == SelectTypes.Count)
             {
@@ -205,11 +205,11 @@ namespace PoweredSoft.DynamicLinq.Helpers
         {
             if (selectType == SelectTypes.Path)
             {
-                return ResolvePathForExpression(parameter, path, selectCollectionHandling, nullChecking);
+                return ResolvePathForExpression(parameter, path);
             }
             else if (selectType == SelectTypes.PathToList)
             {
-                var expr = ResolvePathForExpression(parameter, path, selectCollectionHandling, nullChecking);
+                var expr = ResolvePathForExpression(parameter, path);
                 var notGroupedType = expr.Type.GenericTypeArguments.FirstOrDefault();
                 if (notGroupedType == null)
                     throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");
@@ -253,7 +253,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             Expression ret = null;
 
-            if (!IsEnumerable(memberExpression))
+            if (!IsGenericEnumerable(memberExpression))
             {
                 // TODO: null checking here too.
                 // should be easier then collection :=|
@@ -276,6 +276,15 @@ namespace PoweredSoft.DynamicLinq.Helpers
                     ret = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { listGenericArgumentType, innerExpression.Type.GenericTypeArguments.First() }, memberExpression, lambda);
             }
 
+            if (step == 1 && nullChecking)
+            {
+                ret = Expression.Condition(
+                    Expression.Equal(memberExpression, Expression.Constant(null)),
+                    Expression.New(nullCheckingType),
+                    ret
+                    );
+            }
+
             return ret;            
         }
 
@@ -285,14 +294,15 @@ namespace PoweredSoft.DynamicLinq.Helpers
         /// <param name="param">Expression.Parameter(typeOfClassOrInterface)</param>
         /// <param name="path">the path you wish to resolve example Contact.Profile.FirstName</param>
         /// <returns></returns>
-        public static Expression ResolvePathForExpression(ParameterExpression param, string path, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.Select, bool nullChecking = false)
+        public static Expression ResolvePathForExpression(ParameterExpression param, string path)
         {
+            Expression ret = param;
             var parts = path.Split('.').ToList();
-            var notCheckingNullResult = InternalResolvePathExpression(1, param, parts, selectCollectionHandling, false);
-            if (!nullChecking)
-                return notCheckingNullResult;
-
-            throw new NotSupportedException("not yet done");
+            parts.ForEach(part =>
+            {
+                ret = Expression.PropertyOrField(ret, part);
+            });
+            return ret;
         }
 
         public static ConstantExpression GetConstantSameAsLeftOperator(Expression member, object value)
@@ -377,7 +387,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             // TODO : maybe support that last part is collection but what do we do?
             // not supported yet.
-            if (isLast && IsEnumerable(memberExpression) && value != null)
+            if (isLast && IsGenericEnumerable(memberExpression) && value != null)
                 throw new NotSupportedException("Can only compare collection to null");
 
 
@@ -402,7 +412,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             if (nullChecking)
                 nullCheckExpression = Expression.NotEqual(memberExpression, Expression.Constant(null));
 
-            if (IsEnumerable(memberExpression))
+            if (IsGenericEnumerable(memberExpression))
             {
                 var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
                 var innerParameter = Expression.Parameter(listGenericArgumentType, $"t{++recursionStep}");
@@ -517,7 +527,15 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return result;
         }
 
-        public static bool IsEnumerable(MemberExpression member) => IsEnumerable(member.Type);
-        public static bool IsEnumerable(Type type) => typeof(IEnumerable).IsAssignableFrom(type);
+        public static bool IsGenericEnumerable(MemberExpression member) => IsGenericEnumerable(member.Type);
+        public static bool IsGenericEnumerable(Type type)
+        {
+            if (!type.IsGenericType)
+                return false;
+
+            var genericArgumentType = type.GenericTypeArguments.First();
+            var ret = typeof(IEnumerable<>).MakeGenericType(genericArgumentType).IsAssignableFrom(type);
+            return ret;
+        }
     }
 }

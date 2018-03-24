@@ -57,8 +57,8 @@ namespace PoweredSoft.DynamicLinq.Test
         public void MixingInWithCollectionPaths()
         {
             var titles = new List<string>() { "Match" };
-            var a = TestData.Authors.AsQueryable().Query(t => t.In("Posts.Title", titles));
-            var b = TestData.Authors.AsQueryable().Where(t => t.Posts.Any(t2 => titles.Contains(t2.Title)));
+            var a = TestData.Authors.AsQueryable().Query(t => t.NullChecking(true).In("Posts.Title", titles));
+            var b = TestData.Authors.AsQueryable().Where(t => t.Posts != null && t.Posts.Any(t2 => titles.Contains(t2.Title)));
             QueryableAssert.AreEqual(a, b);
         }
 
