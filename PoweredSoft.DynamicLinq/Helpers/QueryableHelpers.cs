@@ -241,7 +241,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return result;
         }
 
-        internal static Expression InternalResolvePathExpression(int step, Expression param, List<string> parts, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
+        internal static Expression InternalResolvePathExpression(int step, Expression param, List<string> parts, SelectCollectionHandling selectCollectionHandling, bool nullChecking, Type nullCheckingType = null)
         {
             var isLast = parts.Count == 1;
             var currentPart = parts.First();
@@ -258,7 +258,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 // TODO: null checking here too.
                 // should be easier then collection :=|
 
-                ret = InternalResolvePathExpression(step + 1, memberExpression, parts.Skip(1).ToList(), selectCollectionHandling, nullChecking);
+                ret = InternalResolvePathExpression(step + 1, memberExpression, parts.Skip(1).ToList(), selectCollectionHandling, nullChecking, nullCheckingType: nullCheckingType);
             }
             else
             {
@@ -276,15 +276,6 @@ namespace PoweredSoft.DynamicLinq.Helpers
                     ret = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { listGenericArgumentType, innerExpression.Type.GenericTypeArguments.First() }, memberExpression, lambda);
             }
 
-            if (nullChecking)
-            {
-                ret = Expression.Condition(
-                    Expression.Equal(memberExpression, Expression.Constant(null)),
-                    Expression.Constant(null, ret.Type),
-                    ret
-                );
-            }
-
             return ret;            
         }
 
@@ -297,7 +288,11 @@ namespace PoweredSoft.DynamicLinq.Helpers
         public static Expression ResolvePathForExpression(ParameterExpression param, string path, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.Select, bool nullChecking = false)
         {
             var parts = path.Split('.').ToList();
-            return InternalResolvePathExpression(1, param, parts, selectCollectionHandling, nullChecking);
+            var notCheckingNullResult = InternalResolvePathExpression(1, param, parts, selectCollectionHandling, false);
+            if (!nullChecking)
+                return notCheckingNullResult;
+
+            throw new NotSupportedException("not yet done");
         }
 
         public static ConstantExpression GetConstantSameAsLeftOperator(Expression member, object value)
@@ -522,10 +517,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return result;
         }
 
-        public static bool IsEnumerable(MemberExpression member)
-        {
-            var ret = member.Type.FullName.StartsWith("System.Collection");
-            return ret;
-        }
+        public static bool IsEnumerable(MemberExpression member) => IsEnumerable(member.Type);
+        public static bool IsEnumerable(Type type) => typeof(IEnumerable).IsAssignableFrom(type);
     }
 }
