@@ -57,8 +57,8 @@ namespace PoweredSoft.DynamicLinq.Test
                 .Select(t =>
                 {
                     t.Path("Id");
-                    t.PathToList("Bs.FirstNames", "FirstNames", SelectCollectionHandling.SelectMany);
-                    t.PathToList("Bs.FirstNames", "FirstNamesLists", SelectCollectionHandling.Select);
+                    t.PathToList("Bs.FirstNames", "FirstNames", SelectCollectionHandling.Flatten);
+                    t.PathToList("Bs.FirstNames", "FirstNamesLists", SelectCollectionHandling.LeaveAsIs);
                 })
                 .ToDynamicClassList();
 
@@ -94,7 +94,7 @@ namespace PoweredSoft.DynamicLinq.Test
             var querySelect = query.Select(t =>
             {
                 t.NullChecking(true);
-                t.PathToList("Posts.Comments", selectCollectionHandling: SelectCollectionHandling.SelectMany);
+                t.PathToList("Posts.Comments", selectCollectionHandling: SelectCollectionHandling.Flatten);
             });
 
             var list = querySelect.ToDynamicClassList();

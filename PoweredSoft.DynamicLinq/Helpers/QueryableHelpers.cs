@@ -270,7 +270,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 var innerExpression = InternalResolvePathExpression(step + 1, innerParam, parts.Skip(1).ToList(), selectCollectionHandling, nullChecking);
                 var lambda = Expression.Lambda(innerExpression, innerParam);
 
-                if (selectCollectionHandling == SelectCollectionHandling.Select)
+                if (selectCollectionHandling == SelectCollectionHandling.LeaveAsIs)
                     ret = Expression.Call(typeof(Enumerable), "Select", new Type[] { listGenericArgumentType, innerExpression.Type }, memberExpression, lambda);
                 else
                     ret = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { listGenericArgumentType, innerExpression.Type.GenericTypeArguments.First() }, memberExpression, lambda);
@@ -527,7 +527,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return result;
         }
 
-        public static bool IsGenericEnumerable(MemberExpression member) => IsGenericEnumerable(member.Type);
+        public static bool IsGenericEnumerable(Expression member) => IsGenericEnumerable(member.Type);
         public static bool IsGenericEnumerable(Type type)
         {
             if (!type.IsGenericType)

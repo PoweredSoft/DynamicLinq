@@ -1,15 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoweredSoft.DynamicLinq", "PoweredSoft.DynamicLinq\PoweredSoft.DynamicLinq.csproj", "{5BB7E50F-8B40-4512-88DC-4B3BD89C9A5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PoweredSoft.DynamicLinq", "PoweredSoft.DynamicLinq\PoweredSoft.DynamicLinq.csproj", "{5BB7E50F-8B40-4512-88DC-4B3BD89C9A5E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoweredSoft.DynamicLinq.Test", "PoweredSoft.DynamicLinq.Test\PoweredSoft.DynamicLinq.Test.csproj", "{6F5C80F0-9045-4098-913F-7BDAD135E6DD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoweredSoft.DynamicLinq.Dal", "PoweredSoft.DynamicLinq.Dal\PoweredSoft.DynamicLinq.Dal.csproj", "{C16927E7-1358-4B9D-BDD7-149E505DE6CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoweredSoft.DynamicLinq.EntityFramework", "PoweredSoft.DynamicLinq.EntityFramework\PoweredSoft.DynamicLinq.EntityFramework.csproj", "{82DADDB0-4A69-4E19-82AD-E73ABC8F1B4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PoweredSoft.DynamicLinq.EntityFramework", "PoweredSoft.DynamicLinq.EntityFramework\PoweredSoft.DynamicLinq.EntityFramework.csproj", "{82DADDB0-4A69-4E19-82AD-E73ABC8F1B4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoweredSoft.DynamicLinq.ConsoleApp", "PoweredSoft.DynamicLinq.ConsoleApp\PoweredSoft.DynamicLinq.ConsoleApp.csproj", "{A166BD89-7BF3-475B-871F-294B8A420D9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{82DADDB0-4A69-4E19-82AD-E73ABC8F1B4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82DADDB0-4A69-4E19-82AD-E73ABC8F1B4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82DADDB0-4A69-4E19-82AD-E73ABC8F1B4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A166BD89-7BF3-475B-871F-294B8A420D9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A166BD89-7BF3-475B-871F-294B8A420D9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A166BD89-7BF3-475B-871F-294B8A420D9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A166BD89-7BF3-475B-871F-294B8A420D9E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

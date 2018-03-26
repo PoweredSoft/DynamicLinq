@@ -55,8 +55,8 @@ namespace PoweredSoft.DynamicLinq
 
     public enum SelectCollectionHandling
     {
-        Select,
-        SelectMany
+        LeaveAsIs,
+        Flatten
     }
 
     internal static class Constants

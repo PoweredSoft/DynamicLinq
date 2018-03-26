@@ -141,7 +141,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return this;
         }
 
-        public SelectBuilder PathToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.Select)
+        public SelectBuilder PathToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
         {
             if (propertyName == null)
                 propertyName = path.Split('.').LastOrDefault();
