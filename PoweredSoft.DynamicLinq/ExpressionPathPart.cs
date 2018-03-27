@@ -5,6 +5,107 @@ using System.Linq.Expressions;
 
 namespace PoweredSoft.DynamicLinq.Helpers
 {
+    public class ExpressionParameterGroup
+    {
+        public ExpressionParameterGroup Parent { get; set; }
+        public ParameterExpression Parameter { get; set; }
+        public List<ExpressionPiece> Parts { get; set; } = new List<ExpressionPiece>();
+
+        public ExpressionParameterGroup(ParameterExpression parameter)
+        {
+            Parameter = parameter;
+        }
+
+        public void AddSubPart(ExpressionPiece expressionPart)
+        {
+            Parts.Add(expressionPart);
+        }
+    }
+
+    public class ExpressionPiece
+    {
+        public ExpressionParameterGroup Parameter { get; set; }
+        public ExpressionPiece Parent { get; set; }
+        public Expression Part { get; set; }
+
+        public ExpressionPiece(ExpressionParameterGroup parameter, ExpressionPiece parent = null)
+        {
+            Parameter = parameter;
+            Parent = parent;
+        }
+
+        public void Resolve(string piece)
+        {
+            Part = Expression.PropertyOrField(Parent?.Part ?? Parameter.Parameter, piece);
+        }
+
+        public bool IsGenericEnumerable() => QueryableHelpers.IsGenericEnumerable(Part);
+        public Type GetGenericEnumerableType() => Part.Type.GenericTypeArguments.First();
+    }
+
+    public class ExpressionParser
+    {
+        public ParameterExpression Parameter { get; protected set; }
+        public string Path { get; protected set; }
+        public List<ExpressionParameterGroup> Groups { get; set; } = new List<ExpressionParameterGroup>();
+
+        public ExpressionParser(Type type, string path) : this(Expression.Parameter(type), path)
+        {
+            
+        }
+
+        public ExpressionParser(ParameterExpression parameter, string path)
+        {
+            if (parameter == null)
+                throw new ArgumentNullException("parameter");
+
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentNullException("path");
+
+            Parameter = parameter;
+            Path = path;
+        }
+        
+        public void Parse()
+        {
+            Groups = new List<ExpressionParameterGroup>();
+            var pieces = Path.Split('.').ToList();
+
+            // create the current parameter.
+            var currentGroup = CreateAndAddParameterGroup(Parameter);
+            ExpressionPiece parentPiece = null;
+
+            pieces.ForEach(piece =>
+            {
+                var expressionPiece = new ExpressionPiece(currentGroup, parentPiece);
+                expressionPiece.Resolve(piece);
+                currentGroup.AddSubPart(expressionPiece);
+
+                if (expressionPiece.IsGenericEnumerable())
+                {
+                    var param = Expression.Parameter(expressionPiece.GetGenericEnumerableType());
+                    currentGroup = CreateAndAddParameterGroup(param, currentGroup);
+                    parentPiece = null;
+                }
+                else
+                {
+                    parentPiece = expressionPiece;
+                }
+            });           
+        }
+
+        public ExpressionParameterGroup CreateAndAddParameterGroup(ParameterExpression parameter, ExpressionParameterGroup parent = null)
+        {
+            var group = new ExpressionParameterGroup(parameter);
+
+            if (parent != null)
+                group.Parent = parent;
+
+            Groups.Add(group);
+            return group;
+        }
+    }
+
     public class ExpressionPathPart
     {
         public Expression ParentExpression { get; set; }
@@ -54,5 +155,6 @@ namespace PoweredSoft.DynamicLinq.Helpers
         }
 
         public Type ParentGenericEnumerableType() => ParentExpression.Type.GenericTypeArguments.First();
+
     }
 }

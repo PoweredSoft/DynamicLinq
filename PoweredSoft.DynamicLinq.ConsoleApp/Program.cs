@@ -14,20 +14,38 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
     {
         static void Main(string[] args)
         {
-            var type = typeof(Dal.Pocos.Author);
+
+
+
+            var q = new List<Author>().AsQueryable();
+            q.Select(t => new
+            {
+                Ids = t.Posts.SelectMany(t2 => t2.Comments.Select(t3 => t3.CommentLikes))
+            });
+
+            var expressionParser = new ExpressionParser(typeof(Author), "Posts.Comments.Post.Author");
+            expressionParser.Parse();
+            var result = expressionParser.Groups;
+
+
+
+            /*
+             *             var type = typeof(Dal.Pocos.Author);
             var param = Expression.Parameter(type);
             var parts = ExpressionPathPart.Split(param, "Posts.Comments.Id");
-
+             * 
             // add the last part.
-            var parent = parts.Last();
-            var toListType = parent.GetToListType();
+            var parent = parts.First();
+            var last = parts.Last();
+            var toListType = last.GetToListType();
+
             parts.Add(new ExpressionPathPart
             {
                 ParentExpression = parent.PartExpression,
-                PartExpression = Expression.Call(typeof(Enumerable), "ToList", new[] { toListType }, parent.ParentExpression)
-            });
+                PartExpression = Expression.Call(typeof(Enumerable), "ToList", new[] { toListType }, parent.PartExpression)
+            });*/
 
-            var result = CreateSelectExpressionFromParts(parts, SelectCollectionHandling.Flatten, SelectNullHandling.New);
+            //var result = CreateSelectExpressionFromParts(parts, SelectCollectionHandling.Flatten, SelectNullHandling.New);
         }
 
         public static Expression CreateSelectExpressionFromParts(List<ExpressionPathPart> parts, 
