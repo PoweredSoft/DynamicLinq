@@ -296,11 +296,11 @@ namespace PoweredSoft.DynamicLinq.Helpers
         /// <returns></returns>
         public static Expression ResolvePathForExpression(ParameterExpression param, string path)
         {
-            var parts = ExpressionPathPart.Break(param, path);
+            var parts = ExpressionPathPart.Split(param, path);
             if (parts.Any(t => t.IsGenericEnumerable()))
                 throw new Exception("this method does not support collection handling");
 
-            return parts.Last().Expression;
+            return parts.Last().PartExpression;
         }
 
         public static ConstantExpression GetConstantSameAsLeftOperator(Expression member, object value)

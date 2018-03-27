@@ -8,13 +8,18 @@ namespace PoweredSoft.DynamicLinq.Helpers
     public class ExpressionPathPart
     {
         public Expression ParentExpression { get; set; }
-        public Expression Expression { get; set; }
-        public bool IsNullable() => TypeHelpers.IsNullable(Expression.Type);
-        public bool IsParentParamaterExpression() => ParentExpression is ParameterExpression;
-        public bool IsGenericEnumerable() => QueryableHelpers.IsGenericEnumerable(Expression);
-        public Type GenericEnumerableType() => Expression.Type.GenericTypeArguments.First();
+        public ParameterExpression ParameterExpression { get; set; }
+        public Expression PartExpression { get; set; }
 
-        public static List<ExpressionPathPart> Break(ParameterExpression param, string path)
+        public bool IsNullable() => TypeHelpers.IsNullable(PartExpression.Type);
+   
+        public bool IsGenericEnumerable() => QueryableHelpers.IsGenericEnumerable(PartExpression);
+        public Type GenericEnumerableType() => PartExpression.Type.GenericTypeArguments.First();
+        public bool IsCallingMethod() => PartExpression is MethodCallExpression;
+        public Type GetToListType() => IsGenericEnumerable() ? GenericEnumerableType() : PartExpression.Type;
+        public bool IsParentGenericEnumerable() => QueryableHelpers.IsGenericEnumerable(ParentExpression);
+
+        public static List<ExpressionPathPart> Split(ParameterExpression param, string path)
         {
             var ret = new List<ExpressionPathPart>();
 
@@ -23,14 +28,31 @@ namespace PoweredSoft.DynamicLinq.Helpers
             parts.ForEach(part =>
             {
                 var p = new ExpressionPathPart();
-                p.Expression = Expression.PropertyOrField(parent, part);
+                p.PartExpression = Expression.PropertyOrField(parent, part);
                 p.ParentExpression = parent;
+                p.ParameterExpression = param;
                 ret.Add(p);
 
-                parent = p.IsGenericEnumerable() ? Expression.Parameter(p.GenericEnumerableType()) : p.Expression;
+                if (p.IsGenericEnumerable())
+                {
+                    param = Expression.Parameter(p.GenericEnumerableType());
+                    parent = param;
+                }
+                else
+                {
+                    parent = p.PartExpression;
+                }
             });
 
             return ret;
         }
+
+        public LambdaExpression GetLambdaExpression()
+        {
+            var lambda = Expression.Lambda(PartExpression, ParameterExpression);
+            return lambda;
+        }
+
+        public Type ParentGenericEnumerableType() => ParentExpression.Type.GenericTypeArguments.First();
     }
 }
