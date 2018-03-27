@@ -15,6 +15,15 @@ namespace PoweredSoft.DynamicLinq.Helpers
         internal static Lazy<AssemblyBuilder> DynamicAssembly = new Lazy<AssemblyBuilder>(() => AssemblyBuilder.DefineDynamicAssembly(DynamicAssemblyName.Value, AssemblyBuilderAccess.Run));
         internal static Lazy<ModuleBuilder> DynamicModule = new Lazy<ModuleBuilder>(() => DynamicAssembly.Value.DefineDynamicModule("PoweredSoft.DynamicLinq.DynamicTypes"));*/
 
+        public static bool IsNullable(Type type)
+        {
+            if (!type.IsValueType)
+                return true; // ref-type
+
+            return Nullable.GetUnderlyingType(type) != null;
+        }
+
+
         public static object ConvertFrom(Type type, object source)
         {
             object ret = null;

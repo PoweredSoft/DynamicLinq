@@ -1,4 +1,5 @@
-﻿using PoweredSoft.DynamicLinq.Helpers;
+﻿using PoweredSoft.DynamicLinq.Dal.Pocos;
+using PoweredSoft.DynamicLinq.Helpers;
 using PoweredSoft.DynamicLinq.Test;
 using System;
 using System.Collections.Generic;
@@ -16,16 +17,15 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             var type = typeof(Dal.Pocos.Author);
             var param = Expression.Parameter(type);
             var path = "Posts.Comments.Id";
-            var expr = ResolveSelectExpression(param, path, SelectCollectionHandling.Flatten);
-            var expr2 = ResolveSelectExpression(param, path, SelectCollectionHandling.Flatten, true);
+
+            var parts = ExpressionPathPart.Break(param, "Posts.Comments.Id");
+
         }
 
-        public static Expression ResolveSelectExpression(ParameterExpression param, string path, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs, bool nullChecking = false)
-        {
-            var notCheckNullExpression = QueryablePathHelpers.NavigatePath(param, path, 
-                (before, member, isFirst, isLast) => member, 
-                (before, member, isFirst, isLast) => member,
-                (parent, innerExpression, innerExpressionLambda) =>
+
+
+        /*
+         *  (parent, innerExpression, innerExpressionLambda) =>
                 {
                     var listGenericArgumentType = parent.Type.GetGenericArguments().First();
                     Expression ret = null;
@@ -36,15 +36,6 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
                     return ret;
                 }
-            );
-
-            if (!nullChecking)
-                return notCheckNullExpression;
-
-            var type = notCheckNullExpression.Type;
-            throw new NotSupportedException();
-        }
-
-
+         */
     }
 }
