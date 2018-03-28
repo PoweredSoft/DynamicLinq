@@ -9,7 +9,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
     {
         public ExpressionParameterGroup Parent { get; set; }
         public ParameterExpression Parameter { get; set; }
-        public List<ExpressionPiece> Parts { get; set; } = new List<ExpressionPiece>();
+        public List<ExpressionPiece> Pieces { get; set; } = new List<ExpressionPiece>();
 
         public ExpressionParameterGroup(ParameterExpression parameter)
         {
@@ -18,7 +18,18 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
         public void AddSubPart(ExpressionPiece expressionPart)
         {
-            Parts.Add(expressionPart);
+            Pieces.Add(expressionPart);
+        }
+
+        public Expression LastExpression() => LastPiece().Expression;
+
+        public ExpressionPiece LastPiece() => Pieces.Last();
+
+        public LambdaExpression CreateLambda()
+        {
+            var lastExpression = LastPiece().Expression;
+            var lambda = Expression.Lambda(lastExpression, Parameter);
+            return lambda;
         }
     }
 
@@ -26,7 +37,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
     {
         public ExpressionParameterGroup Parameter { get; set; }
         public ExpressionPiece Parent { get; set; }
-        public Expression Part { get; set; }
+        public Expression Expression { get; set; }
 
         public ExpressionPiece(ExpressionParameterGroup parameter, ExpressionPiece parent = null)
         {
@@ -36,11 +47,11 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
         public void Resolve(string piece)
         {
-            Part = Expression.PropertyOrField(Parent?.Part ?? Parameter.Parameter, piece);
+            Expression = Expression.PropertyOrField(Parent?.Expression ?? Parameter.Parameter, piece);
         }
 
-        public bool IsGenericEnumerable() => QueryableHelpers.IsGenericEnumerable(Part);
-        public Type GetGenericEnumerableType() => Part.Type.GenericTypeArguments.First();
+        public bool IsGenericEnumerable() => QueryableHelpers.IsGenericEnumerable(Expression);
+        public Type GetGenericEnumerableType() => Expression.Type.GenericTypeArguments.First();
     }
 
     public class ExpressionParser
@@ -75,6 +86,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var currentGroup = CreateAndAddParameterGroup(Parameter);
             ExpressionPiece parentPiece = null;
 
+            int step = 0;
             pieces.ForEach(piece =>
             {
                 var expressionPiece = new ExpressionPiece(currentGroup, parentPiece);

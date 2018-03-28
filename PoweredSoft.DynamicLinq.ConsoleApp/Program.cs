@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.ConsoleApp
 {
-    public class Program
+    public class SelectExpression
     {
         static void Main(string[] args)
         {
@@ -23,9 +23,11 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
                 Ids = t.Posts.SelectMany(t2 => t2.Comments.Select(t3 => t3.CommentLikes))
             });
 
-            var expressionParser = new ExpressionParser(typeof(Author), "Posts.Comments.Post.Author");
+            var expressionParser = new ExpressionParser(typeof(Author), "Posts.Comments.Id");
             expressionParser.Parse();
-            var result = expressionParser.Groups;
+
+            var finalExpression = CreateSelectExpressionFromParsed(expressionParser, SelectCollectionHandling.Flatten, SelectNullHandling.LeaveAsIs);
+        }
 
 
 
@@ -46,45 +48,75 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             });*/
 
             //var result = CreateSelectExpressionFromParts(parts, SelectCollectionHandling.Flatten, SelectNullHandling.New);
-        }
+        //}
 
-        public static Expression CreateSelectExpressionFromParts(List<ExpressionPathPart> parts, 
+        public static Expression CreateSelectExpressionFromParsed(ExpressionParser expressionParser, 
             SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs, 
             SelectNullHandling nullChecking = SelectNullHandling.LeaveAsIs)
         {
             Type nullHandlingRightType = null;
             Expression nullHandlingNullValue = null;
 
+            /*
             if (nullChecking != SelectNullHandling.LeaveAsIs)
             {
                 nullHandlingRightType = parts.Last().PartExpression.Type;
                 nullHandlingNullValue = nullChecking == SelectNullHandling.Default
                     ? Expression.Default(nullHandlingRightType) as Expression
                     : Expression.New(nullHandlingRightType) as Expression;
-            }
+            }*/
 
             // reversed :)
-            var reversedCopy = parts.Select(t => t).ToList();
+            var reversedCopy = expressionParser.Groups.Select(t => t).ToList();
             reversedCopy.Reverse();
 
+            MethodCallExpression lastSelectExpression = null;
             Expression ret = null;
-            reversedCopy.ForEach(t =>
+
+            foreach(var t in reversedCopy)
             {
-                if (t.IsParentGenericEnumerable())
+                if (true == t.Parent?.LastPiece().IsGenericEnumerable())
                 {
-                    var lambda = t.GetLambdaExpression();
-                    var parentGenericType = t.ParentGenericEnumerableType();
-                    if (selectCollectionHandling == SelectCollectionHandling.LeaveAsIs || !t.IsGenericEnumerable())
-                        ret = Expression.Call(typeof(Enumerable), "Select", new Type[] { parentGenericType, t.PartExpression.Type }, t.ParentExpression, lambda);
+                    if (lastSelectExpression == null)
+                        lastSelectExpression = CreateSelectExpression(t, selectCollectionHandling);
                     else
-                        ret = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { parentGenericType, t.GenericEnumerableType() }, t.ParentExpression, lambda);
+                        lastSelectExpression = CreateSelectExpression(t, lastSelectExpression, selectCollectionHandling);
                 }
-                else
-                {
-                    ret = t.PartExpression;
-                }
-            });
-            
+            }
+
+            ret = lastSelectExpression;
+            return ret;
+        }
+
+        public static MethodCallExpression CreateSelectExpression(ExpressionParameterGroup group, SelectCollectionHandling selectCollectionHandling)
+        {
+            MethodCallExpression ret = null;
+            var lambda = group.CreateLambda();
+            var parentExpression = group.Parent.LastExpression();
+            var isParentExpressionGenericEnumerable = QueryableHelpers.IsGenericEnumerable(parentExpression);
+            var parentExpressionGenericEnumerableType = isParentExpressionGenericEnumerable ? parentExpression.Type.GenericTypeArguments.First() : null;
+            var lastPiece = group.LastPiece();
+
+            if (selectCollectionHandling == SelectCollectionHandling.LeaveAsIs || !lastPiece.IsGenericEnumerable())
+                ret = Expression.Call(typeof(Enumerable), "Select", new Type[] { parentExpressionGenericEnumerableType, lastPiece.Expression.Type }, parentExpression, lambda);
+            else
+                ret = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { parentExpressionGenericEnumerableType, lastPiece.GetGenericEnumerableType() }, parentExpression, lambda);
+
+            return ret;
+        }
+
+        public static MethodCallExpression CreateSelectExpression(ExpressionParameterGroup group, MethodCallExpression innerSelect, SelectCollectionHandling selectCollectionHandling)
+        {
+            var parent = group.Parent;
+            var parentLastPiece = parent.LastPiece();
+
+            MethodCallExpression ret = null;
+            var lambda = Expression.Lambda(innerSelect, group.Parameter);
+            if (selectCollectionHandling == SelectCollectionHandling.LeaveAsIs)
+                ret = Expression.Call(typeof(Enumerable), "Select", new Type[] { parentLastPiece.GetGenericEnumerableType(), innerSelect.Type }, parentLastPiece.Expression, lambda);
+            else
+                ret = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { parentLastPiece.GetGenericEnumerableType(), innerSelect.Type.GenericTypeArguments.First() }, parentLastPiece.Expression, lambda);
+
             return ret;
         }
 
