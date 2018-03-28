@@ -122,6 +122,11 @@ namespace PoweredSoft.DynamicLinq.Helpers
             Groups.Add(group);
             return group;
         }
+
+        public ExpressionParameterGroup LastGroup()
+        {
+            return this.Groups.Last();
+        }
     }
 
     public class ExpressionPathPart

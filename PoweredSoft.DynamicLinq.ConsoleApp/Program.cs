@@ -23,7 +23,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             var expressionParser = new ExpressionParser(typeof(Author), "Posts.Comments.CommentLikes");
             expressionParser.Parse();
 
-            var finalExpression = CreateSelectExpressionFromParsed(expressionParser, SelectCollectionHandling.Flatten, SelectNullHandling.LeaveAsIs);
+            var finalExpression = CreateSelectExpressionFromParsed(expressionParser, SelectCollectionHandling.Flatten, SelectNullHandling.New);
         }
 
         public static Expression CreateSelectExpressionFromParsed(ExpressionParser expressionParser, 
@@ -32,15 +32,19 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
         {
             Type nullHandlingRightType = null;
             Expression nullHandlingNullValue = null;
-
-            /*
+            
             if (nullChecking != SelectNullHandling.LeaveAsIs)
             {
-                nullHandlingRightType = parts.Last().PartExpression.Type;
+                var withoutNullCheckResult = CreateSelectExpressionFromParsed(expressionParser, SelectCollectionHandling.Flatten, SelectNullHandling.LeaveAsIs);
+                if (QueryableHelpers.IsGenericEnumerable(withoutNullCheckResult.Type))
+                    nullHandlingRightType = typeof(List<>).MakeGenericType(withoutNullCheckResult.Type.GenericTypeArguments.First());
+                else
+                    nullHandlingRightType = withoutNullCheckResult.Type;
+
                 nullHandlingNullValue = nullChecking == SelectNullHandling.Default
                     ? Expression.Default(nullHandlingRightType) as Expression
                     : Expression.New(nullHandlingRightType) as Expression;
-            }*/
+            }
 
             // reversed :)
             var reversedCopy = expressionParser.Groups.Select(t => t).ToList();
