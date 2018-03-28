@@ -14,41 +14,17 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
     {
         static void Main(string[] args)
         {
-
-
-
             var q = new List<Author>().AsQueryable();
             q.Select(t => new
             {
                 Ids = t.Posts.SelectMany(t2 => t2.Comments.Select(t3 => t3.CommentLikes))
             });
 
-            var expressionParser = new ExpressionParser(typeof(Author), "Posts.Comments.Id");
+            var expressionParser = new ExpressionParser(typeof(Author), "Posts.Comments.CommentLikes");
             expressionParser.Parse();
 
             var finalExpression = CreateSelectExpressionFromParsed(expressionParser, SelectCollectionHandling.Flatten, SelectNullHandling.LeaveAsIs);
         }
-
-
-
-            /*
-             *             var type = typeof(Dal.Pocos.Author);
-            var param = Expression.Parameter(type);
-            var parts = ExpressionPathPart.Split(param, "Posts.Comments.Id");
-             * 
-            // add the last part.
-            var parent = parts.First();
-            var last = parts.Last();
-            var toListType = last.GetToListType();
-
-            parts.Add(new ExpressionPathPart
-            {
-                ParentExpression = parent.PartExpression,
-                PartExpression = Expression.Call(typeof(Enumerable), "ToList", new[] { toListType }, parent.PartExpression)
-            });*/
-
-            //var result = CreateSelectExpressionFromParts(parts, SelectCollectionHandling.Flatten, SelectNullHandling.New);
-        //}
 
         public static Expression CreateSelectExpressionFromParsed(ExpressionParser expressionParser, 
             SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs, 
@@ -78,9 +54,9 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
                 if (true == t.Parent?.LastPiece().IsGenericEnumerable())
                 {
                     if (lastSelectExpression == null)
-                        lastSelectExpression = CreateSelectExpression(t, selectCollectionHandling);
+                        lastSelectExpression = RegroupSelectExpressions(t, selectCollectionHandling);
                     else
-                        lastSelectExpression = CreateSelectExpression(t, lastSelectExpression, selectCollectionHandling);
+                        lastSelectExpression = RegroupSelectExpressions(t, lastSelectExpression, selectCollectionHandling);
                 }
             }
 
@@ -88,7 +64,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             return ret;
         }
 
-        public static MethodCallExpression CreateSelectExpression(ExpressionParameterGroup group, SelectCollectionHandling selectCollectionHandling)
+        public static MethodCallExpression RegroupSelectExpressions(ExpressionParameterGroup group, SelectCollectionHandling selectCollectionHandling)
         {
             MethodCallExpression ret = null;
             var lambda = group.CreateLambda();
@@ -105,7 +81,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             return ret;
         }
 
-        public static MethodCallExpression CreateSelectExpression(ExpressionParameterGroup group, MethodCallExpression innerSelect, SelectCollectionHandling selectCollectionHandling)
+        public static MethodCallExpression RegroupSelectExpressions(ExpressionParameterGroup group, MethodCallExpression innerSelect, SelectCollectionHandling selectCollectionHandling)
         {
             var parent = group.Parent;
             var parentLastPiece = parent.LastPiece();

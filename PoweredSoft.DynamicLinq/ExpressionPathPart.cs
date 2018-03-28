@@ -86,12 +86,18 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var currentGroup = CreateAndAddParameterGroup(Parameter);
             ExpressionPiece parentPiece = null;
 
-            int step = 0;
+            int indexOfPiece = -1;
             pieces.ForEach(piece =>
             {
+                ++indexOfPiece;
+                bool isLast = indexOfPiece == pieces.Count - 1;
+
                 var expressionPiece = new ExpressionPiece(currentGroup, parentPiece);
                 expressionPiece.Resolve(piece);
                 currentGroup.AddSubPart(expressionPiece);
+
+                // rest is only if its not the last piece.
+                if (isLast) return;
 
                 if (expressionPiece.IsGenericEnumerable())
                 {
