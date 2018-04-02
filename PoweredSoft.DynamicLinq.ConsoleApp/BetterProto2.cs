@@ -51,6 +51,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             new List<Post>().AsQueryable().Select(t => new
             {
                 FirstNames = t.Author == null ? new List<string>() : (t.Author.Posts == null ? new List<string>() : t.Author.Posts.Where(t2 => t2.Author != null).Select(t2 => t2.Author.FirstName)),
+                PostsAuthors = t.Author == null ? new List<Author>() : (t.Author.Posts == null ? new List<Author>() : t.Author.Posts.Where(t2 => t2.Author != null).Select(t2 => t2.Author)),
                 Comments = t.Comments == null ? new List<Comment>() : t.Comments,
                 CommentLikes = (t.Comments == null ? new List<CommentLike>() : t.Comments.Where(t2 => t2.CommentLikes != null).SelectMany(t2 => t2.CommentLikes)),
                 CommentLikeIds = (t.Comments == null ? new List<long>() : t.Comments.Where(t2 => t2.CommentLikes != null).SelectMany(t2 => t2.CommentLikes.Select(t3 => t3.Id))),
