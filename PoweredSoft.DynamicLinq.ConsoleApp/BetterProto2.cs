@@ -26,8 +26,15 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
          */
         public static void Run()
         {
+            // the expression parser.
             var ep = new ExpressionParser(typeof(Author), "Posts.Comments.Id");
-            ep.Parse();
+
+            // the builder.
+            var per = new PathExpressionResolver(ep);
+            per.Resolve();
+
+            // the result expression.
+            var result = per.Result;
         }
     }
 
@@ -39,6 +46,24 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
         public bool IsGenericEnumerable => QueryableHelpers.IsGenericEnumerable(MemberExpression);
         public Type EnumerableType => MemberExpression.Type.GenericTypeArguments.FirstOrDefault();
+    }
+
+    public class PathExpressionResolver
+    {
+        public SelectNullHandling NullChecking { get; set; } = SelectNullHandling.LeaveAsIs;
+        public SelectCollectionHandling CollectionHandling { get; set; } = SelectCollectionHandling.LeaveAsIs;
+        public ExpressionParser Parser { get; protected set; }
+        public Expression Result { get; protected set; }
+
+        public PathExpressionResolver(ExpressionParser parser)
+        {
+            Parser = parser;
+        }
+
+        public void Resolve()
+        {
+
+        }
     }
 
     public class ExpressionParser
