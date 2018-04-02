@@ -46,5 +46,33 @@ namespace PoweredSoft.DynamicLinq
 
         public static IQueryable GroupBy(this IEnumerable list, Type type, Action<GroupBuilder> callback)
             => list.AsQueryable().GroupBy(type, callback);
+
+        public static List<T> Reversed<T>(this List<T> list)
+        {
+            var copy = list.ToList();
+            copy.Reverse();
+            return copy;
+        }
+
+        public delegate void ForEachDelegate<T>(T element, int index);
+
+        public static void ForEach<T>(this List<T> list, ForEachDelegate<T> callback)
+        {
+            for (var i = 0; i < list.Count; i++)
+                callback(list[i], i);
+        }
+
+        public static void ReversedForEach<T>(this List<T> list, Action<T> action)
+        {
+            list.Reversed().ForEach(action);
+        }
+
+        public static void ReversedForEach<T>(this List<T> list, ForEachDelegate<T> callback)
+        {
+            var reversed = list.Reversed();
+            reversed.ForEach(callback);
+        }
+
+
     }
 }
