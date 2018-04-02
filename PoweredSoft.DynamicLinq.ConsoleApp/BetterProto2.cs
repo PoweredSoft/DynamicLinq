@@ -48,12 +48,14 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             // the expression parser.
             var ep = new ExpressionParser(typeof(Post), "Author.Posts.Author.FirstName");
 
-            /*
-            var esl = new List<string>();
-            new List<Post>().AsQueryable().Select(t => new 
+            new List<Post>().AsQueryable().Select(t => new
             {
-                FirstNames = (t.Author == null ? esl : (t.Author.Posts == null ? esl : t.Author.Posts.Select(t2 => t2.Author == null ? string.Empty : t2.Author.FirstName)))
-            });*/
+                FirstNames = t.Author == null ? new List<string>() : (t.Author.Posts == null ? new List<string>() : t.Author.Posts.Where(t2 => t2.Author != null).Select(t2 => t2.Author.FirstName)),
+                Comments = t.Comments == null ? new List<Comment>() : t.Comments,
+                CommentLikes = (t.Comments == null ? new List<CommentLike>() : t.Comments.Where(t2 => t2.CommentLikes != null).SelectMany(t2 => t2.CommentLikes)),
+                CommentLikeIds = (t.Comments == null ? new List<long>() : t.Comments.Where(t2 => t2.CommentLikes != null).SelectMany(t2 => t2.CommentLikes.Select(t3 => t3.Id))),
+                CommentsLikes = (t.Comments == null ? new List<List<CommentLike>>() : t.Comments.Where(t2 => t2.CommentLikes != null).Select(t2 => t2.CommentLikes))
+            });
 
             // the builder.
             var per = new PathExpressionResolver(ep);
@@ -128,7 +130,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
         private void HandleCollection(ExpressionParserPiece piece, int index)
         {
-            Parser.Pieces.
+            
 
             /*
             if (Result == null)
