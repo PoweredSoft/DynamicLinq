@@ -69,8 +69,8 @@ namespace PoweredSoft.DynamicLinq
 
         public static void ReversedForEach<T>(this List<T> list, ForEachDelegate<T> callback)
         {
-            var reversed = list.Reversed();
-            reversed.ForEach(callback);
+            for (var i = list.Count - 1; i >= 0; i--)
+                callback(list[i], i);
         }
 
 
