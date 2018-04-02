@@ -46,7 +46,14 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
         public static void Case2()
         {
             // the expression parser.
-            var ep = new ExpressionParser(typeof(Post), "Author.Posts.Author.Posts.Comments.Id");
+            var ep = new ExpressionParser(typeof(Post), "Author.Posts.Author.FirstName");
+
+            /*
+            var esl = new List<string>();
+            new List<Post>().AsQueryable().Select(t => new 
+            {
+                FirstNames = (t.Author == null ? esl : (t.Author.Posts == null ? esl : t.Author.Posts.Select(t2 => t2.Author == null ? string.Empty : t2.Author.FirstName)))
+            });*/
 
             // the builder.
             var per = new PathExpressionResolver(ep);
@@ -92,7 +99,10 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             // reverse foreach
             Parser.Pieces.ReversedForEach((piece, index) =>
             {
-                if (piece.Parent != null && piece.Parent.IsGenericEnumerable)
+                if (piece.Parent == null)
+                    return;
+
+                if (piece.Parent.IsGenericEnumerable)
                     HandleCollection(piece, index);
             });
         }
@@ -101,22 +111,24 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
         {
             if (NullChecking == SelectNullHandling.LeaveAsIs)
                 return;
-
-            Type nullableType = null;
-
+            
+            // last piece.
             var lastPiece = Parser.Pieces.Last();
+
+            // the subject type
+            Type subjectType = null;
             if (lastPiece.IsGenericEnumerable)
-                nullableType = typeof(List<>).MakeGenericType(lastPiece.EnumerableType);
+                subjectType = typeof(List<>).MakeGenericType(lastPiece.EnumerableType);
 
             if (NullChecking == SelectNullHandling.Default)
-                NullCheckValueExpression = Expression.Default(nullableType);
+                NullCheckValueExpression = Expression.Default(subjectType);
             else
-                NullCheckValueExpression = Expression.New(nullableType);
+                NullCheckValueExpression = Expression.New(subjectType);
         }
 
         private void HandleCollection(ExpressionParserPiece piece, int index)
         {
-
+            Parser.Pieces.
 
             /*
             if (Result == null)
