@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.ConsoleApp
 {
@@ -60,6 +58,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
             // the builder.
             var per = new PathExpressionResolver(ep);
+            per.NullChecking = SelectNullHandling.New;
             per.Resolve();
 
             // the result expression.
@@ -73,6 +72,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
         public bool IsGenericEnumerable { get; set; }
         public Type EnumerableType { get; set; }
         public ExpressionParserPiece Parent { get; set; }
+        public string Name { get; internal set; }
     }
 
     public class PathExpressionResolver
@@ -81,8 +81,6 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
         public SelectCollectionHandling CollectionHandling { get; set; } = SelectCollectionHandling.LeaveAsIs;
         public ExpressionParser Parser { get; protected set; }
         public Expression Result { get; protected set; }
-
-        protected Expression NullCheckValueExpression { get; set; }
 
         public PathExpressionResolver(ExpressionParser parser)
         {
@@ -96,20 +94,58 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             // parse the expression.
             Parser.Parse();
 
-            // resolve the expression to use during a conditional if null checking is enabled.
-            ResolveNullCheckingRightType();
-
             // reverse foreach
-            Parser.Pieces.ReversedForEach((piece, index) =>
-            {
-                if (piece.Parent == null)
-                    return;
+            var last = Parser.Pieces.Last();
 
-                if (piece.Parent.IsGenericEnumerable)
-                    HandleCollection(piece, index);
-            });
+            // reverse recursive.
+            Result = RecursiveSelect(last);
         }
 
+        protected Expression RecursiveSelect(ExpressionParserPiece piece)
+        {
+            if (piece.Parent == null)
+            {
+                var parameter = Parser.Parameter;
+                var me = Expression.PropertyOrField(Parser.Parameter, piece.Name);
+                return me;
+            }
+            else if (piece.Parent.IsGenericEnumerable)
+            {
+                var indexOfPiece = Parser.Pieces.IndexOf(piece);
+                var currentSimpleChain = Parser.Pieces.Skip(indexOfPiece - 1).Where(t => !t.IsGenericEnumerable).ToList();
+                var parameter = ResolveParameter(currentSimpleChain);
+                var currentSimpleChainExpression = BuildSimpleChainExpression(currentSimpleChain, parameter);
+                var currentSimpleChainExpressionLambda = Expression.Lambda(currentSimpleChainExpression, parameter);
+
+                // the left before the parent.
+                var left = RecursiveSelect(piece.Parent);
+
+                // the parent.
+                var parent = Expression.PropertyOrField(left, piece.Parent.Name) as Expression;
+
+                if (NullChecking != SelectNullHandling.LeaveAsIs)
+                {
+                    var nullCheckParameter = ResolveParameter(currentSimpleChain);
+                    var nullCheckConditionExpression = BuildNullCheckConditionExpression(currentSimpleChain, nullCheckParameter);
+                    var whereExpression = Expression.Call(typeof(Enumerable), "Where", new[] { piece.Parent.EnumerableType }, parent, nullCheckConditionExpression);
+                    parent = whereExpression as Expression;
+                }
+
+                // select.
+                var allPiecesAttached = Expression.Call(typeof(Enumerable),
+                    "Select",
+                    new Type[] { piece.Parent.EnumerableType, currentSimpleChainExpression.Type },
+                    parent, currentSimpleChainExpressionLambda);
+
+                // add current to parent?
+                return allPiecesAttached;
+            }
+
+            // skip.
+            return RecursiveSelect(piece.Parent);
+        }
+
+        /*
         private void ResolveNullCheckingRightType()
         {
             if (NullChecking == SelectNullHandling.LeaveAsIs)
@@ -117,27 +153,75 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             
             // last piece.
             var lastPiece = Parser.Pieces.Last();
+            var anyCollections = Parser.Pieces.Any(t => t.IsGenericEnumerable);
 
-            // the subject type
             Type subjectType = null;
-            if (lastPiece.IsGenericEnumerable)
+            if (anyCollections)
                 subjectType = typeof(List<>).MakeGenericType(lastPiece.EnumerableType);
+            else
+                subjectType = lastPiece.Type;
 
             if (NullChecking == SelectNullHandling.Default)
                 NullCheckValueExpression = Expression.Default(subjectType);
             else
                 NullCheckValueExpression = Expression.New(subjectType);
-        }
+        }*/
 
         private void HandleCollection(ExpressionParserPiece piece, int index)
         {
-            
+            // simple parent.
 
-            /*
-            if (Result == null)
-                HandleNoPreviousResultCollection(piece, index);
+            // the current simple chain.
+            var currentSimpleChain = Parser.Pieces.Skip(index - 1).Where(t => !t.IsGenericEnumerable).ToList();
+            
+            // the parameter being used to select.
+            var parameter = ResolveParameter(currentSimpleChain);
+
+            // this is the simple chain to select.
+            var currentSimpleChainExpression = BuildSimpleChainExpression(currentSimpleChain, parameter);
+
+            // add where :)
+            if (NullChecking != SelectNullHandling.LeaveAsIs)
+            {
+                var nullCheckParameter = ResolveParameter(currentSimpleChain);
+                var nullCheckWhereForChain = BuildNullCheckConditionExpression(currentSimpleChain, nullCheckParameter);
+            }
             else
-                HandlePreviousResultCollection(piece, index);*/
+            {
+                Result = currentSimpleChainExpression;
+            }
+        }
+
+        private Expression BuildNullCheckConditionExpression(List<ExpressionParserPiece> currentSimpleChain, ParameterExpression parameter)
+        {
+            var path = string.Join(".", currentSimpleChain.Select(t => t.Name).Take(currentSimpleChain.Count - 1));
+            var where = QueryableHelpers.CreateConditionExpression(parameter.Type, path, ConditionOperators.NotEqual, null, QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, 
+                nullChecking: true, parameter: parameter);
+            return where;
+        }
+
+        private ParameterExpression ResolveParameter(List<ExpressionParserPiece> currentSimpleChain)
+        {
+            var first = currentSimpleChain.First();
+            if (first.Parent == null)
+                return Parser.Parameter;
+
+            if (first.Parent.IsGenericEnumerable)
+                return Expression.Parameter(first.Parent.EnumerableType);
+
+            throw new NotSupportedException();
+        }
+
+        private Expression BuildSimpleChainExpression(List<ExpressionParserPiece> currentSimpleChain, ParameterExpression parameter)
+        {
+            var ret = parameter as Expression;
+            currentSimpleChain.ForEach(p =>
+            {
+                var me = Expression.PropertyOrField(ret, p.Name);
+                ret = me;
+            });
+
+            return ret;
         }
 
         /*
@@ -215,7 +299,8 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
                     Type = memberExpression.Type,
                     IsGenericEnumerable = QueryableHelpers.IsGenericEnumerable(memberExpression),
                     EnumerableType = memberExpression.Type.GenericTypeArguments.FirstOrDefault(),
-                    Parent = parent
+                    Parent = parent,
+                    Name = pp
                 };
 
                 Pieces.Add(current);

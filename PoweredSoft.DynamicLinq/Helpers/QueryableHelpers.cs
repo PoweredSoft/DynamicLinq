@@ -434,8 +434,10 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 if (nullCheckExpression != null)
                 {
                     var pathExpr = InternalCreateConditionExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
-                    var nullCheckResult = Expression.AndAlso(nullCheckExpression, pathExpr);
-                    return nullCheckResult;
+                    
+                    var nullCheckResult = Expression.AndAlso(nullCheckExpression, (pathExpr as LambdaExpression).Body);
+                    var nullCheckResultLambda = Expression.Lambda((Expression)nullCheckResult, parameter);
+                    return nullCheckResultLambda;
                 }
 
                 return InternalCreateConditionExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
