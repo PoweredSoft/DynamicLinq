@@ -44,7 +44,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
         public static void Case2()
         {
             // the expression parser.
-            var ep = new ExpressionParser(typeof(Post), "Author.Posts.Author.FirstName");
+            var ep = new ExpressionParser(typeof(Post), "Author.Posts.Author.Posts.Author.FirstName");
 
             new List<Post>().AsQueryable().Select(t => new
             {
@@ -111,8 +111,8 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             }
             else if (piece.Parent.IsGenericEnumerable)
             {
-                var indexOfPiece = Parser.Pieces.IndexOf(piece);
-                var currentSimpleChain = Parser.Pieces.Skip(indexOfPiece - 1).Where(t => !t.IsGenericEnumerable).ToList();
+                var indexOfParentPiece = Parser.Pieces.IndexOf(piece);
+                var currentSimpleChain = Parser.Pieces.Skip(indexOfParentPiece).TakeWhile(t => !t.IsGenericEnumerable).ToList();     
                 var parameter = ResolveParameter(currentSimpleChain);
                 var currentSimpleChainExpression = BuildSimpleChainExpression(currentSimpleChain, parameter);
                 var currentSimpleChainExpressionLambda = Expression.Lambda(currentSimpleChainExpression, parameter);
@@ -121,24 +121,24 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
                 var left = RecursiveSelect(piece.Parent);
 
                 // the parent.
-                var parent = Expression.PropertyOrField(left, piece.Parent.Name) as Expression;
+                var parentExpression = Expression.PropertyOrField(left, piece.Parent.Name) as Expression;
 
                 if (NullChecking != SelectNullHandling.LeaveAsIs)
                 {
                     var nullCheckParameter = ResolveParameter(currentSimpleChain);
                     var nullCheckConditionExpression = BuildNullCheckConditionExpression(currentSimpleChain, nullCheckParameter);
-                    var whereExpression = Expression.Call(typeof(Enumerable), "Where", new[] { piece.Parent.EnumerableType }, parent, nullCheckConditionExpression);
-                    parent = whereExpression as Expression;
+                    var whereExpression = Expression.Call(typeof(Enumerable), "Where", new[] { piece.Parent.EnumerableType }, parentExpression, nullCheckConditionExpression);
+                    parentExpression = whereExpression as Expression;
                 }
 
                 // select.
-                var allPiecesAttached = Expression.Call(typeof(Enumerable),
+                var gluedTogetherExpression = Expression.Call(typeof(Enumerable),
                     "Select",
                     new Type[] { piece.Parent.EnumerableType, currentSimpleChainExpression.Type },
-                    parent, currentSimpleChainExpressionLambda);
+                    parentExpression, currentSimpleChainExpressionLambda);
 
                 // add current to parent?
-                return allPiecesAttached;
+                return gluedTogetherExpression;
             }
 
             // skip.
