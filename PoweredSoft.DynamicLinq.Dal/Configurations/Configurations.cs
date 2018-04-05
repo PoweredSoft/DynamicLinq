@@ -23,6 +23,8 @@ namespace PoweredSoft.DynamicLinq.Dal.Configurations
             Property(t => t.Id).HasColumnName("Id").HasColumnType("bigint").IsRequired().HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
             Property(t => t.FirstName).HasColumnType("nvarchar").HasMaxLength(50).IsRequired();
             Property(t => t.LastName).HasColumnType("nvarchar").HasMaxLength(50).IsRequired();
+
+            HasOptional(t => t.Website).WithMany(t => t.Authors).HasForeignKey(t => t.WebsiteId).WillCascadeOnDelete(false);
         }
     }
 
@@ -84,6 +86,23 @@ namespace PoweredSoft.DynamicLinq.Dal.Configurations
             Property(t => t.CreateTime).HasColumnName("CreateTime").HasColumnType("datetimeoffset").IsRequired();
 
             HasRequired(t => t.Comment).WithMany(t => t.CommentLikes).HasForeignKey(t => t.CommentId).WillCascadeOnDelete(false);
+        }
+    }
+
+    public class WebsiteConfiguration : EntityTypeConfiguration<Website>
+    {
+        public WebsiteConfiguration() : this("dbo")
+        {
+
+        }
+
+        public WebsiteConfiguration(string schema)
+        {
+            ToTable("Website", schema);
+            HasKey(t => t.Id);
+            Property(t => t.Id).HasColumnName("Id").HasColumnType("bigint").IsRequired().HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            Property(t => t.Title).HasColumnName("Title").HasColumnType("nvarchar").HasMaxLength(100).IsRequired();
+            Property(t => t.Url).HasColumnName("Url").HasColumnType("nvarchar").HasMaxLength(255).IsRequired();
         }
     }
 }

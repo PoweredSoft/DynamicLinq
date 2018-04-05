@@ -1,5 +1,6 @@
 ﻿using PoweredSoft.DynamicLinq.Dal.Pocos;
 using PoweredSoft.DynamicLinq.Helpers;
+using PoweredSoft.DynamicLinq.Parser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +45,12 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
         public static void Case2()
         {
             // the expression parser.
-            var ep = new ExpressionParser(typeof(Post), "Author.Posts.Author.Posts.Author.FirstName");
+            var ep = new ExpressionParser(typeof(Author), "Posts.Author.Posts.Author.Website.Url");
+
+            new List<Author>().AsQueryable().Select(t => new
+            {
+                A = t.Posts.Select(t2 => t2.Author.Posts.Select(t3 => t3.Author.Website.Url)) 
+            });
 
             new List<Post>().AsQueryable().Select(t => new
             {
@@ -58,7 +64,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
             // the builder.
             var per = new PathExpressionResolver(ep);
-            per.NullChecking = SelectNullHandling.New;
+            per.NullChecking = SelectNullHandling.Handle;
             per.Resolve();
 
             // the result expression.
@@ -66,20 +72,14 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
         }
     }
 
-    public class ExpressionParserPiece
-    {
-        public Type Type { get; set; }
-        public bool IsGenericEnumerable { get; set; }
-        public Type EnumerableType { get; set; }
-        public ExpressionParserPiece Parent { get; set; }
-        public string Name { get; internal set; }
-    }
+
 
     public class PathExpressionResolver
     {
         public SelectNullHandling NullChecking { get; set; } = SelectNullHandling.LeaveAsIs;
         public SelectCollectionHandling CollectionHandling { get; set; } = SelectCollectionHandling.LeaveAsIs;
         public ExpressionParser Parser { get; protected set; }
+
         public Expression Result { get; protected set; }
 
         public PathExpressionResolver(ExpressionParser parser)
@@ -94,105 +94,86 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             // parse the expression.
             Parser.Parse();
 
-            // reverse foreach
-            var last = Parser.Pieces.Last();
+            // group the piece by common parameters
+            var groups = Parser.GroupBySharedParameters();
 
-            // reverse recursive.
-            Result = RecursiveSelect(last);
+            // compiled lambdas.
+            var groupLambdas = groups.Select(group => group.CompileGroup(NullChecking)).ToList();
         }
 
-        protected Expression RecursiveSelect(ExpressionParserPiece piece)
+        protected Expression RecursiveSelect(List<ExpressionParserPiece> pieces)
+        {
+            // get the last.
+            var piece = pieces.Last();
+
+            var firstEnumerableParent = ExpressionParser.GetFirstEnumerableParent(piece);
+            var chainTillEnumerable = pieces.SkipWhile(t => t != firstEnumerableParent).Skip(1).ToList();
+            if (chainTillEnumerable.Count == 0)
+            {
+                if (piece.Parent == null)
+                {
+                    // no parent.
+                    var mostLeftExpression = Expression.PropertyOrField(Parser.Parameter, piece.Name);
+                    return mostLeftExpression;
+                }
+                else
+                {
+                    // we have a parent its probably a enumerable.
+                    var collectionParentParameter = Expression.Parameter(piece.Parent.EnumerableType);
+                    var memberOf = Expression.PropertyOrField(collectionParentParameter, piece.Name);
+                }
+            }
+            else
+            {
+                // we have a simple chain to resolve.
+                var chainTillEnumerableParameter = ResolveParameter(chainTillEnumerable);
+                var chainTillEnumerableExpression = BuildSimpleChainExpression(chainTillEnumerable, chainTillEnumerableParameter);
+                var chainTillEnumerableLambda = Expression.Lambda(chainTillEnumerableExpression, chainTillEnumerableParameter);
+
+                // get parent to glue with.
+                var nextList = pieces.Take(pieces.IndexOf(firstEnumerableParent)+1).ToList();
+                var parent = RecursiveSelect(nextList);
+
+                // glue.
+                var gluedResult = Expression.Call(typeof(Enumerable),
+                    "Select",
+                    new Type[] { firstEnumerableParent.EnumerableType, chainTillEnumerableExpression.Type },
+                    parent, chainTillEnumerableLambda);
+
+                return gluedResult;
+            }
+            
+            throw null;
+            
+        }
+
+        private ExpressionParserPiece GetFirstEnumerableParent(ExpressionParserPiece piece)
         {
             if (piece.Parent == null)
-            {
-                var parameter = Parser.Parameter;
-                var me = Expression.PropertyOrField(Parser.Parameter, piece.Name);
-                return me;
-            }
-            else if (piece.Parent.IsGenericEnumerable)
-            {
-                var indexOfParentPiece = Parser.Pieces.IndexOf(piece);
-                var currentSimpleChain = Parser.Pieces.Skip(indexOfParentPiece).TakeWhile(t => !t.IsGenericEnumerable).ToList();     
-                var parameter = ResolveParameter(currentSimpleChain);
-                var currentSimpleChainExpression = BuildSimpleChainExpression(currentSimpleChain, parameter);
-                var currentSimpleChainExpressionLambda = Expression.Lambda(currentSimpleChainExpression, parameter);
+                return null;
 
-                // the left before the parent.
-                var left = RecursiveSelect(piece.Parent);
+            if (piece.Parent.IsGenericEnumerable)
+                return piece.Parent;
 
-                // the parent.
-                var parentExpression = Expression.PropertyOrField(left, piece.Parent.Name) as Expression;
-
-                if (NullChecking != SelectNullHandling.LeaveAsIs)
-                {
-                    var nullCheckParameter = ResolveParameter(currentSimpleChain);
-                    var nullCheckConditionExpression = BuildNullCheckConditionExpression(currentSimpleChain, nullCheckParameter);
-                    var whereExpression = Expression.Call(typeof(Enumerable), "Where", new[] { piece.Parent.EnumerableType }, parentExpression, nullCheckConditionExpression);
-                    parentExpression = whereExpression as Expression;
-                }
-
-                // select.
-                var gluedTogetherExpression = Expression.Call(typeof(Enumerable),
-                    "Select",
-                    new Type[] { piece.Parent.EnumerableType, currentSimpleChainExpression.Type },
-                    parentExpression, currentSimpleChainExpressionLambda);
-
-                // add current to parent?
-                return gluedTogetherExpression;
-            }
-
-            // skip.
-            return RecursiveSelect(piece.Parent);
+            return GetFirstEnumerableParent(piece.Parent);
         }
 
-        /*
-        private void ResolveNullCheckingRightType()
+        private Expression NullCheckTernary(Expression left, Expression right, ParameterExpression parameter)
         {
-            if (NullChecking == SelectNullHandling.LeaveAsIs)
-                return;
-            
-            // last piece.
             var lastPiece = Parser.Pieces.Last();
-            var anyCollections = Parser.Pieces.Any(t => t.IsGenericEnumerable);
+            var lastPieceType = !lastPiece.IsGenericEnumerable ? lastPiece.Type : lastPiece.EnumerableType;
 
-            Type subjectType = null;
-            if (anyCollections)
-                subjectType = typeof(List<>).MakeGenericType(lastPiece.EnumerableType);
-            else
-                subjectType = lastPiece.Type;
+            var escapeType = typeof(List<>).MakeGenericType(lastPieceType);
+            var typeMatch = typeof(IEnumerable<>).MakeGenericType(lastPieceType);
+            var ifTrueExpression = Expression.New(escapeType);
+            var testExpression = Expression.Equal(left, Expression.Constant(null));
 
-            if (NullChecking == SelectNullHandling.Default)
-                NullCheckValueExpression = Expression.Default(subjectType);
-            else
-                NullCheckValueExpression = Expression.New(subjectType);
-        }*/
-
-        private void HandleCollection(ExpressionParserPiece piece, int index)
-        {
-            // simple parent.
-
-            // the current simple chain.
-            var currentSimpleChain = Parser.Pieces.Skip(index - 1).Where(t => !t.IsGenericEnumerable).ToList();
-            
-            // the parameter being used to select.
-            var parameter = ResolveParameter(currentSimpleChain);
-
-            // this is the simple chain to select.
-            var currentSimpleChainExpression = BuildSimpleChainExpression(currentSimpleChain, parameter);
-
-            // add where :)
-            if (NullChecking != SelectNullHandling.LeaveAsIs)
-            {
-                var nullCheckParameter = ResolveParameter(currentSimpleChain);
-                var nullCheckWhereForChain = BuildNullCheckConditionExpression(currentSimpleChain, nullCheckParameter);
-            }
-            else
-            {
-                Result = currentSimpleChainExpression;
-            }
+            var condition = Expression.Condition(testExpression, ifTrueExpression, right, typeMatch);
+            var lambda = Expression.Lambda(condition, parameter);
+            return lambda;
         }
 
-        private Expression BuildNullCheckConditionExpression(List<ExpressionParserPiece> currentSimpleChain, ParameterExpression parameter)
+        private Expression BuildNullCheckConditionExpressionForWhere(List<ExpressionParserPiece> currentSimpleChain, ParameterExpression parameter)
         {
             var path = string.Join(".", currentSimpleChain.Select(t => t.Name).Take(currentSimpleChain.Count - 1));
             var where = QueryableHelpers.CreateConditionExpression(parameter.Type, path, ConditionOperators.NotEqual, null, QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, 
@@ -212,103 +193,16 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             throw new NotSupportedException();
         }
 
-        private Expression BuildSimpleChainExpression(List<ExpressionParserPiece> currentSimpleChain, ParameterExpression parameter)
+        private Expression BuildSimpleChainExpression(List<ExpressionParserPiece> chain, ParameterExpression parameter)
         {
             var ret = parameter as Expression;
-            currentSimpleChain.ForEach(p =>
+            chain.ForEach(p =>
             {
                 var me = Expression.PropertyOrField(ret, p.Name);
                 ret = me;
             });
 
             return ret;
-        }
-
-        /*
-        public void HandleNoPreviousResultCollection(ExpressionParserPiece piece, int index)
-        {
-            MethodCallExpression result = null;
-
-            // create the lambda.
-            var lambda = ResolveLambda(piece);
-
-            if (CollectionHandling == SelectCollectionHandling.LeaveAsIs || !piece.IsGenericEnumerable)
-                result = Expression.Call(typeof(Enumerable),
-                    "Select",
-                    new Type[] { piece.Parent.EnumerableType, piece.MemberExpression.Type },
-                    piece.Parent.MemberExpression, lambda);
-            else
-                result = Expression.Call(typeof(Enumerable),
-                    "SelectMany",
-                    new Type[] { piece.Parent.EnumerableType, piece.EnumerableType },
-                    piece.Parent.MemberExpression, lambda);
-
-            Result = result;
-        }
-
-        public void HandlePreviousResultCollection(ExpressionParserPiece piece, int index)
-        {
-            var pieceParameter = ResolvePieceParameter(piece);
-
-            MethodCallExpression result = null;
-            var lambda = Expression.Lambda(Result, ResolvePieceParameter(piece));
-            if (CollectionHandling == SelectCollectionHandling.LeaveAsIs)
-                result = Expression.Call(typeof(Enumerable), "Select", 
-                    new Type[] { piece.Parent.EnumerableType, Result.Type }, 
-                    piece.Parent.MemberExpression, lambda);
-            else
-                result = Expression.Call(typeof(Enumerable),
-                    "SelectMany",
-                    new Type[] { piece.Parent.EnumerableType, Result.Type.GenericTypeArguments.First() },
-                    piece.Parent.MemberExpression, lambda);
-
-            Result = result;
-        }*/
-    }
-
-    public class ExpressionParser
-    {
-        public ParameterExpression Parameter { get; protected set; }
-        public string Path { get; set; }
-        public List<ExpressionParserPiece> Pieces { get; set; } = new List<ExpressionParserPiece>();
-
-        public ExpressionParser(Type type, string path) : this(Expression.Parameter(type), path)
-        {
-            
-        }
-
-        public ExpressionParser(ParameterExpression parameter, string path)
-        {
-            Parameter = parameter;
-            Path = path;
-        }
-
-        public void Parse()
-        {
-            Pieces.Clear();
-
-            var pathPieces = Path.Split('.').ToList();
-            var param = Parameter;
-            ExpressionParserPiece parent = null;
-
-            pathPieces.ForEach(pp =>
-            {
-                var memberExpression = Expression.PropertyOrField(param, pp);
-                var current = new ExpressionParserPiece
-                {
-                    Type = memberExpression.Type,
-                    IsGenericEnumerable = QueryableHelpers.IsGenericEnumerable(memberExpression),
-                    EnumerableType = memberExpression.Type.GenericTypeArguments.FirstOrDefault(),
-                    Parent = parent,
-                    Name = pp
-                };
-
-                Pieces.Add(current);
-
-                // for next iteration.
-                param = Expression.Parameter(current.IsGenericEnumerable ? current.EnumerableType : current.Type);
-                parent = current;
-            });
         }
     }
 }

@@ -62,8 +62,7 @@ namespace PoweredSoft.DynamicLinq
     public enum SelectNullHandling
     {
         LeaveAsIs,
-        Default,
-        New
+        Handle
     }
 
     internal static class Constants
