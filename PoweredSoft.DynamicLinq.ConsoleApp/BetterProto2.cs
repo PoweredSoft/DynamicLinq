@@ -64,7 +64,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
             // the builder.
             var per = new PathExpressionResolver(ep);
-            per.NullChecking = SelectNullHandling.Handle;
+            per.NullHandling = SelectNullHandling.Handle;
             per.Resolve();
 
             // the result expression.
@@ -76,7 +76,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
     public class PathExpressionResolver
     {
-        public SelectNullHandling NullChecking { get; set; } = SelectNullHandling.LeaveAsIs;
+        public SelectNullHandling NullHandling { get; set; } = SelectNullHandling.LeaveAsIs;
         public SelectCollectionHandling CollectionHandling { get; set; } = SelectCollectionHandling.LeaveAsIs;
         public ExpressionParser Parser { get; protected set; }
 
@@ -97,8 +97,64 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             // group the piece by common parameters
             var groups = Parser.GroupBySharedParameters();
 
-            // compiled lambdas.
-            var groupLambdas = groups.Select(group => group.CompileGroup(NullChecking)).ToList();
+            Expression ce = null;
+            groups.ReversedForEach(group =>
+            {
+                if (ce == null)
+                {
+                    var ge = group.CompileGroup(NullHandling);
+                    var gl = Expression.Lambda(ge, group.Parameter);
+
+                    if (group.Parent == null)
+                    {
+                        ce = gl;
+                        return;
+                    }
+
+                    var parent = group.Parent;
+                    var parentExpression = parent.CompileGroup(NullHandling);
+                    var selectType = parent.GroupEnumerableType();
+                    var select = Expression.Call(typeof(Enumerable), "Select", 
+                        new Type[] { selectType, ge.Type }, 
+                        parentExpression, gl);
+                    ce = select;
+                }
+                else
+                {
+                    if (group.Parent == null)
+                    {
+                        ce = Expression.Lambda(ce, group.Parameter);
+                        return;
+                    }
+
+                    var parent = group.Parent;
+                    var parentExpression = parent.CompileGroup(NullHandling);
+                    var selectType = parent.GroupEnumerableType();
+                    var currentExpressionLambda = Expression.Lambda(ce, group.Parameter);
+                    ce = Expression.Call(typeof(Enumerable), "Select",
+                        new Type[] { selectType, ce.Type },
+                        parentExpression, currentExpressionLambda);
+                }
+            });
+        }
+
+        private Expression JoinGroups(IEnumerable<ExpressionParserPieceGroup> groups, Expression result = null)
+        {
+            var lastGroup = groups.Last();
+            var lastGroupExpression = lastGroup.CompileGroup(NullHandling);
+            var lastGroupExpressionLambda = Expression.Lambda(lastGroupExpression, lastGroup.Parameter);
+
+            if (lastGroup.Parent == null)
+                return lastGroupExpressionLambda;
+
+            var parent = lastGroup.Parent;
+            var parentExpression = parent.CompileGroup(NullHandling);
+            var selectType = parent.GroupEnumerableType();
+
+            var select = Expression.Call(typeof(Enumerable), "Select",
+                new Type[] { selectType, lastGroupExpression.Type },
+                parentExpression, lastGroupExpressionLambda);
+            return select;
         }
 
         protected Expression RecursiveSelect(List<ExpressionParserPiece> pieces)

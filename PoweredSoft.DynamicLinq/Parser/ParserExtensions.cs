@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
@@ -13,16 +14,19 @@ namespace PoweredSoft.DynamicLinq.Parser
             return result;
         }
 
-        public static LambdaExpression CompileGroup(this ExpressionParserPieceGroup group, SelectNullHandling NullHandling)
+        public static Expression CompileGroup(this ExpressionParserPieceGroup group, SelectNullHandling NullHandling)
         {
-            var expr = group.ParameterExpression as Expression;
+            var expr = group.Parameter as Expression;
             group.Pieces.ForEach(piece =>
             {
                 expr = Expression.PropertyOrField(expr, piece.Name);
             });
+            return expr;
+        }
 
-            var ret = Expression.Lambda(expr, group.ParameterExpression);
-            return ret;
+        public static Type GroupEnumerableType(this ExpressionParserPieceGroup group)
+        {
+            return group.Pieces.Last().EnumerableType;
         }
     }
 }

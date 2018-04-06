@@ -62,10 +62,11 @@ namespace PoweredSoft.DynamicLinq.Parser
             });
         }
 
-        private ExpressionParserPieceGroup CreateAndAddGroup(List<ExpressionParserPieceGroup> groups, ParameterExpression parameter)
+        private ExpressionParserPieceGroup CreateAndAddGroup(List<ExpressionParserPieceGroup> groups, ParameterExpression parameter, ExpressionParserPieceGroup parent)
         {
             var group = new ExpressionParserPieceGroup();
-            group.ParameterExpression = parameter;
+            group.Parameter = parameter;
+            group.Parent = parent;
             groups.Add(group);
             return group;
         }
@@ -74,12 +75,12 @@ namespace PoweredSoft.DynamicLinq.Parser
         {
             var groups = new List<ExpressionParserPieceGroup>();
 
-            var group = CreateAndAddGroup(groups, Parameter);
+            var group = CreateAndAddGroup(groups, Parameter, null);
             Pieces.ForEach(piece =>
             {
                 group.Pieces.Add(piece);
                 if (piece.IsGenericEnumerable)
-                    group = CreateAndAddGroup(groups, Expression.Parameter(piece.EnumerableType));
+                    group = CreateAndAddGroup(groups, Expression.Parameter(piece.EnumerableType), group);
             });
 
             return groups;
