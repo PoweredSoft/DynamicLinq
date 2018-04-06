@@ -97,6 +97,8 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             // group the piece by common parameters
             var groups = Parser.GroupBySharedParameters();
 
+            var nullType = groups.ResolveNullHandlingType();
+
             Expression currentExpression = null;
             groups.ReversedForEach(group =>
             {

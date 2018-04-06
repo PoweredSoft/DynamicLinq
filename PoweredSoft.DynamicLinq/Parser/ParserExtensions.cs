@@ -28,5 +28,16 @@ namespace PoweredSoft.DynamicLinq.Parser
         {
             return group.Pieces.Last().EnumerableType;
         }
+
+        public static Type ResolveNullHandlingType(this List<ExpressionParserPieceGroup> groups)
+        {
+            if (groups.Count() == 1)
+            {
+                throw new NotImplementedException();
+            }
+
+            var type = groups.Last().Pieces.Last().Type;
+            return typeof(IEnumerable<>).MakeGenericType(type);
+        }
     }
 }
