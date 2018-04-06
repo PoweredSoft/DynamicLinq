@@ -97,42 +97,42 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             // group the piece by common parameters
             var groups = Parser.GroupBySharedParameters();
 
-            Expression ce = null;
+            Expression currentExpression = null;
             groups.ReversedForEach(group =>
             {
-                if (ce == null)
+                if (currentExpression == null)
                 {
-                    var ge = group.CompileGroup(NullHandling);
-                    var gl = Expression.Lambda(ge, group.Parameter);
+                    var groupExpression = group.CompileGroup(NullHandling);
+                    var groupExpressionLambda = Expression.Lambda(groupExpression, group.Parameter);
 
                     if (group.Parent == null)
                     {
-                        ce = gl;
+                        currentExpression = groupExpressionLambda;
                         return;
                     }
 
                     var parent = group.Parent;
                     var parentExpression = parent.CompileGroup(NullHandling);
                     var selectType = parent.GroupEnumerableType();
-                    var select = Expression.Call(typeof(Enumerable), "Select", 
-                        new Type[] { selectType, ge.Type }, 
-                        parentExpression, gl);
-                    ce = select;
+                    var selectExpression = Expression.Call(typeof(Enumerable), "Select", 
+                        new Type[] { selectType, groupExpression.Type }, 
+                        parentExpression, groupExpressionLambda);
+                    currentExpression = selectExpression;
                 }
                 else
                 {
                     if (group.Parent == null)
                     {
-                        ce = Expression.Lambda(ce, group.Parameter);
+                        currentExpression = Expression.Lambda(currentExpression, group.Parameter);
                         return;
                     }
 
                     var parent = group.Parent;
                     var parentExpression = parent.CompileGroup(NullHandling);
                     var selectType = parent.GroupEnumerableType();
-                    var currentExpressionLambda = Expression.Lambda(ce, group.Parameter);
-                    ce = Expression.Call(typeof(Enumerable), "Select",
-                        new Type[] { selectType, ce.Type },
+                    var currentExpressionLambda = Expression.Lambda(currentExpression, group.Parameter);
+                    currentExpression = Expression.Call(typeof(Enumerable), "Select",
+                        new Type[] { selectType, currentExpression.Type },
                         parentExpression, currentExpressionLambda);
                 }
             });
