@@ -138,6 +138,8 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
                         parentExpression, currentExpressionLambda);
                 }
             });
+
+            Result = currentExpression;
         }
     }
 }
