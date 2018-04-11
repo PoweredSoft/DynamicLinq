@@ -49,7 +49,8 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
             new List<Author>().AsQueryable().Select(t => new
             {
-                A = t.Posts.Select(t2 => t2.Author.Posts.Select(t3 => t3.Author.Website.Url)) 
+                A = t.Posts.Select(t2 => t2.Author.Posts.Select(t3 => t3.Author.Website.Url)) ,
+                B = t.Posts.Where(t2 => t2.Author != null).Select(t2 => t2.Author.Posts.Where(t3 => t3.Author != null && t3.Author.Website != null).Select(t3 => t3.Author.Website.Url))
             });
 
             new List<Post>().AsQueryable().Select(t => new
@@ -141,7 +142,6 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
                             parentExpression = Expression.Call(typeof(Enumerable), "Where",
                                 new Type[] { parent.GroupEnumerableType()  },
                                 parentExpression, whereExpression);
-
                         }
                     }
 
@@ -163,6 +163,24 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
                     var parent = group.Parent;
                     var parentExpression = CompileGroup(parent, NullHandling);
                     var selectType = parent.GroupEnumerableType();
+
+
+                    if (NullHandling != SelectNullHandling.LeaveAsIs)
+                    {
+                        if (group.Pieces.Count > 1)
+                        {
+                            var path = string.Join(".", group.Pieces.Take(group.Pieces.Count - 1).Select(T => T.Name));
+                            var whereExpression = QueryableHelpers.CreateConditionExpression(group.Parameter.Type, path,
+                                ConditionOperators.NotEqual, null, QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
+                                parameter: group.Parameter, nullChecking: true);
+
+                            //public static IEnumerable<TSource> Where<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate);
+                            parentExpression = Expression.Call(typeof(Enumerable), "Where",
+                                new Type[] { parent.GroupEnumerableType() },
+                                parentExpression, whereExpression);
+                        }
+                    }
+
                     var currentExpressionLambda = Expression.Lambda(currentExpression, group.Parameter);
                     currentExpression = Expression.Call(typeof(Enumerable), "Select",
                         new Type[] { selectType, currentExpression.Type },
