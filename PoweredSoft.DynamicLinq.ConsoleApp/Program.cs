@@ -14,7 +14,8 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
     {
         static void Main(string[] args)
         {
-            BetterProto2.Run();
+            var selectTests = new SelectTests();
+            selectTests.SelectNullChecking();
         }
 
     }

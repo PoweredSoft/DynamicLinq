@@ -1,4 +1,6 @@
 ﻿using PoweredSoft.DynamicLinq.DynamicType;
+using PoweredSoft.DynamicLinq.Parser;
+using PoweredSoft.DynamicLinq.Resolver;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -201,7 +203,8 @@ namespace PoweredSoft.DynamicLinq.Helpers
             return CreateSelectExpressionForGrouping(query, parameter, selectType, path, selectCollectionHandling, nullChecking);            
         }
 
-        private static Expression CreateSelectExpressionRegular(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
+        private static Expression CreateSelectExpressionRegular(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path
+            , SelectCollectionHandling selectCollectionHandling, bool nullChecking)
         {
             if (selectType == SelectTypes.Path)
             {
@@ -209,7 +212,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
             }
             else if (selectType == SelectTypes.PathToList)
             {
-                var expr = ResolvePathForExpression(parameter, path);
+                var parser = new ExpressionParser(parameter, path);
+                var resolver = new PathExpressionResolver(parser);
+                resolver.NullChecking = nullChecking;
+                resolver.CollectionHandling = selectCollectionHandling;
+                resolver.Resolve();
+                var expr = (resolver.Result as LambdaExpression).Body;
                 var notGroupedType = expr.Type.GenericTypeArguments.FirstOrDefault();
                 if (notGroupedType == null)
                     throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");

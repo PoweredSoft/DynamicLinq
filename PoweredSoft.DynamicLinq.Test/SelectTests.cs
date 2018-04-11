@@ -94,8 +94,10 @@ namespace PoweredSoft.DynamicLinq.Test
             var querySelect = query.Select(t =>
             {
                 t.NullChecking(true);
-                t.PathToList("Posts.Comments", selectCollectionHandling: SelectCollectionHandling.Flatten);
+                t.PathToList("Posts.Comments.CommentLikes", selectCollectionHandling: SelectCollectionHandling.Flatten);
             });
+
+            var abc = querySelect.ToObjectList();
 
             var list = querySelect.ToDynamicClassList();
         }

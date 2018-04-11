@@ -83,6 +83,10 @@ namespace PoweredSoft.DynamicLinq.Parser
                     group = CreateAndAddGroup(groups, Expression.Parameter(piece.EnumerableType), group);
             });
 
+            // if the last piece is empty.
+            if (group.Pieces.Count == 0)
+                groups.Remove(group);
+
             return groups;
         }
     }
