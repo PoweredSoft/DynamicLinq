@@ -14,15 +14,7 @@ namespace PoweredSoft.DynamicLinq.Parser
             return result;
         }
 
-        public static Expression CompileGroup(this ExpressionParserPieceGroup group, SelectNullHandling NullHandling)
-        {
-            var expr = group.Parameter as Expression;
-            group.Pieces.ForEach(piece =>
-            {
-                expr = Expression.PropertyOrField(expr, piece.Name);
-            });
-            return expr;
-        }
+      
 
         public static Type GroupEnumerableType(this ExpressionParserPieceGroup group)
         {
