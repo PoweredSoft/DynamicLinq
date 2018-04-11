@@ -25,7 +25,7 @@ namespace PoweredSoft.DynamicLinq.Parser
         {
             if (groups.Count() == 1)
             {
-                throw new NotImplementedException();
+                return groups.First().Pieces.Last().Type;
             }
 
             var type = groups.Last().Pieces.Last().Type;

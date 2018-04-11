@@ -45,7 +45,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
         public static void Case2()
         {
             // the expression parser.
-            var ep = new ExpressionParser(typeof(Author), "Posts.Author.Posts.Author.Website.Url");
+            var ep = new ExpressionParser(typeof(Author), "Posts.Author.Website.Url");
 
             new List<Author>().AsQueryable().Select(t => new
             {
@@ -112,8 +112,8 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
             NullType = groups.ResolveNullHandlingType();
 
             Expression currentExpression = null;
-            groups.ReversedForEach(group =>
-            {
+            foreach(var group in groups.Reversed())
+            { 
                 if (currentExpression == null)
                 {
                     var groupExpression = CompileGroup(group, NullHandling);
@@ -122,7 +122,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
                     if (group.Parent == null)
                     {
                         currentExpression = groupExpressionLambda;
-                        return;
+                        continue;
                     }
 
                     var parent = group.Parent;
@@ -130,20 +130,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
                     // check null with where.
                     if (NullHandling != SelectNullHandling.LeaveAsIs)
-                    {
-                        if (group.Pieces.Count > 1)
-                        {
-                            var path = string.Join(".", group.Pieces.Take(group.Pieces.Count-1).Select(T => T.Name));
-                            var whereExpression = QueryableHelpers.CreateConditionExpression(group.Parameter.Type, path,
-                                ConditionOperators.NotEqual, null, QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
-                                parameter: group.Parameter, nullChecking: true);
-
-                            //public static IEnumerable<TSource> Where<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate);
-                            parentExpression = Expression.Call(typeof(Enumerable), "Where",
-                                new Type[] { parent.GroupEnumerableType()  },
-                                parentExpression, whereExpression);
-                        }
-                    }
+                        parentExpression = CheckNullOnEnumerableParent(group, parent, parentExpression);
 
                     // the select expression.
                     var selectType = parent.GroupEnumerableType();
@@ -156,8 +143,11 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
                 {
                     if (group.Parent == null)
                     {
+                        if (NullHandling != SelectNullHandling.LeaveAsIs)
+                            currentExpression = CheckNullOnFirstGroup(group, currentExpression);
+
                         currentExpression = Expression.Lambda(currentExpression, group.Parameter);
-                        return;
+                        continue;
                     }
 
                     var parent = group.Parent;
@@ -166,29 +156,62 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
 
 
                     if (NullHandling != SelectNullHandling.LeaveAsIs)
-                    {
-                        if (group.Pieces.Count > 1)
-                        {
-                            var path = string.Join(".", group.Pieces.Take(group.Pieces.Count - 1).Select(T => T.Name));
-                            var whereExpression = QueryableHelpers.CreateConditionExpression(group.Parameter.Type, path,
-                                ConditionOperators.NotEqual, null, QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
-                                parameter: group.Parameter, nullChecking: true);
-
-                            //public static IEnumerable<TSource> Where<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate);
-                            parentExpression = Expression.Call(typeof(Enumerable), "Where",
-                                new Type[] { parent.GroupEnumerableType() },
-                                parentExpression, whereExpression);
-                        }
-                    }
+                        parentExpression = CheckNullOnEnumerableParent(group, parent, parentExpression);
 
                     var currentExpressionLambda = Expression.Lambda(currentExpression, group.Parameter);
                     currentExpression = Expression.Call(typeof(Enumerable), "Select",
                         new Type[] { selectType, currentExpression.Type },
                         parentExpression, currentExpressionLambda);
                 }
-            });
+            }
 
             Result = currentExpression;
+        }
+
+        private Expression CheckNullOnFirstGroup(ExpressionParserPieceGroup group, Expression currentExpression)
+        {
+            var path = string.Join(".", group.Pieces.Select(t => t.Name));
+            var whereExpression = QueryableHelpers.CreateConditionExpression(group.Parameter.Type, path,
+                    ConditionOperators.NotEqual, null, QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
+                    parameter: group.Parameter, nullChecking: true);
+
+            var whereBodyExpression = (whereExpression as LambdaExpression).Body;
+
+            Expression ifTrueExpression = null;
+            if (QueryableHelpers.IsGenericEnumerable(NullType))
+            {
+                var listType = typeof(List<>).MakeGenericType(NullType.GenericTypeArguments.First());
+                ifTrueExpression = Expression.New(listType);
+
+            }
+            else
+            {
+                ifTrueExpression = Expression.Default(NullType);
+            }
+
+            return Expression.Condition(whereBodyExpression, ifTrueExpression, currentExpression, currentExpression.Type);
+        }
+
+        private static Expression CheckNullOnEnumerableParent(ExpressionParserPieceGroup group, ExpressionParserPieceGroup parent, Expression parentExpression)
+        {
+            if (group.Pieces.Count > 1)
+            {
+                var path = string.Join(".", group.Pieces.Take(group.Pieces.Count - 1).Select(T => T.Name));
+                var whereExpression = QueryableHelpers.CreateConditionExpression(group.Parameter.Type, path,
+                    ConditionOperators.NotEqual, null, QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
+                    parameter: group.Parameter, nullChecking: true);
+
+                //public static IEnumerable<TSource> Where<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate);
+                parentExpression = Expression.Call(typeof(Enumerable), "Where",
+                    new Type[] { parent.GroupEnumerableType() },
+                    parentExpression, whereExpression);
+            }
+            else
+            {
+
+            }
+
+            return parentExpression;
         }
     }
 }
