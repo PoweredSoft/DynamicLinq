@@ -66,11 +66,22 @@ namespace PoweredSoft.DynamicLinq.Resolver
                         parentExpression = CheckNullOnEnumerableParent(group, parent, parentExpression, isLastGroup);
 
                     // the select expression.
-                    var selectType = parent.GroupEnumerableType();
-                    var selectExpression = Expression.Call(typeof(Enumerable), "Select",
-                        new Type[] { selectType, groupExpression.Type },
-                        parentExpression, groupExpressionLambda);
-                    currentExpression = selectExpression;
+                    if (CollectionHandling == SelectCollectionHandling.Flatten && QueryableHelpers.IsGenericEnumerable(groupExpression))
+                    {
+                        var selectType = parent.GroupEnumerableType();
+                        var selectExpression = Expression.Call(typeof(Enumerable), "SelectMany",
+                            new Type[] { selectType, groupExpression.Type.GenericTypeArguments.First() },
+                            parentExpression, groupExpressionLambda);
+                        currentExpression = selectExpression;
+                    }
+                    else
+                    {
+                        var selectType = parent.GroupEnumerableType();
+                        var selectExpression = Expression.Call(typeof(Enumerable), "Select",
+                            new Type[] { selectType, groupExpression.Type },
+                            parentExpression, groupExpressionLambda);
+                        currentExpression = selectExpression;
+                    }
                 }
                 else
                 {
@@ -91,10 +102,20 @@ namespace PoweredSoft.DynamicLinq.Resolver
                     if (NullChecking != false)
                         parentExpression = CheckNullOnEnumerableParent(group, parent, parentExpression, isLastGroup);
 
-                    var currentExpressionLambda = Expression.Lambda(currentExpression, group.Parameter);
-                    currentExpression = Expression.Call(typeof(Enumerable), "Select",
-                        new Type[] { selectType, currentExpression.Type },
-                        parentExpression, currentExpressionLambda);
+                    if (CollectionHandling == SelectCollectionHandling.Flatten && QueryableHelpers.IsGenericEnumerable(currentExpression))
+                    {
+                        var currentExpressionLambda = Expression.Lambda(currentExpression, group.Parameter);
+                        currentExpression = Expression.Call(typeof(Enumerable), "SelectMany",
+                            new Type[] { selectType, currentExpression.Type.GenericTypeArguments.First() },
+                            parentExpression, currentExpressionLambda);
+                    }
+                    else
+                    {
+                        var currentExpressionLambda = Expression.Lambda(currentExpression, group.Parameter);
+                        currentExpression = Expression.Call(typeof(Enumerable), "Select",
+                            new Type[] { selectType, currentExpression.Type },
+                            parentExpression, currentExpressionLambda);
+                    }
                 }
             }
 
