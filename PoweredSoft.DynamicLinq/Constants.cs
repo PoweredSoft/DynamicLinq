@@ -59,12 +59,6 @@ namespace PoweredSoft.DynamicLinq
         Flatten
     }
 
-    public enum SelectNullHandling
-    {
-        LeaveAsIs,
-        Handle
-    }
-
     internal static class Constants
     {
         internal static readonly MethodInfo GroupByMethod = typeof(Queryable).GetMethods().First(t => t.Name == "GroupBy");

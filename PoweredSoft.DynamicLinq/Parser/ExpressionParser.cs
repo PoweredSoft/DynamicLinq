@@ -11,6 +11,7 @@ namespace PoweredSoft.DynamicLinq.Parser
         public ParameterExpression Parameter { get; protected set; }
         public string Path { get; set; }
         public List<ExpressionParserPiece> Pieces { get; set; } = new List<ExpressionParserPiece>();
+        public bool IsParsed => Pieces?.Count > 0;
 
         public ExpressionParser(Type type, string path) : this(Expression.Parameter(type), path)
         {

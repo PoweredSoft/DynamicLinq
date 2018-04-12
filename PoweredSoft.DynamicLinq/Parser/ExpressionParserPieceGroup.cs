@@ -14,11 +14,6 @@ namespace PoweredSoft.DynamicLinq.Parser
 
 #if DEBUG
         public override string ToString() => $"{Parameter?.ToString()} is {Parameter?.Type} | {(Pieces == null ? "" : string.Join(" -> ", Pieces.Select(t2 => t2.ToString())))}";
-
-        public object CompileSimpleExpress(SelectNullHandling nullHandling)
-        {
-            throw new NotImplementedException();
-        }
 #endif
     }
 }

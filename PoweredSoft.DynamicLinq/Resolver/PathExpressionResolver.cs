@@ -37,7 +37,8 @@ namespace PoweredSoft.DynamicLinq.Resolver
             Result = null;
 
             // parse the expression.
-            Parser.Parse();
+            if (!Parser.IsParsed)
+                Parser.Parse();
 
             // group the piece by common parameters
             var groups = Parser.GroupBySharedParameters();
@@ -169,6 +170,14 @@ namespace PoweredSoft.DynamicLinq.Resolver
             }
 
             return parentExpression;
+        }
+
+        public Expression GetResultBodyExpression()
+        {
+            if (Result == null)
+                return Result;
+
+            return ((LambdaExpression)Result).Body;
         }
     }
 }

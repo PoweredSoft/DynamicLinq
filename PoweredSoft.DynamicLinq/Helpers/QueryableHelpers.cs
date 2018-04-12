@@ -302,13 +302,17 @@ namespace PoweredSoft.DynamicLinq.Helpers
         /// <param name="param">Expression.Parameter(typeOfClassOrInterface)</param>
         /// <param name="path">the path you wish to resolve example Contact.Profile.FirstName</param>
         /// <returns></returns>
-        public static Expression ResolvePathForExpression(ParameterExpression param, string path)
+        public static Expression ResolvePathForExpression(ParameterExpression param, string path, bool throwIfHasEnumerable = true)
         {
-            var parts = ExpressionPathPart.Split(param, path);
-            if (parts.Any(t => t.IsGenericEnumerable()))
-                throw new Exception("this method does not support collection handling");
+            var expressionParser = new ExpressionParser(param, path);
+            expressionParser.Parse();
 
-            return parts.Last().PartExpression;
+            if (throwIfHasEnumerable && expressionParser.Pieces.Any(t2 => t2.IsGenericEnumerable))
+                throw new Exception("Path contains an enumerable, and this feature does not support it.");
+
+            var expressionResolver = new PathExpressionResolver(expressionParser);
+            expressionResolver.Resolve();
+            return expressionResolver.GetResultBodyExpression();
         }
 
         public static ConstantExpression GetConstantSameAsLeftOperator(Expression member, object value)
