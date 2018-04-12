@@ -97,9 +97,18 @@ namespace PoweredSoft.DynamicLinq.Test
                 t.PathToList("Posts.Comments.CommentLikes", selectCollectionHandling: SelectCollectionHandling.Flatten);
             });
 
-            var abc = querySelect.ToObjectList();
+            var b = querySelect.ToDynamicClassList();
 
-            var list = querySelect.ToDynamicClassList();
+            Assert.AreEqual(a.Count, b.Count);
+            for(var i = 0; i  < a.Count; i++)
+            {
+                var left = a[i];
+                var right = b[i];
+
+                var leftCommentLikes = left.CommentLikes;
+                var rightCommentLikes = right.GetDynamicPropertyValue<List<CommentLike>>("CommentLikes");
+                QueryableAssert.AreEqual(leftCommentLikes.AsQueryable(), rightCommentLikes.AsQueryable());
+            }
         }
     }
 }

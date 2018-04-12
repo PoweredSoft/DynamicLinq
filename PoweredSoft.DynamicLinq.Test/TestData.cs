@@ -133,7 +133,22 @@ namespace PoweredSoft.DynamicLinq.Test
                                 Id = 1,
                                 DisplayName = "John Doe",
                                 CommentText = "!@#$!@#!@#",
-                                Email = "john.doe@me.com"
+                                Email = "john.doe@me.com",
+                                CommentLikes = new List<CommentLike>()
+                                {
+                                    new CommentLike()
+                                    {
+                                        Id = 1,
+                                        CommentId = 1,
+                                        CreateTime = DateTimeOffset.Now
+                                    },
+                                    new CommentLike()
+                                    {
+                                        Id = 2,
+                                        CommentId = 1,
+                                        CreateTime = DateTimeOffset.Now
+                                    },
+                                }
                             }
                         }
                     },

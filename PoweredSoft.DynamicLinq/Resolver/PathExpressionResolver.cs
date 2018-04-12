@@ -62,11 +62,12 @@ namespace PoweredSoft.DynamicLinq.Resolver
                     var parentExpression = CompileGroup(parent, NullChecking);
 
                     // check null with where.
+                    var isSelectMany = CollectionHandling == SelectCollectionHandling.Flatten && QueryableHelpers.IsGenericEnumerable(groupExpression);
                     if (NullChecking != false)
-                        parentExpression = CheckNullOnEnumerableParent(group, parent, parentExpression, isLastGroup);
+                        parentExpression = CheckNullOnEnumerableParent(group, parent, parentExpression, isLastGroup && !isSelectMany);
 
                     // the select expression.
-                    if (CollectionHandling == SelectCollectionHandling.Flatten && QueryableHelpers.IsGenericEnumerable(groupExpression))
+                    if (isSelectMany)
                     {
                         var selectType = parent.GroupEnumerableType();
                         var selectExpression = Expression.Call(typeof(Enumerable), "SelectMany",
@@ -98,11 +99,11 @@ namespace PoweredSoft.DynamicLinq.Resolver
                     var parentExpression = CompileGroup(parent, NullChecking);
                     var selectType = parent.GroupEnumerableType();
 
-
+                    bool isSelectMany = CollectionHandling == SelectCollectionHandling.Flatten && QueryableHelpers.IsGenericEnumerable(currentExpression);
                     if (NullChecking != false)
-                        parentExpression = CheckNullOnEnumerableParent(group, parent, parentExpression, isLastGroup);
+                        parentExpression = CheckNullOnEnumerableParent(group, parent, parentExpression, isLastGroup && !isSelectMany);
 
-                    if (CollectionHandling == SelectCollectionHandling.Flatten && QueryableHelpers.IsGenericEnumerable(currentExpression))
+                    if (isSelectMany)
                     {
                         var currentExpressionLambda = Expression.Lambda(currentExpression, group.Parameter);
                         currentExpression = Expression.Call(typeof(Enumerable), "SelectMany",
@@ -147,10 +148,10 @@ namespace PoweredSoft.DynamicLinq.Resolver
             return Expression.Condition(whereBodyExpression, ifTrueExpression, currentExpression, currentExpression.Type);
         }
 
-        private static Expression CheckNullOnEnumerableParent(ExpressionParserPieceGroup group, ExpressionParserPieceGroup parent, Expression parentExpression, bool isLastGroup)
+        private static Expression CheckNullOnEnumerableParent(ExpressionParserPieceGroup group, ExpressionParserPieceGroup parent, Expression parentExpression, bool shouldSkipLast)
         {
             string path = null;
-            if (isLastGroup)
+            if (shouldSkipLast)
                 path = string.Join(".", group.Pieces.Take(group.Pieces.Count - 1).Select(t => t.Name));
             else
                 path = string.Join(".", group.Pieces.Select(t => t.Name));
