@@ -111,6 +111,29 @@ namespace PoweredSoft.DynamicLinq.Test
             },
         };
 
+        static readonly internal List<CommentLike> Likes = new List<CommentLike>()
+        {
+            new CommentLike
+            {
+                Id = 1,
+                CommentId = 1,
+                Comment = new Comment
+                {
+                    Email = "john@doe.ca",
+                    CommentText = "bla bla",
+                    Post = new Post
+                    {
+                        Content = "ASDFSADF"
+                    }
+                }
+            },
+            new CommentLike
+            {
+                Id = 2,
+                CommentId = 2
+            }
+        };
+
         static readonly internal List<Author> Authors = new List<Author>()
         {
             new Author

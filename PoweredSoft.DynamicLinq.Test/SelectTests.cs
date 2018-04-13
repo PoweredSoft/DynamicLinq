@@ -110,5 +110,28 @@ namespace PoweredSoft.DynamicLinq.Test
                 QueryableAssert.AreEqual(leftCommentLikes.AsQueryable(), rightCommentLikes.AsQueryable());
             }
         }
+
+        [TestMethod]
+        public void SelectNullChecking2()
+        {
+            var query = TestData.Likes.AsQueryable();
+
+            var qs = query.Select(t => new
+            {
+                Post = t.Comment == null || t.Comment.Post == null ? null : t.Comment.Post,
+                Texts = (t.Comment == null || t.Comment.Post == null || t.Comment.Post.Comments == null ? new List<string>() : t.Comment.Post.Comments.Select(t2 => t2.CommentText)).ToList()
+            });
+
+            var a = qs.ToList();
+
+            var querySelect = query.Select(t =>
+            {
+                t.NullChecking(true);
+                // this needs to be fixed.
+                t.PathToList("Comment.Post.Comments.CommentText", selectCollectionHandling: SelectCollectionHandling.Flatten);
+            });
+
+            var b = querySelect.ToDynamicClassList();
+        }
     }
 }
