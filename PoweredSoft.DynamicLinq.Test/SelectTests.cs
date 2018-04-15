@@ -82,6 +82,7 @@ namespace PoweredSoft.DynamicLinq.Test
         {
             var query = TestData.Authors.AsQueryable();
 
+            
             var qs = query.Select(t => new
             {
                 CommentLikes = t.Posts == null ? 
@@ -128,7 +129,8 @@ namespace PoweredSoft.DynamicLinq.Test
             {
                 t.NullChecking(true);
                 // this needs to be fixed.
-                t.PathToList("Comment.Post.Comments.CommentText", selectCollectionHandling: SelectCollectionHandling.Flatten);
+                t.Path("Comment.CommentText", "CommentText2");
+                //t.PathToList("Comment.Post.Comments.CommentText", selectCollectionHandling: SelectCollectionHandling.Flatten);
             });
 
             var b = querySelect.ToDynamicClassList();

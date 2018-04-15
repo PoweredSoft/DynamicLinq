@@ -208,7 +208,11 @@ namespace PoweredSoft.DynamicLinq.Helpers
         {
             if (selectType == SelectTypes.Path)
             {
-                return ResolvePathForExpression(parameter, path);
+                var parser = new ExpressionParser(parameter, path);
+                var resolver = new PathExpressionResolver(parser);
+                resolver.NullChecking = nullChecking;
+                resolver.Resolve();
+                return resolver.GetResultBodyExpression();
             }
             else if (selectType == SelectTypes.PathToList)
             {

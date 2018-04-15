@@ -15,7 +15,6 @@ namespace PoweredSoft.DynamicLinq.Resolver
         public ExpressionParser Parser { get; protected set; }
 
         public Expression Result { get; protected set; }
-        public Type NullType { get; set; }
 
         public PathExpressionResolver(ExpressionParser parser)
         {
@@ -55,7 +54,11 @@ namespace PoweredSoft.DynamicLinq.Resolver
 
                     if (group.Parent == null)
                     {
-                        currentExpression = groupExpressionLambda;
+                        currentExpression = groupExpression;
+                        if (NullChecking != false)
+                            currentExpression = CheckNullOnFirstGroup(group, currentExpression);
+
+                        currentExpression = Expression.Lambda(currentExpression, group.Parameter);
                         continue;
                     }
 
@@ -128,10 +131,14 @@ namespace PoweredSoft.DynamicLinq.Resolver
         {
             var path = string.Join(".", group.Pieces.Select(t => t.Name));
             var whereExpression = QueryableHelpers.CreateConditionExpression(group.Parameter.Type, path,
-                    ConditionOperators.Equal, null, QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
+                    ConditionOperators.NotEqual, null, QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
                     parameter: group.Parameter, nullChecking: true);
 
             var whereBodyExpression = (whereExpression as LambdaExpression).Body;
+            whereBodyExpression =Expression.Not(whereBodyExpression);
+
+
+
 
             var nullType = currentExpression.Type;
             Expression ifTrueExpression = null;
@@ -143,7 +150,7 @@ namespace PoweredSoft.DynamicLinq.Resolver
             }
             else
             {
-                ifTrueExpression = Expression.Default(NullType);
+                ifTrueExpression = Expression.Default(nullType);
             }
 
             return Expression.Condition(whereBodyExpression, ifTrueExpression, currentExpression, currentExpression.Type);
