@@ -66,7 +66,19 @@ TestSales
 	    TaxAverage = t.Average(t2 => t2.Tax),
 	    Sales = t.ToList()
 	});
-```       
+```     
+
+### Select 
+
+```csharp
+var querySelect = query.Select(t =>
+{
+t.NullChecking(true); // not obligated but usefull for in memory queries. 
+t.PathToList("Posts.Comments.CommentLikes", selectCollectionHandling: SelectCollectionHandling.Flatten);
+t.Path("FirstName");
+t.Path("LastName", "ChangePropertyNameOfLastName");
+});
+```
 
 ### In Support
 You can filter with a list, this will generate a contains with your list.
