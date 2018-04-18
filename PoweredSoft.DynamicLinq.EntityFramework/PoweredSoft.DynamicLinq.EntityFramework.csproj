@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>David Lebee</Authors>
     <Company>Powered Software Inc.</Company>
     <Product>Entity Framework extensions for Dynamic Linq of PoweredSoft</Product>
@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/PoweredSoft/DynamicLinq</RepositoryUrl>
     <PackageTags>entity framework ef dynamic linq</PackageTags>
     <PackageProjectUrl>https://github.com/PoweredSoft/DynamicLinq</PackageProjectUrl>
-    <Version>1.1.0</Version>
+    <Version>1.1.2</Version>
     <AssemblyVersion>1.1.0.0</AssemblyVersion>
     <FileVersion>1.1.0.0</FileVersion>
   </PropertyGroup>
