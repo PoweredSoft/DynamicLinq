@@ -34,6 +34,12 @@ namespace PoweredSoft.DynamicLinq.Test
 
     internal static class TestData
     {
+        static readonly internal List<Unique> Uniques = new List<Unique>
+        {
+            new Unique { Id = 1, RowNumber = Guid.NewGuid(), OtherNullableGuid = null } ,
+            new Unique { Id = 2, RowNumber = Guid.NewGuid(), OtherNullableGuid = Guid.NewGuid() }
+        };
+
         static readonly internal List<MockPersonObject> Persons = new List<MockPersonObject>
         {
             new MockPersonObject { FirstName = "David", LastName = "Lebee", Age = 28 },

@@ -9,6 +9,23 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Dal.Configurations
 {
+    public class UniqueConfiguration : EntityTypeConfiguration<Unique>
+    {
+        public UniqueConfiguration() : this("dbo")
+        {
+
+        }
+
+        public UniqueConfiguration(string schema)
+        {
+            ToTable("Unique", schema);
+            HasKey(t => t.Id);
+            Property(t => t.Id).HasColumnName("Id").HasColumnType("bigint").IsRequired().HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+            Property(t => t.RowNumber).HasColumnType("uniqueidentifier").IsRequired();
+            Property(t => t.OtherNullableGuid).HasColumnType("uniqueidentifier");
+        }
+    }
+
     public class AuthorConfiguration : EntityTypeConfiguration<Author>
     {
         public AuthorConfiguration() : this("dbo")

@@ -43,6 +43,14 @@ namespace PoweredSoft.DynamicLinq.Test
         }
 
         [TestMethod]
+        public void TestGuid()
+        {
+            var randomGuidStr = Guid.NewGuid().ToString();
+            TestData.Uniques.AsQueryable().Query(t => t.Equal("RowNumber", randomGuidStr));
+            TestData.Uniques.AsQueryable().Query(t => t.Equal("OtherNullableGuid", randomGuidStr));
+        }
+
+        [TestMethod]
         public void SpecifyType()
         {
             Assert.IsTrue(Posts.AsQueryable().Query(t => t.Equal("ForeignKey", 1, QueryConvertStrategy.SpecifyType)).Any());

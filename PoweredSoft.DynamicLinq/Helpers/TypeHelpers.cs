@@ -24,26 +24,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
         }
 
 
-        public static object ConvertFrom(Type type, object source)
-        {
-            object ret = null;
-
-            // safe if null.
-            if (source == null)
-                return ret;
-
-            // not nullable type.
-            var notNullableType = Nullable.GetUnderlyingType(type);
-            if (notNullableType == null)
-            {
-                ret = Convert.ChangeType(source, type);
-                return ret;
-            }
-
-            // the ret.
-            ret = Convert.ChangeType(source, notNullableType);
-            return ret;
-        }
+     
 
         /*
         /// <summary>

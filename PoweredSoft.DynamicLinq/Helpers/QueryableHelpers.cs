@@ -327,17 +327,8 @@ namespace PoweredSoft.DynamicLinq.Helpers
             if (value == null)
                 return Expression.Constant(null);
 
-            // the types.
-            var valueType = value.GetType();
-            var memberType = member.Type;
-
-            // if match.
-            if (valueType == memberType)
-                return Expression.Constant(value);
-
-            // attempt a conversion.
-            object convertedValue = TypeHelpers.ConvertFrom(memberType, value);
-            return Expression.Constant(convertedValue, memberType);
+            var convertedValue = PoweredSoft.Types.Converter.To(value, member.Type);
+            return Expression.Constant(convertedValue, member.Type);
         }
 
         public static ConstantExpression ResolveConstant(Expression member, object value, QueryConvertStrategy convertStrategy)
@@ -474,7 +465,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             foreach (var o in enumerableValue)
             {
                 if (convertStrategy == QueryConvertStrategy.ConvertConstantToComparedPropertyOrField)
-                    list.Add(TypeHelpers.ConvertFrom(memberExpression.Type, o));
+                    list.Add(PoweredSoft.Types.Converter.To(o, memberExpression.Type));
                 else
                     list.Add(o);
             }

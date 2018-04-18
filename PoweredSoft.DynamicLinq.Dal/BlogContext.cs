@@ -37,6 +37,8 @@ namespace PoweredSoft.DynamicLinq.Dal
             modelBuilder.Configurations.Add(new CommentConfiguration());
             modelBuilder.Configurations.Add(new PostConfiguration());
             modelBuilder.Configurations.Add(new WebsiteConfiguration());
+            modelBuilder.Configurations.Add(new CommentLikeConfiguration());
+            modelBuilder.Configurations.Add(new UniqueConfiguration());
         }
     }
 }
