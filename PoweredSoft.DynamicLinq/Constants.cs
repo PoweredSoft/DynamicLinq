@@ -64,7 +64,7 @@ namespace PoweredSoft.DynamicLinq
         internal static readonly MethodInfo GroupByMethod = typeof(Queryable).GetMethods().First(t => t.Name == "GroupBy");
         internal static readonly MethodInfo GroupByMethodWithEqualityComparer = typeof(Queryable).GetMethods().First(t => t.Name == "GroupBy" && t.GetParameters().Any(t2 => t2.Name == "comparer"));
         internal static readonly MethodInfo StringEqualWithComparisation = typeof(string).GetMethod("Equals", new Type[] { typeof(string), typeof(StringComparison) });
-        internal static readonly MethodInfo ContainsMethod = typeof(string).GetMethod("Contains");
+        internal static readonly MethodInfo ContainsMethod = typeof(string).GetMethod("Contains", new Type[] { typeof(string) });
         internal static readonly MethodInfo StartsWithMethod = typeof(string).GetMethod("StartsWith", new Type[] { typeof(string) });
         internal static readonly MethodInfo StartsWithMethodWithComparisation = typeof(string).GetMethod("StartsWith", new Type[] { typeof(string), typeof(StringComparison) });
         internal static readonly MethodInfo EndsWithMethod = typeof(string).GetMethod("EndsWith", new Type[] { typeof(string) });
