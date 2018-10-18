@@ -19,6 +19,14 @@ namespace PoweredSoft.DynamicLinq
             return query;
         }
 
+        public static IQueryable Where(this IQueryable query, string path, ConditionOperators conditionOperator, object value,
+            QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
+            QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
+        {
+            query = query.Query(qb => qb.Compare(path, conditionOperator, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision));
+            return query;
+        }
+
         public static IQueryable<T> Where<T>(this IQueryable<T> query, Action<WhereBuilder> callback)
             => query.Query(callback);
 
@@ -28,6 +36,18 @@ namespace PoweredSoft.DynamicLinq
             callback(queryBuilder);
             var ret = queryBuilder.Build();
             return (IQueryable<T>)ret;
+        }
+
+        // non generics were missing.
+        public static IQueryable Where(this IQueryable query, Action<WhereBuilder> callback)
+            => query.Query(callback);
+
+        public static IQueryable Query(this IQueryable query, Action<WhereBuilder> callback)
+        {
+            var queryBuilder = new WhereBuilder(query);
+            callback(queryBuilder);
+            var ret = queryBuilder.Build();
+            return ret;
         }
 
         // generic.
