@@ -145,12 +145,17 @@ namespace PoweredSoft.DynamicLinq
             return ret;
         }
 
-        private static MethodInfo _internalCount = typeof(QueryableExtensions).GetMethod(nameof(QueryableExtensions._internalCount), BindingFlags.Static | BindingFlags.NonPublic);
-        private static int InternalCount<T>(IQueryable<T> q) => q.Count();
+        private static MethodInfo _internalCount = typeof(QueryableExtensions).GetMethod(nameof(QueryableExtensions.InternalCount), BindingFlags.Static | BindingFlags.NonPublic);
+        private static int InternalCount<T>(IQueryable<T> q) => System.Linq.Queryable.Count(q); 
         public static int Count(this IQueryable query) => (int)_internalCount.MakeGenericMethod(query.ElementType).Invoke(null, new object[] {query});
 
-        private static MethodInfo _internalLongCount = typeof(QueryableExtensions).GetMethod(nameof(QueryableExtensions._internalLongCount), BindingFlags.Static | BindingFlags.NonPublic);
-        private static long InternalLongCount<T>(IQueryable<T> q) => q.LongCount();
-        public static long LongCount(this IQueryable query) => (int)_internalLongCount.MakeGenericMethod(query.ElementType).Invoke(null, new object[] { query });
+        private static MethodInfo _internalLongCount = typeof(QueryableExtensions).GetMethod(nameof(QueryableExtensions.InternalLongCount), BindingFlags.Static | BindingFlags.NonPublic);
+        private static long InternalLongCount<T>(IQueryable<T> q) => System.Linq.Queryable.LongCount(q);
+        public static long LongCount(this IQueryable query)
+        {
+            var method =_internalLongCount.MakeGenericMethod(query.ElementType);
+            var result = method.Invoke(null, new object[] {query});
+            return (long) result;
+        }
     }
 }
