@@ -59,6 +59,23 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return this;
         }
 
+        public SelectBuilder Aggregate(string path, SelectTypes type, string propertyName = null)
+        {
+            if (propertyName == null)
+                propertyName = path.Split('.').LastOrDefault();
+
+            ThrowIfUsedOrEmpty(propertyName);
+
+            Parts.Add(new SelectPart
+            {
+                Path = path,
+                PropertyName = propertyName,
+                SelectType = type
+            });
+
+            return this;
+        }
+
         public SelectBuilder Path(string path, string propertyName = null)
         {
             if (propertyName == null)
