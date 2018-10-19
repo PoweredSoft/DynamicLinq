@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -143,5 +144,13 @@ namespace PoweredSoft.DynamicLinq
             var ret = query.Cast<DynamicClass>().ToList();
             return ret;
         }
+
+        private static MethodInfo _internalCount = typeof(QueryableExtensions).GetMethod(nameof(QueryableExtensions._internalCount), BindingFlags.Static | BindingFlags.NonPublic);
+        private static int InternalCount<T>(IQueryable<T> q) => q.Count();
+        public static int Count(this IQueryable query) => (int)_internalCount.MakeGenericMethod(query.ElementType).Invoke(null, new object[] {query});
+
+        private static MethodInfo _internalLongCount = typeof(QueryableExtensions).GetMethod(nameof(QueryableExtensions._internalLongCount), BindingFlags.Static | BindingFlags.NonPublic);
+        private static long InternalLongCount<T>(IQueryable<T> q) => q.LongCount();
+        public static long LongCount(this IQueryable query) => (int)_internalLongCount.MakeGenericMethod(query.ElementType).Invoke(null, new object[] { query });
     }
 }
