@@ -157,5 +157,16 @@ namespace PoweredSoft.DynamicLinq
             var result = method.Invoke(null, new object[] {query});
             return (long) result;
         }
+
+        public static IQueryable EmptyGroupBy(this IQueryable queryable, Type underlyingType)
+        {
+            var parameter = Expression.Parameter(underlyingType);
+            var genericMethod = Constants.GroupByMethod.MakeGenericMethod(underlyingType, typeof(bool));
+            var trueConstant = Expression.Constant(true);
+            var lambda = Expression.Lambda(trueConstant, parameter);
+            var groupByExpression = Expression.Call(genericMethod, queryable.Expression, lambda);
+            var result = queryable.Provider.CreateQuery(groupByExpression);
+            return result;
+        }
     }
 }
