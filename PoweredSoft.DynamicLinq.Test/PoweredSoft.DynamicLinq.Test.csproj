@@ -77,6 +77,7 @@
     <Compile Include="EntityFrameworkTests.cs" />
     <Compile Include="StringComparision.cs" />
     <Compile Include="TestData.cs" />
+    <Compile Include="CountTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -47,6 +47,9 @@ namespace PoweredSoft.DynamicLinq
         public static IQueryable GroupBy(this IEnumerable list, Type type, Action<GroupBuilder> callback)
             => list.AsQueryable().GroupBy(type, callback);
 
+        public static IQueryable EmptyGroupBy(this IEnumerable list, Type underlyingType)
+            => list.AsQueryable().EmptyGroupBy(underlyingType);
+
         public static List<T> Reversed<T>(this List<T> list)
         {
             var copy = list.ToList();

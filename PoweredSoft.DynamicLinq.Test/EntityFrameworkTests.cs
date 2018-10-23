@@ -14,7 +14,8 @@ namespace PoweredSoft.DynamicLinq.Test
     public class EntityFrameworkTests
     {
         public static string testConnectionString =>
-            "data source=(local); initial catalog=blogtests;persist security info=True; Integrated Security=SSPI;";
+            @"Server=(localdb)\mssqllocaldb;Database=EFProviders.InMemory;Trusted_Connection=True;";
+            //"data source=(local); initial catalog=blogtests;persist security info=True; Integrated Security=SSPI;";
 
         public static void SeedForTests(BlogContext context)
         {

@@ -32,7 +32,7 @@ Shortcuts allow to avoid specifying the condition operator by having it handy in
 ```csharp
 queryable.Query(t => t.Contains("FirstName", "Dav").OrContains("FirstName", "Jo"));
 ```
-You may visit this test for more examples: https://github.com/PoweredSoft/DynamicLinq/blob/master/PoweredSoft.DynamicLinq.Test/ShortcutTests.cs
+> You may visit this test for more examples: https://github.com/PoweredSoft/DynamicLinq/blob/master/PoweredSoft.DynamicLinq.Test/ShortcutTests.cs
 
 ### Simple Query
 ```csharp
@@ -51,10 +51,11 @@ TestData.Sales
 	    t.LongCount("LongCount");
 	    t.Sum("NetSales");
 	    t.Average("Tax", "TaxAverage");
+	    t.Aggregate("Tax", SelectTypes.Average, "TaxAverage2"); // Starting 1.0.5
 	    t.ToList("Sales");
 	});
 ```	
-Is equivalent to
+> Is equivalent to
 ```csharp
 TestSales
 	.GroupBy(t => new { t.ClientId })
@@ -64,9 +65,37 @@ TestSales
 	    LongCount = t.LongCount(),
 	    NetSales = t.Sum(t2 => t2.NetSales),
 	    TaxAverage = t.Average(t2 => t2.Tax),
+	    TaxAverage2 = t.Average(t2 => t2.Tax),
 	    Sales = t.ToList()
 	});
 ```     
+
+### Empty Group By
+
+This is common to create aggregate totals.
+
+```csharp
+someQueryable.EmptyGroupBy(typeof(SomeClass));
+```
+> Is equivalent to
+
+```csharp
+someQueryableOfT.GroupBy(t => true);
+```
+
+### Count shortcut
+
+```csharp
+IQueryable someQueryable = <something>;
+someQueryable.Count(); 
+```
+
+> Is equivalent to
+
+```csharp
+IQueryable<T> someQueryableOfT = <something>;
+someQsomeQueryableOfTueryable.Count(); 
+```
 
 ### Select 
 
