@@ -83,7 +83,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
   
 
-        public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts, Type groupToType = null, Type equalityCompareType = null)
+        public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts, Type groupToType = null, Type equalityCompareType = null, bool nullChecking = false)
         {
             // EXPRESSION
             var parameter = Expression.Parameter(type, "t");
@@ -94,22 +94,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
             // resolve part expression and create the fields inside the anonymous type.
             parts.ForEach(part =>
             {
-                var partExpression = ResolvePathForExpression(parameter, part.path);
+                var partExpression = CreateSelectExpression(query, parameter, SelectTypes.Path, part.path, SelectCollectionHandling.LeaveAsIs, nullChecking: nullChecking);
                 fields.Add((partExpression.Type, part.propertyName));
                 partExpressions.Add((partExpression, part.propertyName));
             });
 
             var keyType = groupToType ?? DynamicClassFactory.CreateType(fields);
-
-            /*
-            var constructorTypes = fields.Select(t => t.type).ToArray();
-            var constructor = anonymousType.GetConstructor(constructorTypes);
-            var newExpression = Expression.New(constructor, partExpressions);
-            var genericMethod = Constants.GroupByMethod.MakeGenericMethod(type, anonymousType);
-            var lambda = Expression.Lambda(newExpression, parameter);
-            var groupByExpression = Expression.Call(genericMethod, query.Expression, lambda);
-            var result = query.Provider.CreateQuery(groupByExpression);*/
-
             var ctor = Expression.New(keyType);
             var bindings = partExpressions.Select(partExpression => Expression.Bind(keyType.GetProperty(partExpression.propertyName), partExpression.expression)).ToArray();
             var mi = Expression.MemberInit(ctor, bindings);

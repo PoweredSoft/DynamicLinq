@@ -8,6 +8,7 @@ using PoweredSoft.DynamicLinq;
 using PoweredSoft.DynamicLinq.Dal;
 using System.Diagnostics;
 using PoweredSoft.DynamicLinq.Test.Helpers;
+using System.Collections;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
@@ -147,6 +148,85 @@ namespace PoweredSoft.DynamicLinq.Test
                 Assert.AreEqual(left.LongCount, right.GetDynamicPropertyValue("LongCount"));
                 Assert.AreEqual(left.TaxAverage, right.GetDynamicPropertyValue("TaxAverage"));
                 QueryableAssert.AreEqual(left.Sales.AsQueryable(), right.GetDynamicPropertyValue<List<MockSale>>("Sales").AsQueryable());
+            }
+        }
+
+        [TestMethod]
+        public void GroupWithoutNullCheckComplex()
+        {
+            var limitResult = TestData.Authors.Where(t => t.Posts != null).AsQueryable();
+
+            var posts = limitResult
+                .GroupBy(t => new
+                {
+                    Titles = t.Posts.Select(t2 => t2.Title)
+                })
+                .Select(t => new
+                {
+                    Titles = t.Key.Titles,
+                    Data = t.ToList()
+                })
+                .ToList();
+
+            var posts2 = limitResult
+                .GroupBy(gb => gb.Path("Posts.Title", "Titles"))
+                .Select(sb =>
+                {
+                    sb.Key("Titles");
+                    sb.ToList("Data");
+                })
+                .ToDynamicClassList();
+
+            Assert.AreEqual(posts.Count, posts2.Count);
+            for(var i  = 0; i < posts.Count; i++)
+            {
+                var expected = posts[0];
+                var actual = posts2[0];
+
+                var titles = actual.GetDynamicPropertyValue("Titles") as ICollection;
+
+                CollectionAssert.AreEqual(expected.Titles as ICollection, titles);
+            }
+        }
+
+        [TestMethod]
+        public void GroupWithNullCheckComplex()
+        {
+            var limitResult = TestData.Authors.AsQueryable();
+
+            var posts = limitResult
+                .GroupBy(t => new
+                {
+                    Titles = t.Posts == null ? new List<string>() : t.Posts.Select(t2 => t2.Title)
+                })
+                .Select(t => new
+                {
+                    Titles = t.Key.Titles,
+                    Data = t.ToList()
+                })
+                .ToList();
+
+            var tempQueryable = limitResult
+                .GroupBy(gb => gb.NullChecking().Path("Posts.Title", "Titles"));
+
+
+            var posts2 = tempQueryable 
+                .Select(sb =>
+                {
+                    sb.Key("Titles");
+                    sb.ToList("Data");
+                })
+                .ToDynamicClassList();
+
+            Assert.AreEqual(posts.Count, posts2.Count);
+            for (var i = 0; i < posts.Count; i++)
+            {
+                var expected = posts[0];
+                var actual = posts2[0];
+
+                var titles = actual.GetDynamicPropertyValue("Titles") as ICollection;
+
+                CollectionAssert.AreEqual(expected.Titles as ICollection, titles);
             }
         }
     }

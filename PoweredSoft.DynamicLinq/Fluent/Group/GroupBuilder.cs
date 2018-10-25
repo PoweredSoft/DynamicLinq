@@ -15,6 +15,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public IQueryable Query { get; protected set; }
 
+        public bool IsNullCheckingEnabled { get; protected set; } = false;
+
         public GroupBuilder(IQueryable query)
         {
             Query = query;
@@ -41,6 +43,12 @@ namespace PoweredSoft.DynamicLinq.Fluent
             return this;
         }
 
+        public GroupBuilder NullChecking(bool nullChecking = true)
+        {
+            IsNullCheckingEnabled = nullChecking;
+            return this;
+        }
+
         public GroupBuilder UseType(Type type)
         {
             Type = type;
@@ -58,7 +66,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
             if (Empty)
                 throw new Exception("No group specified, please specify at least one group");
 
-            var ret = QueryableHelpers.GroupBy(Query, Query.ElementType, Parts, Type, EqualityComparerType);
+            var ret = QueryableHelpers.GroupBy(Query, Query.ElementType, Parts, groupToType: Type, equalityCompareType: EqualityComparerType, nullChecking: IsNullCheckingEnabled);
             return ret;
         }
     }
