@@ -83,7 +83,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
   
 
-        public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts, Type groupToType = null, Type equalityCompareType = null)
+        public static IQueryable GroupBy(IQueryable query, Type type, List<(string path, string propertyName)> parts, Type groupToType = null, Type equalityCompareType = null, bool nullChecking = false)
         {
             // EXPRESSION
             var parameter = Expression.Parameter(type, "t");
@@ -94,22 +94,12 @@ namespace PoweredSoft.DynamicLinq.Helpers
             // resolve part expression and create the fields inside the anonymous type.
             parts.ForEach(part =>
             {
-                var partExpression = ResolvePathForExpression(parameter, part.path);
+                var partExpression = CreateSelectExpression(query, parameter, SelectTypes.Path, part.path, SelectCollectionHandling.LeaveAsIs, nullChecking: nullChecking);
                 fields.Add((partExpression.Type, part.propertyName));
                 partExpressions.Add((partExpression, part.propertyName));
             });
 
             var keyType = groupToType ?? DynamicClassFactory.CreateType(fields);
-
-            /*
-            var constructorTypes = fields.Select(t => t.type).ToArray();
-            var constructor = anonymousType.GetConstructor(constructorTypes);
-            var newExpression = Expression.New(constructor, partExpressions);
-            var genericMethod = Constants.GroupByMethod.MakeGenericMethod(type, anonymousType);
-            var lambda = Expression.Lambda(newExpression, parameter);
-            var groupByExpression = Expression.Call(genericMethod, query.Expression, lambda);
-            var result = query.Provider.CreateQuery(groupByExpression);*/
-
             var ctor = Expression.New(keyType);
             var bindings = partExpressions.Select(partExpression => Expression.Bind(keyType.GetProperty(partExpression.propertyName), partExpression.expression)).ToArray();
             var mi = Expression.MemberInit(ctor, bindings);
@@ -185,10 +175,52 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 var body = Expression.Call(typeof(Enumerable), "Sum", new[] { notGroupedType }, parameter, innerMemberLambda);
                 return body;
             }
+            else if (selectType == SelectTypes.Min)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var innerParameter = Expression.Parameter(notGroupedType);
+                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
+                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
+                var body = Expression.Call(typeof(Enumerable), "Min", new[] { notGroupedType }, parameter, innerMemberLambda);
+                return body;
+            }
+            else if (selectType == SelectTypes.Max)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var innerParameter = Expression.Parameter(notGroupedType);
+                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
+                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
+                var body = Expression.Call(typeof(Enumerable), "Max", new[] { notGroupedType }, parameter, innerMemberLambda);
+                return body;
+            }
             else if (selectType == SelectTypes.ToList)
             {
                 var notGroupedType = parameter.Type.GenericTypeArguments[1];
                 var body = Expression.Call(typeof(Enumerable), "ToList", new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else if (selectType == SelectTypes.First)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "First", new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else if (selectType == SelectTypes.Last)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "Last", new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else if (selectType == SelectTypes.FirstOrDefault)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "FirstOrDefault", new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else if (selectType == SelectTypes.LastOrDefault)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "LastOrDefault", new[] { notGroupedType }, parameter);
                 return body;
             }
 
@@ -214,23 +246,35 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 resolver.Resolve();
                 return resolver.GetResultBodyExpression();
             }
-            else if (selectType == SelectTypes.PathToList)
-            {
-                var parser = new ExpressionParser(parameter, path);
-                var resolver = new PathExpressionResolver(parser);
-                resolver.NullChecking = nullChecking;
-                resolver.CollectionHandling = selectCollectionHandling;
-                resolver.Resolve();
-                var expr = (resolver.Result as LambdaExpression).Body;
-                var notGroupedType = expr.Type.GenericTypeArguments.FirstOrDefault();
-                if (notGroupedType == null)
-                    throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");
+            else if (selectType == SelectTypes.ToList)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "ToList");
+            else if (selectType == SelectTypes.First)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "First");
+            else if (selectType == SelectTypes.FirstOrDefault)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "FirstOrDefault");
+            else if (selectType == SelectTypes.Last)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "Last");
+            else if (selectType == SelectTypes.LastOrDefault)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "LastOrDefault");
 
-                var body = Expression.Call(typeof(Enumerable), "ToList", new[] { notGroupedType }, expr) as Expression;
-                return body;
-            }
 
             throw new NotSupportedException($"unkown select type {selectType}");
+        }
+
+        private static Expression CreateSelectExpressionPathWithMethodName(ParameterExpression parameter, string path, SelectCollectionHandling selectCollectionHandling, bool nullChecking, string methodName)
+        {
+            var parser = new ExpressionParser(parameter, path);
+            var resolver = new PathExpressionResolver(parser);
+            resolver.NullChecking = nullChecking;
+            resolver.CollectionHandling = selectCollectionHandling;
+            resolver.Resolve();
+            var expr = (resolver.Result as LambdaExpression).Body;
+            var notGroupedType = expr.Type.GenericTypeArguments.FirstOrDefault();
+            if (notGroupedType == null)
+                throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");
+
+            var body = Expression.Call(typeof(Enumerable), methodName, new[] { notGroupedType }, expr) as Expression;
+            return body;
         }
 
         private static bool IsGrouping(IQueryable query)

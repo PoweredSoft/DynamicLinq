@@ -99,11 +99,13 @@ someQsomeQueryableOfTueryable.Count();
 
 ### Select 
 
+> Note **PathToList** has been renamed to just **ToList** it seemed redudant, sorry for breaking change.
+
 ```csharp
 var querySelect = query.Select(t =>
 {
 t.NullChecking(true); // not obligated but usefull for in memory queries. 
-t.PathToList("Posts.Comments.CommentLikes", selectCollectionHandling: SelectCollectionHandling.Flatten);
+t.ToList("Posts.Comments.CommentLikes", selectCollectionHandling: SelectCollectionHandling.Flatten);
 t.Path("FirstName");
 t.Path("LastName", "ChangePropertyNameOfLastName");
 });
@@ -189,6 +191,8 @@ Assert.AreEqual(first?.FirstName, "David");
 ```
 
 ### How it can be used in a web api
+
+> I highly suggest looking @ https://github.com/poweredsoft/dynamicquery if you are interested in this sample.
 
 ```csharp
 [HttpGet][Route("FindClients")]

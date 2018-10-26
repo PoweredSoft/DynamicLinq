@@ -42,25 +42,11 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 throw new Exception($"{propertyName} is already used");
         }
 
-        public SelectBuilder Key(string propertyName, string path = null)
+        public SelectBuilder Aggregate(string path, SelectTypes type, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
         {
-            if (propertyName == null)
-                propertyName = path.Split('.').LastOrDefault();
+            if (propertyName == null && path == null)
+                throw new Exception("if property name is not specified, a path must be supplied.");
 
-            ThrowIfUsedOrEmpty(propertyName);
-
-            Parts.Add(new SelectPart
-            {
-                Path = path == null ? "Key" : $"Key.{path}",
-                PropertyName = propertyName,
-                SelectType = SelectTypes.Key
-            });
-
-            return this;
-        }
-
-        public SelectBuilder Aggregate(string path, SelectTypes type, string propertyName = null)
-        {
             if (propertyName == null)
                 propertyName = path.Split('.').LastOrDefault();
 
@@ -70,111 +56,45 @@ namespace PoweredSoft.DynamicLinq.Fluent
             {
                 Path = path,
                 PropertyName = propertyName,
-                SelectType = type
-            });
-
-            return this;
-        }
-
-        public SelectBuilder Path(string path, string propertyName = null)
-        {
-            if (propertyName == null)
-                propertyName = path.Split('.').LastOrDefault();
-
-            ThrowIfUsedOrEmpty(propertyName);
-
-            Parts.Add(new SelectPart
-            {
-                Path = path, 
-                PropertyName = propertyName,
-                SelectType = SelectTypes.Path
-            });
-
-            return this;
-        }
-
-        public SelectBuilder Count(string propertyName)
-        {
-            ThrowIfUsedOrEmpty(propertyName);
-            Parts.Add(new SelectPart
-            {
-                PropertyName = propertyName,
-                SelectType = SelectTypes.Count
-            });
-            return this;
-        }
-
-        public SelectBuilder LongCount(string propertyName)
-        {
-            ThrowIfUsedOrEmpty(propertyName);
-            Parts.Add(new SelectPart
-            {
-                PropertyName = propertyName,
-                SelectType = SelectTypes.LongCount
-            });
-            return this;
-        }
-
-        public SelectBuilder Sum(string path, string propertyName = null)
-        {
-            if (propertyName == null)
-                propertyName = path.Split('.').LastOrDefault();
-
-            ThrowIfUsedOrEmpty(propertyName);
-
-            Parts.Add(new SelectPart
-            {
-                Path = path,
-                PropertyName = propertyName,
-                SelectType = SelectTypes.Sum
-            });
-            return this;
-        }
-
-        public SelectBuilder Average(string path, string propertyName = null)
-        {
-            if (propertyName == null)
-                propertyName = path.Split('.').LastOrDefault();
-
-            ThrowIfUsedOrEmpty(propertyName);
-
-            Parts.Add(new SelectPart
-            {
-                Path = path,
-                PropertyName = propertyName,
-                SelectType = SelectTypes.Average
-            });
-            return this;
-        }
-
-        public SelectBuilder ToList(string propertyName)
-        {
-            ThrowIfUsedOrEmpty(propertyName);
-            Parts.Add(new SelectPart
-            {
-                PropertyName = propertyName,
-                SelectType = SelectTypes.ToList
-            });
-            return this;
-        }
-
-        public SelectBuilder PathToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
-        {
-            if (propertyName == null)
-                propertyName = path.Split('.').LastOrDefault();
-
-            ThrowIfUsedOrEmpty(propertyName);
-
-            Parts.Add(new SelectPart
-            {
-                Path = path,
-                PropertyName = propertyName,
-                SelectType = SelectTypes.PathToList,
+                SelectType = type,
                 SelectCollectionHandling = selectCollectionHandling
             });
 
             return this;
         }
+
+        public SelectBuilder Key(string propertyName, string path = null) => Aggregate(path == null ? "Key" : $"Key.{path}", SelectTypes.Key, propertyName);
+        public SelectBuilder Path(string path, string propertyName = null) => Aggregate(path, SelectTypes.Path, propertyName);
+        public SelectBuilder Count(string propertyName) => Aggregate(null, SelectTypes.Count, propertyName);
+        public SelectBuilder LongCount(string propertyName) => Aggregate(null, SelectTypes.LongCount, propertyName);
+        public SelectBuilder Sum(string path, string propertyName = null) => Aggregate(path, SelectTypes.Sum, propertyName);
+        public SelectBuilder Average(string path, string propertyName = null) => Aggregate(path, SelectTypes.Average, propertyName);
+        public SelectBuilder Min(string path, string propertyName = null) => Aggregate(path, SelectTypes.Min, propertyName);
+        public SelectBuilder Max(string path, string propertyName = null) => Aggregate(path, SelectTypes.Max, propertyName);
+        public SelectBuilder ToList(string propertyName) => Aggregate(null, SelectTypes.ToList, propertyName);
+        public SelectBuilder LastOrDefault(string propertyName) => Aggregate(null, SelectTypes.LastOrDefault, propertyName);
+        public SelectBuilder FirstOrDefault(string propertyName) => Aggregate(null, SelectTypes.FirstOrDefault, propertyName);
+        public SelectBuilder Last(string propertyName) => Aggregate(null, SelectTypes.Last, propertyName);
+        public SelectBuilder First(string propertyName) => Aggregate(null, SelectTypes.First, propertyName);
+
+        [System.Obsolete("Use ToList instead", true)]
+        public SelectBuilder PathToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+                => ToList(path, propertyName, selectCollectionHandling);
+
+        public SelectBuilder ToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.ToList, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
+
+        public SelectBuilder First(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.First, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
+
+        public SelectBuilder FirstOrDefault(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.FirstOrDefault, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
+
+        public SelectBuilder Last(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.Last, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
+
+        public SelectBuilder LastOrDefault(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.LastOrDefault, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
 
         public virtual IQueryable Build()
         {
