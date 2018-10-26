@@ -192,6 +192,8 @@ Assert.AreEqual(first?.FirstName, "David");
 
 ### How it can be used in a web api
 
+> I highly suggest looking @ https://github.com/poweredsoft/dynamicquery if you are interested in this sample.
+
 ```csharp
 [HttpGet][Route("FindClients")]
 public IHttpActionResult FindClients(string filterField = null, string filterValue = null, 
