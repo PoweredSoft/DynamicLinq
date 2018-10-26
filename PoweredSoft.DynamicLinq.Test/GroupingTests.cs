@@ -9,6 +9,7 @@ using PoweredSoft.DynamicLinq.Dal;
 using System.Diagnostics;
 using PoweredSoft.DynamicLinq.Test.Helpers;
 using System.Collections;
+using PoweredSoft.DynamicLinq.Dal.Pocos;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
@@ -289,7 +290,7 @@ namespace PoweredSoft.DynamicLinq.Test
         }
 
         [TestMethod]
-        public void GroupByToListWithPathWithNullChecking()
+        public void GroupByToListWithPathWithNullCheckingWithFlattening()
         {
             var limitResult = TestData.Authors;
 
@@ -300,7 +301,7 @@ namespace PoweredSoft.DynamicLinq.Test
             .Select(t => new
             {
                 Key = t.Key.AuthorFirstName,
-                Contents = t.SelectMany(t2 => t2.Posts.Select(t3 => t3.Content)).ToList()
+                Contents = t.SelectMany(t2 => t2.Posts == null ? new List<string>() : t2.Posts.Select(t3 => t3.Content)).ToList()
             })
             .ToList();
 

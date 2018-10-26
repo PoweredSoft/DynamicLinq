@@ -220,10 +220,16 @@ namespace PoweredSoft.DynamicLinq.Helpers
         {
             var selectType = parameter.Type.GenericTypeArguments.Skip(1).First();
             var innerSelectType = ((LambdaExpression)innerLambdaExpression).ReturnType;
-            var selectExpression = Expression.Call(typeof(Enumerable), "Select", new Type[] { selectType, innerSelectType }, parameter, innerLambdaExpression);
+
+            Expression selectExpression;
+            if (QueryableHelpers.IsGenericEnumerable(innerSelectType) && selectCollectionHandling == SelectCollectionHandling.Flatten)
+                selectExpression = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { selectType, innerSelectType.GenericTypeArguments.First() }, parameter, innerLambdaExpression);
+            else
+                selectExpression = Expression.Call(typeof(Enumerable), "Select", new Type[] { selectType, innerSelectType }, parameter, innerLambdaExpression);
+
             return selectExpression;
         }
-
+    
         private static Expression CreateSelectExpression(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
         {
             if (!IsGrouping(query))
