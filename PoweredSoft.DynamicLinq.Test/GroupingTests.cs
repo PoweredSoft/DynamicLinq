@@ -73,7 +73,13 @@ namespace PoweredSoft.DynamicLinq.Test
                     LongCount = t.LongCount(),
                     NetSales = t.Sum(t2 => t2.NetSales),
                     TaxAverage = t.Average(t2 => t2.Tax),
-                    Sales = t.ToList()
+                    Sales = t.ToList(),
+                    MaxNetSales = t.Max(t2 => t2.NetSales),
+                    MinNetSales = t.Min(t2 => t2.NetSales),
+                    First = t.First(),
+                    Last = t.Last(),
+                    FirstOrDefault = t.FirstOrDefault(),
+                    LastOrDefault = t.LastOrDefault()
                 })
                 .ToList();
 
@@ -87,6 +93,12 @@ namespace PoweredSoft.DynamicLinq.Test
                    t.LongCount("LongCount");
                    t.Sum("NetSales");
                    t.Average("Tax", "TaxAverage");
+                   t.Max("NetSales", "MaxNetSales");
+                   t.Min("NetSales", "MinNetSales");
+                   t.First("First");
+                   t.Last("Last");
+                   t.FirstOrDefault("FirstOrDefault");
+                   t.LastOrDefault("LastOrDefault");
                    t.ToList("Sales");
                })
                .ToDynamicClassList();
@@ -101,6 +113,14 @@ namespace PoweredSoft.DynamicLinq.Test
                 Assert.AreEqual(left.Count, right.GetDynamicPropertyValue("Count"));
                 Assert.AreEqual(left.LongCount, right.GetDynamicPropertyValue("LongCount"));
                 Assert.AreEqual(left.TaxAverage, right.GetDynamicPropertyValue("TaxAverage"));
+                Assert.AreEqual(left.MinNetSales, right.GetDynamicPropertyValue("MinNetSales"));
+                Assert.AreEqual(left.MaxNetSales, right.GetDynamicPropertyValue("MaxNetSales"));
+
+                Assert.AreEqual(left.First, right.GetDynamicPropertyValue("First"));
+                Assert.AreEqual(left.FirstOrDefault, right.GetDynamicPropertyValue("FirstOrDefault"));
+                Assert.AreEqual(left.Last, right.GetDynamicPropertyValue("Last"));
+                Assert.AreEqual(left.LastOrDefault, right.GetDynamicPropertyValue("LastOrDefault"));
+
                 QueryableAssert.AreEqual(left.Sales.AsQueryable(), right.GetDynamicPropertyValue<List<MockSale>>("Sales").AsQueryable());
             }
         }

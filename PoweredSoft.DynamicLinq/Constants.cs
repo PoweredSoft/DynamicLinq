@@ -50,7 +50,13 @@ namespace PoweredSoft.DynamicLinq
         Average,
         ToList,
         PathToList,
-        Path
+        Path,
+        Min,
+        Max,
+        LastOrDefault,
+        FirstOrDefault,
+        Last,
+        First
     }
 
     public enum SelectCollectionHandling

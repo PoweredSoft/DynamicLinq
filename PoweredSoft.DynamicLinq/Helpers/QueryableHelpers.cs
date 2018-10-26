@@ -175,10 +175,52 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 var body = Expression.Call(typeof(Enumerable), "Sum", new[] { notGroupedType }, parameter, innerMemberLambda);
                 return body;
             }
+            else if (selectType == SelectTypes.Min)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var innerParameter = Expression.Parameter(notGroupedType);
+                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
+                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
+                var body = Expression.Call(typeof(Enumerable), "Min", new[] { notGroupedType }, parameter, innerMemberLambda);
+                return body;
+            }
+            else if (selectType == SelectTypes.Max)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var innerParameter = Expression.Parameter(notGroupedType);
+                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
+                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
+                var body = Expression.Call(typeof(Enumerable), "Max", new[] { notGroupedType }, parameter, innerMemberLambda);
+                return body;
+            }
             else if (selectType == SelectTypes.ToList)
             {
                 var notGroupedType = parameter.Type.GenericTypeArguments[1];
                 var body = Expression.Call(typeof(Enumerable), "ToList", new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else if (selectType == SelectTypes.First)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "First", new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else if (selectType == SelectTypes.Last)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "Last", new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else if (selectType == SelectTypes.FirstOrDefault)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "FirstOrDefault", new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else if (selectType == SelectTypes.LastOrDefault)
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), "LastOrDefault", new[] { notGroupedType }, parameter);
                 return body;
             }
 
