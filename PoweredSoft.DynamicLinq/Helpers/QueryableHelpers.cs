@@ -246,23 +246,35 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 resolver.Resolve();
                 return resolver.GetResultBodyExpression();
             }
-            else if (selectType == SelectTypes.PathToList)
-            {
-                var parser = new ExpressionParser(parameter, path);
-                var resolver = new PathExpressionResolver(parser);
-                resolver.NullChecking = nullChecking;
-                resolver.CollectionHandling = selectCollectionHandling;
-                resolver.Resolve();
-                var expr = (resolver.Result as LambdaExpression).Body;
-                var notGroupedType = expr.Type.GenericTypeArguments.FirstOrDefault();
-                if (notGroupedType == null)
-                    throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");
+            else if (selectType == SelectTypes.ToList)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "ToList");
+            else if (selectType == SelectTypes.First)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "First");
+            else if (selectType == SelectTypes.FirstOrDefault)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "FirstOrDefault");
+            else if (selectType == SelectTypes.Last)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "Last");
+            else if (selectType == SelectTypes.LastOrDefault)
+                return CreateSelectExpressionPathWithMethodName(parameter, path, selectCollectionHandling, nullChecking, "LastOrDefault");
 
-                var body = Expression.Call(typeof(Enumerable), "ToList", new[] { notGroupedType }, expr) as Expression;
-                return body;
-            }
 
             throw new NotSupportedException($"unkown select type {selectType}");
+        }
+
+        private static Expression CreateSelectExpressionPathWithMethodName(ParameterExpression parameter, string path, SelectCollectionHandling selectCollectionHandling, bool nullChecking, string methodName)
+        {
+            var parser = new ExpressionParser(parameter, path);
+            var resolver = new PathExpressionResolver(parser);
+            resolver.NullChecking = nullChecking;
+            resolver.CollectionHandling = selectCollectionHandling;
+            resolver.Resolve();
+            var expr = (resolver.Result as LambdaExpression).Body;
+            var notGroupedType = expr.Type.GenericTypeArguments.FirstOrDefault();
+            if (notGroupedType == null)
+                throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");
+
+            var body = Expression.Call(typeof(Enumerable), methodName, new[] { notGroupedType }, expr) as Expression;
+            return body;
         }
 
         private static bool IsGrouping(IQueryable query)

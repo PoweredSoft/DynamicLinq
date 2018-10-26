@@ -47,7 +47,16 @@ namespace PoweredSoft.DynamicLinq.Test
                 {
                     Id = t.Id,
                     FirstNames = t.Bs.SelectMany(t2 => t2.FirstNames).ToList(),
-                    FirstNamesLists = t.Bs.Select(t2 => t2.FirstNames).ToList()
+                    FirstNamesLists = t.Bs.Select(t2 => t2.FirstNames).ToList(),
+                    FirstFirstName = t.Bs.SelectMany(t2 => t2.FirstNames).First(),
+                    FirstOrDefaultFirstName = t.Bs.SelectMany(t2 => t2.FirstNames).FirstOrDefault(),
+                    LastFirstName = t.Bs.SelectMany(t2 => t2.FirstNames).Last(),
+                    LastOrDefaultFirstName = t.Bs.SelectMany(t2 => t2.FirstNames).LastOrDefault(),
+
+                    FirstFirstNameList = t.Bs.Select(t2 => t2.FirstNames).First(),
+                    FirstOrDefaultFirstNameList = t.Bs.Select(t2 => t2.FirstNames).FirstOrDefault(),
+                    LastFirstNameList = t.Bs.Select(t2 => t2.FirstNames).Last(),
+                    LastOrDefaultFirstNameList = t.Bs.Select(t2 => t2.FirstNames).LastOrDefault()
                 });
             
             var regularSyntax = regularSyntaxA.ToList();
@@ -57,8 +66,17 @@ namespace PoweredSoft.DynamicLinq.Test
                 .Select(t =>
                 {
                     t.Path("Id");
-                    t.PathToList("Bs.FirstNames", "FirstNames", SelectCollectionHandling.Flatten);
-                    t.PathToList("Bs.FirstNames", "FirstNamesLists", SelectCollectionHandling.LeaveAsIs);
+                    t.ToList("Bs.FirstNames", "FirstNames", SelectCollectionHandling.Flatten);
+                    t.ToList("Bs.FirstNames", "FirstNamesLists", SelectCollectionHandling.LeaveAsIs);
+                    t.First("Bs.FirstNames", "FirstFirstName", SelectCollectionHandling.Flatten);
+                    t.FirstOrDefault("Bs.FirstNames", "FirstOrDefaultFirstName", SelectCollectionHandling.Flatten);
+                    t.Last("Bs.FirstNames", "LastFirstName", SelectCollectionHandling.Flatten);
+                    t.LastOrDefault("Bs.FirstNames", "LastOrDefaultFirstName", SelectCollectionHandling.Flatten);
+
+                    t.First("Bs.FirstNames", "FirstFirstNameList", SelectCollectionHandling.LeaveAsIs);
+                    t.FirstOrDefault("Bs.FirstNames", "FirstOrDefaultFirstNameList", SelectCollectionHandling.LeaveAsIs);
+                    t.Last("Bs.FirstNames", "LastFirstNameList", SelectCollectionHandling.LeaveAsIs);
+                    t.LastOrDefault("Bs.FirstNames", "LastOrDefaultFirstNameList", SelectCollectionHandling.LeaveAsIs);
                 })
                 .ToDynamicClassList();
 
@@ -66,8 +84,21 @@ namespace PoweredSoft.DynamicLinq.Test
             for(var i = 0; i < regularSyntax.Count; i++)
             {
                 Assert.AreEqual(regularSyntax[i].Id, dynamicSyntax[i].GetDynamicPropertyValue<int>("Id"));
+                Assert.AreEqual(regularSyntax[i].FirstFirstName, dynamicSyntax[i].GetDynamicPropertyValue<string>("FirstFirstName"));
+                Assert.AreEqual(regularSyntax[i].FirstOrDefaultFirstName, dynamicSyntax[i].GetDynamicPropertyValue<string>("FirstOrDefaultFirstName"));
+                Assert.AreEqual(regularSyntax[i].LastFirstName, dynamicSyntax[i].GetDynamicPropertyValue<string>("LastFirstName"));
+                Assert.AreEqual(regularSyntax[i].LastOrDefaultFirstName, dynamicSyntax[i].GetDynamicPropertyValue<string>("LastOrDefaultFirstName"));
+
+                CollectionAssert.AreEqual(regularSyntax[i].FirstFirstNameList, dynamicSyntax[i].GetDynamicPropertyValue<List<string>>("FirstFirstNameList"));
+                CollectionAssert.AreEqual(regularSyntax[i].FirstOrDefaultFirstNameList, dynamicSyntax[i].GetDynamicPropertyValue<List<string>>("FirstOrDefaultFirstNameList"));
+                CollectionAssert.AreEqual(regularSyntax[i].LastFirstNameList, dynamicSyntax[i].GetDynamicPropertyValue<List<string>>("LastFirstNameList"));
+                CollectionAssert.AreEqual(regularSyntax[i].LastOrDefaultFirstNameList, dynamicSyntax[i].GetDynamicPropertyValue<List<string>>("LastOrDefaultFirstNameList"));
+
+
                 QueryableAssert.AreEqual(regularSyntax[i].FirstNames.AsQueryable(), dynamicSyntax[i].GetDynamicPropertyValue<List<string>>("FirstNames").AsQueryable());
 
+
+                
 
                 var left = regularSyntax[i].FirstNamesLists;
                 var right = dynamicSyntax[i].GetDynamicPropertyValue<List<List<string>>>("FirstNamesLists");
@@ -95,7 +126,7 @@ namespace PoweredSoft.DynamicLinq.Test
             var querySelect = query.Select(t =>
             {
                 t.NullChecking(true);
-                t.PathToList("Posts.Comments.CommentLikes", selectCollectionHandling: SelectCollectionHandling.Flatten);
+                t.ToList("Posts.Comments.CommentLikes", selectCollectionHandling: SelectCollectionHandling.Flatten);
             });
 
             var b = querySelect.ToDynamicClassList();

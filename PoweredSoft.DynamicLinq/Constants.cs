@@ -49,14 +49,13 @@ namespace PoweredSoft.DynamicLinq
         Sum,
         Average,
         ToList,
-        PathToList,
         Path,
         Min,
         Max,
         LastOrDefault,
         FirstOrDefault,
         Last,
-        First
+        First,
     }
 
     public enum SelectCollectionHandling

@@ -69,17 +69,28 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public SelectBuilder LongCount(string propertyName) => Aggregate(null, SelectTypes.LongCount, propertyName);
         public SelectBuilder Sum(string path, string propertyName = null) => Aggregate(path, SelectTypes.Sum, propertyName);
         public SelectBuilder Average(string path, string propertyName = null) => Aggregate(path, SelectTypes.Average, propertyName);
-        public void Min(string path, string propertyName = null) => Aggregate(path, SelectTypes.Min, propertyName);
-        public void Max(string path, string propertyName = null) => Aggregate(path, SelectTypes.Max, propertyName);
+        public SelectBuilder Min(string path, string propertyName = null) => Aggregate(path, SelectTypes.Min, propertyName);
+        public SelectBuilder Max(string path, string propertyName = null) => Aggregate(path, SelectTypes.Max, propertyName);
         public SelectBuilder ToList(string propertyName) => Aggregate(null, SelectTypes.ToList, propertyName);
+        public SelectBuilder LastOrDefault(string propertyName) => Aggregate(null, SelectTypes.LastOrDefault, propertyName);
+        public SelectBuilder FirstOrDefault(string propertyName) => Aggregate(null, SelectTypes.FirstOrDefault, propertyName);
+        public SelectBuilder Last(string propertyName) => Aggregate(null, SelectTypes.Last, propertyName);
+        public SelectBuilder First(string propertyName) => Aggregate(null, SelectTypes.First, propertyName);
 
-        public SelectBuilder PathToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
-            => Aggregate(path, SelectTypes.PathToList, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
+        public SelectBuilder ToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.ToList, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
 
-        public void LastOrDefault(string propertyName) => Aggregate(null, SelectTypes.LastOrDefault, propertyName);
-        public void FirstOrDefault(string propertyName) => Aggregate(null, SelectTypes.FirstOrDefault, propertyName);
-        public void Last(string propertyName) => Aggregate(null, SelectTypes.Last, propertyName);
-        public void First(string propertyName) => Aggregate(null, SelectTypes.First, propertyName);
+        public SelectBuilder First(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.First, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
+
+        public SelectBuilder FirstOrDefault(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.FirstOrDefault, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
+
+        public SelectBuilder Last(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.Last, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
+
+        public SelectBuilder LastOrDefault(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+            => Aggregate(path, SelectTypes.LastOrDefault, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
 
         public virtual IQueryable Build()
         {
