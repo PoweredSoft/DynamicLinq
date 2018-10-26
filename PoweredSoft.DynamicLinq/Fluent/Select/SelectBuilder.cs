@@ -77,6 +77,10 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public SelectBuilder Last(string propertyName) => Aggregate(null, SelectTypes.Last, propertyName);
         public SelectBuilder First(string propertyName) => Aggregate(null, SelectTypes.First, propertyName);
 
+        [System.Obsolete("Use ToList instead")]
+        public SelectBuilder PathToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
+                => ToList(path, propertyName, selectCollectionHandling);
+
         public SelectBuilder ToList(string path, string propertyName = null, SelectCollectionHandling selectCollectionHandling = SelectCollectionHandling.LeaveAsIs)
             => Aggregate(path, SelectTypes.ToList, propertyName: propertyName, selectCollectionHandling: selectCollectionHandling);
 
