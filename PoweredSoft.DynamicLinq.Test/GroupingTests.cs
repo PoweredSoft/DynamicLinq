@@ -9,6 +9,7 @@ using PoweredSoft.DynamicLinq.Dal;
 using System.Diagnostics;
 using PoweredSoft.DynamicLinq.Test.Helpers;
 using System.Collections;
+using PoweredSoft.DynamicLinq.Dal.Pocos;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
@@ -249,5 +250,83 @@ namespace PoweredSoft.DynamicLinq.Test
                 CollectionAssert.AreEqual(expected.Titles as ICollection, titles);
             }
         }
+
+        [TestMethod]
+        public void GroupByToListWithPath()
+        {
+            var limitResult = TestData.Posts.Where(t => t.Author != null);
+
+            var expected = limitResult.GroupBy(t => new
+            {
+                AuthorFirstName = t.Author.FirstName
+            })
+            .Select(t => new
+            {
+                Key = t.Key.AuthorFirstName,
+                Contents = t.Select(t2 => t2.Content).ToList()
+            })
+            .ToList();
+
+            var actualQuery = limitResult
+                .GroupBy(t => t.Path("Author.FirstName", "AuthorFirstName"))
+                .Select(t =>
+                {
+                    t.Key("Key", "AuthorFirstName");
+                    t.ToList("Content", "Contents", SelectCollectionHandling.LeaveAsIs);
+                });
+
+            var actual = actualQuery.ToDynamicClassList();
+
+            Assert.AreEqual(expected.Count, actual.Count);
+            for(var i = 0; i < expected.Count; i++)
+            {
+                var itExpected = expected[i];
+                var itActual = actual[i];
+
+
+                Assert.AreEqual(itExpected.Key, itActual.GetDynamicPropertyValue<string>("Key"));
+                CollectionAssert.AreEqual(itExpected.Contents, itActual.GetDynamicPropertyValue("Contents") as ICollection);
+            }
+        }
+
+        [TestMethod]
+        public void GroupByToListWithPathWithNullCheckingWithFlattening()
+        {
+            var limitResult = TestData.Authors;
+
+            var expected = limitResult.GroupBy(t => new
+            {
+                AuthorFirstName = t.FirstName
+            })
+            .Select(t => new
+            {
+                Key = t.Key.AuthorFirstName,
+                Contents = t.SelectMany(t2 => t2.Posts == null ? new List<string>() : t2.Posts.Select(t3 => t3.Content)).ToList()
+            })
+            .ToList();
+
+            var actualQuery = limitResult
+                .GroupBy(t => t.NullChecking().Path("FirstName", "AuthorFirstName"))
+                .Select(t =>
+                {
+                    t.NullChecking();
+                    t.Key("Key", "AuthorFirstName");
+                    t.ToList("Posts.Content", "Contents", SelectCollectionHandling.Flatten);
+                });
+
+            var actual = actualQuery.ToDynamicClassList();
+
+            Assert.AreEqual(expected.Count, actual.Count);
+            for (var i = 0; i < expected.Count; i++)
+            {
+                var itExpected = expected[i];
+                var itActual = actual[i];
+
+
+                Assert.AreEqual(itExpected.Key, itActual.GetDynamicPropertyValue<string>("Key"));
+                CollectionAssert.AreEqual(itExpected.Contents, itActual.GetDynamicPropertyValue("Contents") as ICollection);
+            }
+        }
+
     }
 }
