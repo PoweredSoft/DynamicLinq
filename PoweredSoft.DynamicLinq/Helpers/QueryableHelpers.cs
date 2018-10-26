@@ -142,7 +142,11 @@ namespace PoweredSoft.DynamicLinq.Helpers
         {
             if (selectType == SelectTypes.Key)
             {
-                return ResolvePathForExpression(parameter, path);
+                var parser = new ExpressionParser(parameter, path);
+                var resolver = new PathExpressionResolver(parser);
+                resolver.NullChecking = nullChecking;
+                resolver.Resolve();
+                return resolver.GetResultBodyExpression();
             }
             else if (selectType == SelectTypes.Count)
             {
@@ -157,74 +161,67 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 return body;
             }
             else if (selectType == SelectTypes.Average)
-            {
-                /// https://stackoverflow.com/questions/25482097/call-enumerable-average-via-expression
-                var notGroupedType = parameter.Type.GenericTypeArguments[1];
-                var innerParameter = Expression.Parameter(notGroupedType);
-                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
-                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
-                var body = Expression.Call(typeof(Enumerable), "Average", new[] { notGroupedType }, parameter, innerMemberLambda);
-                return body;
-            }
+                return CreateGroupedAggregateExpression(parameter, path, "Average");
             else if (selectType == SelectTypes.Sum)
-            {
-                var notGroupedType = parameter.Type.GenericTypeArguments[1];
-                var innerParameter = Expression.Parameter(notGroupedType);
-                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
-                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
-                var body = Expression.Call(typeof(Enumerable), "Sum", new[] { notGroupedType }, parameter, innerMemberLambda);
-                return body;
-            }
+                return CreateGroupedAggregateExpression(parameter, path, "Sum");
             else if (selectType == SelectTypes.Min)
-            {
-                var notGroupedType = parameter.Type.GenericTypeArguments[1];
-                var innerParameter = Expression.Parameter(notGroupedType);
-                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
-                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
-                var body = Expression.Call(typeof(Enumerable), "Min", new[] { notGroupedType }, parameter, innerMemberLambda);
-                return body;
-            }
+                return CreateGroupedAggregateExpression(parameter, path, "Min");
             else if (selectType == SelectTypes.Max)
-            {
-                var notGroupedType = parameter.Type.GenericTypeArguments[1];
-                var innerParameter = Expression.Parameter(notGroupedType);
-                var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
-                var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
-                var body = Expression.Call(typeof(Enumerable), "Max", new[] { notGroupedType }, parameter, innerMemberLambda);
-                return body;
-            }
+                return CreateGroupedAggregateExpression(parameter, path, "Max");
             else if (selectType == SelectTypes.ToList)
-            {
-                var notGroupedType = parameter.Type.GenericTypeArguments[1];
-                var body = Expression.Call(typeof(Enumerable), "ToList", new[] { notGroupedType }, parameter);
-                return body;
-            }
+                return CreateGroupedPathExpressionWithMethod(parameter, path, selectCollectionHandling, nullChecking, "ToList");
             else if (selectType == SelectTypes.First)
-            {
-                var notGroupedType = parameter.Type.GenericTypeArguments[1];
-                var body = Expression.Call(typeof(Enumerable), "First", new[] { notGroupedType }, parameter);
-                return body;
-            }
+                return CreateGroupedPathExpressionWithMethod(parameter, path, selectCollectionHandling, nullChecking, "First");
             else if (selectType == SelectTypes.Last)
-            {
-                var notGroupedType = parameter.Type.GenericTypeArguments[1];
-                var body = Expression.Call(typeof(Enumerable), "Last", new[] { notGroupedType }, parameter);
-                return body;
-            }
+                return CreateGroupedPathExpressionWithMethod(parameter, path, selectCollectionHandling, nullChecking, "Last");
             else if (selectType == SelectTypes.FirstOrDefault)
-            {
-                var notGroupedType = parameter.Type.GenericTypeArguments[1];
-                var body = Expression.Call(typeof(Enumerable), "FirstOrDefault", new[] { notGroupedType }, parameter);
-                return body;
-            }
+                return CreateGroupedPathExpressionWithMethod(parameter, path, selectCollectionHandling, nullChecking, "FirstOrDefault");
             else if (selectType == SelectTypes.LastOrDefault)
-            {
-                var notGroupedType = parameter.Type.GenericTypeArguments[1];
-                var body = Expression.Call(typeof(Enumerable), "LastOrDefault", new[] { notGroupedType }, parameter);
-                return body;
-            }
+                return CreateGroupedPathExpressionWithMethod(parameter, path, selectCollectionHandling, nullChecking, "LastOrDefault");
 
             throw new NotSupportedException($"unkown select type {selectType}");
+        }
+
+        private static Expression CreateGroupedAggregateExpression(ParameterExpression parameter, string path, string methodName)
+        {
+            /// https://stackoverflow.com/questions/25482097/call-enumerable-average-via-expression
+            var notGroupedType = parameter.Type.GenericTypeArguments[1];
+            var innerParameter = Expression.Parameter(notGroupedType);
+            var innerMemberExpression = ResolvePathForExpression(innerParameter, path);
+            var innerMemberLambda = Expression.Lambda(innerMemberExpression, innerParameter);
+            var body = Expression.Call(typeof(Enumerable), methodName, new[] { notGroupedType }, parameter, innerMemberLambda);
+            return body;
+        }
+
+        private static Expression CreateGroupedPathExpressionWithMethod(ParameterExpression parameter, string path, SelectCollectionHandling selectCollectionHandling, bool nullChecking, string methodName)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var body = Expression.Call(typeof(Enumerable), methodName, new[] { notGroupedType }, parameter);
+                return body;
+            }
+            else
+            {
+                var notGroupedType = parameter.Type.GenericTypeArguments[1];
+                var innerParameter = Expression.Parameter(notGroupedType);
+                var parser = new ExpressionParser(innerParameter, path);
+                var resolver = new PathExpressionResolver(parser);
+                resolver.NullChecking = nullChecking;
+                resolver.Resolve();
+                var expression = resolver.Result;
+                var selectExpression = WrapIntoSelectFromGrouping(parameter, expression, selectCollectionHandling);
+                var body = CallMethodOnSelectExpression(methodName, selectExpression);
+                return body;
+            }
+        }
+
+        private static Expression WrapIntoSelectFromGrouping(ParameterExpression parameter, Expression innerLambdaExpression, SelectCollectionHandling selectCollectionHandling)
+        {
+            var selectType = parameter.Type.GenericTypeArguments.Skip(1).First();
+            var innerSelectType = ((LambdaExpression)innerLambdaExpression).ReturnType;
+            var selectExpression = Expression.Call(typeof(Enumerable), "Select", new Type[] { selectType, innerSelectType }, parameter, innerLambdaExpression);
+            return selectExpression;
         }
 
         private static Expression CreateSelectExpression(IQueryable query, ParameterExpression parameter, SelectTypes selectType, string path, SelectCollectionHandling selectCollectionHandling, bool nullChecking)
@@ -274,6 +271,13 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 throw new Exception($"Path must be a Enumerable<T> but its a {expr.Type}");
 
             var body = Expression.Call(typeof(Enumerable), methodName, new[] { notGroupedType }, expr) as Expression;
+            return body;
+        }
+
+        private static Expression CallMethodOnSelectExpression(string methodName, Expression selectExpression)
+        {
+            var notGroupedType = selectExpression.Type.GenericTypeArguments.First();
+            var body = Expression.Call(typeof(Enumerable), methodName, new[] { notGroupedType }, selectExpression) as Expression;
             return body;
         }
 
