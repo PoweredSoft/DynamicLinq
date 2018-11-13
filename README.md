@@ -193,6 +193,7 @@ Assert.AreEqual(first?.FirstName, "David");
 ### How it can be used in a web api
 
 > I highly suggest looking @ https://github.com/poweredsoft/dynamicquery if you are interested in this sample.
+
 > Sample how to use DynamicQuery with asp.net mvc core and EF Core: https://github.com/PoweredSoft/DynamicQueryAspNetCoreSample
 
 ```csharp
