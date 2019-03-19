@@ -30,7 +30,7 @@ namespace PoweredSoft.DynamicLinq.Fluent
 
         public virtual WhereBuilder Compare(string path, ConditionOperators conditionOperators, object value,
             QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField,
-            bool and = true, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
+            bool and = true, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null, bool negate = false)
         {
             Filters.Add(new WhereBuilderCondition
             {
@@ -40,7 +40,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 Value = value,
                 ConvertStrategy = convertStrategy,
                 CollectionHandling = collectionHandling,
-                StringComparisation = stringComparision
+                StringComparisation = stringComparision,
+                Negate = negate
             });
 
             return this;
@@ -131,7 +132,8 @@ namespace PoweredSoft.DynamicLinq.Fluent
                 filter.CollectionHandling,
                 parameter: parameter,
                 nullChecking: IsNullCheckingEnabled,
-                stringComparision: filter.StringComparisation
+                stringComparision: filter.StringComparisation,
+                negate: filter.Negate
             );
 
             return ret;

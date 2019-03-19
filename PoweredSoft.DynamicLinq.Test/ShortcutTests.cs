@@ -170,5 +170,13 @@ namespace PoweredSoft.DynamicLinq.Test
             var q3b = Persons.AsQueryable().Where(t => t.LastName.Contains("ee") || t.LastName.Contains("ar"));
             QueryableAssert.AreEqual(q3, q3b);
         }
+
+        [TestMethod]
+        public void NotContains()
+        {
+            var q1 = Persons.AsQueryable().Query(t => t.Contains("LastName", "ee", negate: true));
+            var q1b = Persons.AsQueryable().Where(t => !t.LastName.Contains("ee"));
+            QueryableAssert.AreEqual(q1, q1b);
+        }
     }
 }

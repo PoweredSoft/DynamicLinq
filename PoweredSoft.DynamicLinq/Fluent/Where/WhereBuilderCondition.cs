@@ -16,5 +16,6 @@ namespace PoweredSoft.DynamicLinq.Fluent
         public List<WhereBuilderCondition> Conditions { get; set; } = new List<WhereBuilderCondition>();
         public QueryCollectionHandling CollectionHandling { get;  set; }
         public StringComparison? StringComparisation { get; set; } = null;
+        public bool Negate { get; set; } = false;
     }
 }
