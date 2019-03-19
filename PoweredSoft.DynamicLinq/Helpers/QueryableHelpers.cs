@@ -16,7 +16,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
         
 
 
-        public static Expression GetConditionExpressionForMember(ParameterExpression parameter, Expression member, ConditionOperators conditionOperator, ConstantExpression constant, StringComparison? stringComparision)
+        public static Expression GetConditionExpressionForMember(ParameterExpression parameter, Expression member, ConditionOperators conditionOperator, ConstantExpression constant, StringComparison? stringComparision, bool negate)
         {
             if (parameter == null)
                 throw new ArgumentNullException("parameter");
@@ -61,6 +61,13 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 else
                     ret = Expression.Call(member, Constants.ContainsMethod, constant);
             }
+            else if (conditionOperator == ConditionOperators.NotContains)
+            {
+                if (member.Type == stringType && stringComparision.HasValue)
+                    ret = Expression.GreaterThan(Expression.Not(Expression.Call(member, Constants.IndexOfMethod, constant, Expression.Constant(stringComparision.Value))), Expression.Constant(-1));
+                else
+                    ret = Expression.Not(Expression.Call(member, Constants.ContainsMethod, constant));
+            }
             else if (conditionOperator == ConditionOperators.StartsWith)
             {
                 if (member.Type == stringType && stringComparision.HasValue)
@@ -77,6 +84,9 @@ namespace PoweredSoft.DynamicLinq.Helpers
             }
             else
                 throw new ArgumentException("conditionOperator", "Must supply a known condition operator");
+
+            if (negate)
+                ret = Expression.Not(ret);
 
             return ret;            
         }
@@ -436,7 +446,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
          */
 
         internal static Expression InternalCreateConditionExpression(int recursionStep, Type type, ParameterExpression parameter, Expression current, List<string> parts,
-            ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, QueryCollectionHandling collectionHandling, bool nullChecking, StringComparison? stringComparison)
+            ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, QueryCollectionHandling collectionHandling, bool nullChecking, StringComparison? stringComparison, bool negate)
         {
             var partStr = parts.First();
             var isLast = parts.Count == 1;
@@ -460,7 +470,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 else
                 {
                     var constant = QueryableHelpers.ResolveConstant(memberExpression, value, convertStrategy);
-                    var filterExpression = QueryableHelpers.GetConditionExpressionForMember(parameter, memberExpression, condition, constant, stringComparison);
+                    var filterExpression = QueryableHelpers.GetConditionExpressionForMember(parameter, memberExpression, condition, constant, stringComparison, negate);
                     var lambda = Expression.Lambda(filterExpression, parameter);
                     return lambda;
                 }
@@ -475,7 +485,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
                 var innerParameter = Expression.Parameter(listGenericArgumentType, $"t{++recursionStep}");
-                var innerLambda = InternalCreateConditionExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
+                var innerLambda = InternalCreateConditionExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison, negate);
 
                 // the collection method.
                 var collectionMethod = GetCollectionMethod(collectionHandling);
@@ -494,14 +504,14 @@ namespace PoweredSoft.DynamicLinq.Helpers
             {
                 if (nullCheckExpression != null)
                 {
-                    var pathExpr = InternalCreateConditionExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
+                    var pathExpr = InternalCreateConditionExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison, negate);
                     
                     var nullCheckResult = Expression.AndAlso(nullCheckExpression, (pathExpr as LambdaExpression).Body);
                     var nullCheckResultLambda = Expression.Lambda((Expression)nullCheckResult, parameter);
                     return nullCheckResultLambda;
                 }
 
-                return InternalCreateConditionExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison);
+                return InternalCreateConditionExpression(recursionStep, type, parameter, memberExpression, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison, negate);
             }
         }
 
@@ -560,13 +570,14 @@ namespace PoweredSoft.DynamicLinq.Helpers
             QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any,
             ParameterExpression parameter = null,
             bool nullChecking = false,
-            StringComparison? stringComparision = null)
+            StringComparison? stringComparision = null, bool negate = false)
         {
             var ret = CreateConditionExpression(typeof(T), path, condition, value, convertStrategy,
                 collectionHandling: collectionHandling,
                 parameter: parameter,
                 nullChecking: nullChecking,
-                stringComparision: stringComparision) as Expression<Func<T, bool>>;
+                stringComparision: stringComparision, 
+                negate: negate) as Expression<Func<T, bool>>;
             return ret;
         }
 
@@ -578,13 +589,14 @@ namespace PoweredSoft.DynamicLinq.Helpers
             QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any,
             ParameterExpression parameter = null,
             bool nullChecking = false,
-            StringComparison? stringComparision = null)
+            StringComparison? stringComparision = null,
+            bool negate = false)
         {
             if (parameter == null)
                 parameter = Expression.Parameter(type, "t");
 
             var parts = path.Split('.').ToList();
-            var result = InternalCreateConditionExpression(1, type, parameter, parameter, parts, condition, value, convertStrategy, collectionHandling, nullChecking, stringComparision);
+            var result = InternalCreateConditionExpression(1, type, parameter, parameter, parts, condition, value, convertStrategy, collectionHandling, nullChecking, stringComparision, negate);
             return result;
         }
 

@@ -61,6 +61,38 @@ namespace PoweredSoft.DynamicLinq.Test
         }
 
         [TestMethod]
+        public void NotContains()
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            // case sensitive.
+            a = Persons.AsQueryable().Query(t => t.NotContains("FirstName", "vi", stringComparision: null));
+            b = Persons.AsQueryable().Where(t => !t.FirstName.Contains("vi"));
+            QueryableAssert.AreEqual(a, b, "CaseSensitive");
+
+            // not case sensitive
+            a = Persons.AsQueryable().Query(t => t.NotContains("FirstName", "VI", stringComparision: StringComparison.OrdinalIgnoreCase));
+            b = Persons.AsQueryable().Where(t => t.FirstName.IndexOf("VI", StringComparison.OrdinalIgnoreCase) == -1);
+            QueryableAssert.AreEqual(a, b, "CaseInsensitive");
+        }
+
+        [TestMethod]
+        public void NegateNotContains()
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            // case sensitive.
+            a = Persons.AsQueryable().Query(t => t.NotContains("FirstName", "vi", stringComparision: null, negate: true));
+            b = Persons.AsQueryable().Where(t => !!t.FirstName.Contains("vi"));
+            QueryableAssert.AreEqual(a, b, "CaseSensitive");
+
+            // not case sensitive
+            a = Persons.AsQueryable().Query(t => t.NotContains("FirstName", "VI", stringComparision: StringComparison.OrdinalIgnoreCase, negate: true));
+            b = Persons.AsQueryable().Where(t => !(t.FirstName.IndexOf("VI", StringComparison.OrdinalIgnoreCase) == -1));
+            QueryableAssert.AreEqual(a, b, "CaseInsensitive");
+        }
+
+        [TestMethod]
         public void StartsWith()
         {
             IQueryable<MockPersonObject> a, b;

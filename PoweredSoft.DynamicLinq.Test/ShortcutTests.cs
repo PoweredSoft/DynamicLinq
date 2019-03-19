@@ -170,5 +170,37 @@ namespace PoweredSoft.DynamicLinq.Test
             var q3b = Persons.AsQueryable().Where(t => t.LastName.Contains("ee") || t.LastName.Contains("ar"));
             QueryableAssert.AreEqual(q3, q3b);
         }
+
+        [TestMethod]
+        public void NotContains()
+        {
+            var q1 = Persons.AsQueryable().Query(t => t.Contains("LastName", "ee", negate: true));
+            var q1b = Persons.AsQueryable().Where(t => !t.LastName.Contains("ee"));
+            QueryableAssert.AreEqual(q1, q1b);
+        }
+
+        [TestMethod]
+        public void NotContains2()
+        {
+            var q1 = Persons.AsQueryable().Query(t => t.NotContains("LastName", "ee"));
+            var q1b = Persons.AsQueryable().Where(t => !t.LastName.Contains("ee"));
+            QueryableAssert.AreEqual(q1, q1b);
+
+            var q2 = Persons.AsQueryable().Query(t => t.NotContains("LastName", "ee").AndNotContains("FirstName", "vid"));
+            var q2b = Persons.AsQueryable().Where(t => !t.LastName.Contains("ee") && !t.FirstName.Contains("vid"));
+            QueryableAssert.AreEqual(q2, q2b);
+
+            var q3 = Persons.AsQueryable().Query(t => t.NotContains("LastName", "ee").OrNotContains("LastName", "ar"));
+            var q3b = Persons.AsQueryable().Where(t => !t.LastName.Contains("ee") || !t.LastName.Contains("ar"));
+            QueryableAssert.AreEqual(q3, q3b);
+        }
+
+        [TestMethod]
+        public void ContainsAndNotContains()
+        {
+            var q1 = Persons.AsQueryable().Query(t => t.Contains("LastName", "s").AndNotContains("LastName", "r"));
+            var q1b = Persons.AsQueryable().Where(t => t.LastName.Contains("s") && !t.LastName.Contains("r"));
+            QueryableAssert.AreEqual(q1, q1b);
+        }
     }
 }
