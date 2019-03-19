@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>David Lebee</Authors>
     <Company>Powered Software Inc.</Company>
     <Product>Entity Framework extensions for Dynamic Linq of PoweredSoft</Product>
@@ -10,9 +10,13 @@
     <RepositoryUrl>https://github.com/PoweredSoft/DynamicLinq</RepositoryUrl>
     <PackageTags>entity framework ef dynamic linq</PackageTags>
     <PackageProjectUrl>https://github.com/PoweredSoft/DynamicLinq</PackageProjectUrl>
-    <Version>1.1.7</Version>
-    <AssemblyVersion>1.1.6.0</AssemblyVersion>
-    <FileVersion>1.1.6.0</FileVersion>
+    <Version>1.1.8</Version>
+    <AssemblyVersion>1.1.8.0</AssemblyVersion>
+    <FileVersion>1.1.8.0</FileVersion>
+    <Description>EF Integration of DynamicLinq</Description>
+    <PackageId>PoweredSoft.DynamicLinq.EntityFramework</PackageId>
+    <PackageReleaseNotes>Added Negate &amp; NotContains</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
