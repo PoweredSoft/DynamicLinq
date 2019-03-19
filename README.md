@@ -194,6 +194,8 @@ Assert.AreEqual(first?.FirstName, "David");
 
 > I highly suggest looking @ https://github.com/poweredsoft/dynamicquery if you are interested in this sample.
 
+> Sample how to use DynamicQuery with asp.net mvc core and EF Core: https://github.com/PoweredSoft/DynamicQueryAspNetCoreSample
+
 ```csharp
 [HttpGet][Route("FindClients")]
 public IHttpActionResult FindClients(string filterField = null, string filterValue = null, 

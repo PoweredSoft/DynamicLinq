@@ -61,6 +61,13 @@ namespace PoweredSoft.DynamicLinq.Helpers
                 else
                     ret = Expression.Call(member, Constants.ContainsMethod, constant);
             }
+            else if (conditionOperator == ConditionOperators.NotContains)
+            {
+                if (member.Type == stringType && stringComparision.HasValue)
+                    ret = Expression.GreaterThan(Expression.Not(Expression.Call(member, Constants.IndexOfMethod, constant, Expression.Constant(stringComparision.Value))), Expression.Constant(-1));
+                else
+                    ret = Expression.Not(Expression.Call(member, Constants.ContainsMethod, constant));
+            }
             else if (conditionOperator == ConditionOperators.StartsWith)
             {
                 if (member.Type == stringType && stringComparision.HasValue)
