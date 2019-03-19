@@ -16,6 +16,7 @@ namespace PoweredSoft.DynamicLinq
         LessThan,
         LessThanOrEqual,
         Contains,
+        NotContains,
         StartsWith,
         EndsWith,
         In,
