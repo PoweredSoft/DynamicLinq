@@ -98,14 +98,14 @@ namespace PoweredSoft.DynamicLinq.Fluent
         #endregion
 
         #region not contains
-        public WhereBuilder NotContains(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
-            => And(path, ConditionOperators.NotContains, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
+        public WhereBuilder NotContains(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null, bool negate = false)
+            => And(path, ConditionOperators.NotContains, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision, negate: negate);
 
-        public WhereBuilder AndNotContains(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
-            => And(path, ConditionOperators.NotContains, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
+        public WhereBuilder AndNotContains(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null, bool negate = false)
+            => And(path, ConditionOperators.NotContains, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision, negate: negate);
 
-        public WhereBuilder OrNotContains(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null)
-            => Or(path, ConditionOperators.NotContains, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision);
+        public WhereBuilder OrNotContains(string path, object value, QueryConvertStrategy convertStrategy = QueryConvertStrategy.ConvertConstantToComparedPropertyOrField, QueryCollectionHandling collectionHandling = QueryCollectionHandling.Any, StringComparison? stringComparision = null, bool negate = false)
+            => Or(path, ConditionOperators.NotContains, value, convertStrategy: convertStrategy, collectionHandling: collectionHandling, stringComparision: stringComparision, negate: negate);
         #endregion
 
         #region starts with

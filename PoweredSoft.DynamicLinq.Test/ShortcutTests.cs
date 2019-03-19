@@ -180,7 +180,7 @@ namespace PoweredSoft.DynamicLinq.Test
         }
 
         [TestMethod]
-        public void NotContains()
+        public void NotContains2()
         {
             var q1 = Persons.AsQueryable().Query(t => t.NotContains("LastName", "ee"));
             var q1b = Persons.AsQueryable().Where(t => !t.LastName.Contains("ee"));
