@@ -14,8 +14,7 @@ namespace PoweredSoft.DynamicLinq.ConsoleApp
     {
         static void Main(string[] args)
         {
-            var selectTests = new SelectTests();
-            selectTests.SelectNullChecking2();
+
         }
 
     }

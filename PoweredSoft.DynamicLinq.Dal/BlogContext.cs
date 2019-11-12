@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace PoweredSoft.DynamicLinq.Dal
 {
+
     public class BlogContext : DbContext
     {
         public DbSet<Author> Authors { get; set; }

@@ -8,9 +8,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>PoweredSoft.DynamicLinq.ConsoleApp</RootNamespace>
     <AssemblyName>PoweredSoft.DynamicLinq.ConsoleApp</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -52,10 +53,6 @@
     <ProjectReference Include="..\PoweredSoft.DynamicLinq.Dal\PoweredSoft.DynamicLinq.Dal.csproj">
       <Project>{c16927e7-1358-4b9d-bdd7-149e505de6cc}</Project>
       <Name>PoweredSoft.DynamicLinq.Dal</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PoweredSoft.DynamicLinq.Test\PoweredSoft.DynamicLinq.Test.csproj">
-      <Project>{6f5c80f0-9045-4098-913f-7bdad135e6dd}</Project>
-      <Name>PoweredSoft.DynamicLinq.Test</Name>
     </ProjectReference>
     <ProjectReference Include="..\PoweredSoft.DynamicLinq\PoweredSoft.DynamicLinq.csproj">
       <Project>{5bb7e50f-8b40-4512-88dc-4b3bd89c9a5e}</Project>
