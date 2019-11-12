@@ -11,6 +11,7 @@ Full Version | NuGet | NuGet Install
 ------------ | :-------------: | :-------------:
 PoweredSoft.DynamicLinq | <a href="https://www.nuget.org/packages/PoweredSoft.DynamicLinq/" target="_blank">[![NuGet](https://img.shields.io/nuget/v/PoweredSoft.DynamicLinq.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/PoweredSoft.DynamicLinq/)</a> | ```PM> Install-Package PoweredSoft.DynamicLinq```
 PoweredSoft.DynamicLinq.EntityFramework | <a href="https://www.nuget.org/packages/PoweredSoft.EntityFramework/" target="_blank">[![NuGet](https://img.shields.io/nuget/v/PoweredSoft.DynamicLinq.EntityFramework.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/PoweredSoft.DynamicLinq.EntityFramework/)</a> | ```PM> Install-Package PoweredSoft.DynamicLinq.EntityFramework```
+PoweredSoft.DynamicLinq.EntityFrameworkCore | <a href="https://www.nuget.org/packages/PoweredSoft.EntityFrameworkCore/" target="_blank">[![NuGet](https://img.shields.io/nuget/v/PoweredSoft.DynamicLinq.EntityFrameworkCore.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/PoweredSoft.DynamicLinq.EntityFrameworkCore/)</a> | ```PM> Install-Package PoweredSoft.DynamicLinq.EntityFrameworkCore```
 
 
 ## Samples
