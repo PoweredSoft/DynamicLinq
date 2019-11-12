@@ -1,34 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net461</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>David Lebee</Authors>
     <Company>Powered Software Inc.</Company>
     <Product>Entity Framework extensions for Dynamic Linq of PoweredSoft</Product>
     <RepositoryType>github</RepositoryType>
     <RepositoryUrl>https://github.com/PoweredSoft/DynamicLinq</RepositoryUrl>
-    <PackageTags>entity framework ef dynamic linq</PackageTags>
+    <PackageTags>entity framework core efcore ef dynamic linq</PackageTags>
     <PackageProjectUrl>https://github.com/PoweredSoft/DynamicLinq</PackageProjectUrl>
     <Version>1.1.9</Version>
     <AssemblyVersion>1.1.9.0</AssemblyVersion>
     <FileVersion>1.1.9.0</FileVersion>
     <Description>EF Integration of DynamicLinq</Description>
-    <PackageId>PoweredSoft.DynamicLinq.EntityFramework</PackageId>
-    <PackageReleaseNotes>Added Negate &amp; NotContains</PackageReleaseNotes>
+    <PackageId>PoweredSoft.DynamicLinq.EntityFrameworkCore</PackageId>
+    <PackageReleaseNotes>First Release of efcore extensions</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+    
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PoweredSoft.DynamicLinq\PoweredSoft.DynamicLinq.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-
+  
 </Project>
