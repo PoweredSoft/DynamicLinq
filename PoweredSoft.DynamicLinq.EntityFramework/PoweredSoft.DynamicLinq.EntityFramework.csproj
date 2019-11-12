@@ -10,9 +10,9 @@
     <RepositoryUrl>https://github.com/PoweredSoft/DynamicLinq</RepositoryUrl>
     <PackageTags>entity framework ef dynamic linq</PackageTags>
     <PackageProjectUrl>https://github.com/PoweredSoft/DynamicLinq</PackageProjectUrl>
-    <Version>1.1.8</Version>
-    <AssemblyVersion>1.1.8.0</AssemblyVersion>
-    <FileVersion>1.1.8.0</FileVersion>
+    <Version>1.1.9</Version>
+    <AssemblyVersion>1.1.9.0</AssemblyVersion>
+    <FileVersion>1.1.9.0</FileVersion>
     <Description>EF Integration of DynamicLinq</Description>
     <PackageId>PoweredSoft.DynamicLinq.EntityFramework</PackageId>
     <PackageReleaseNotes>Added Negate &amp; NotContains</PackageReleaseNotes>
