@@ -194,5 +194,21 @@ namespace PoweredSoft.DynamicLinq.Test
             var first = result.FirstOrDefault() as Author;
             Assert.AreEqual(first?.FirstName, "David");
         }
+
+        [TestMethod]
+        public void TestLessAndGreaterThan()
+        {
+            var context = GetCoreContext(nameof(TestWhereAnd)); //EF Core     
+                                                                //or new BlogContext(testConnectionString);     in EF
+            SeedForTests(context);
+
+            var query = context.Authors.Query(q => q.LessThan("FirstName", "Mario"));
+            var first = query.FirstOrDefault();
+            Assert.AreEqual(first?.FirstName, "David");
+
+            query = context.Authors.Query(q => q.GreaterThan("FirstName", "Mario"));
+            first = query.FirstOrDefault();
+            Assert.AreEqual(first?.FirstName, "Some");
+        }
     }
 }
