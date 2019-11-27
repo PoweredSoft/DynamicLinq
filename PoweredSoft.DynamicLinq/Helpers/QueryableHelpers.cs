@@ -47,13 +47,33 @@ namespace PoweredSoft.DynamicLinq.Helpers
                     ret = Expression.NotEqual(member, constant);
             }
             else if (conditionOperator == ConditionOperators.GreaterThan)
-                ret = Expression.GreaterThan(member, constant);
+            {
+                if (member.Type == stringType)
+                    ret = Expression.GreaterThan(Expression.Call(member, Constants.CompareToMethod, constant), Expression.Constant(0));
+                else
+                    ret = Expression.GreaterThan(member, constant);
+            }
             else if (conditionOperator == ConditionOperators.GreaterThanOrEqual)
-                ret = Expression.GreaterThanOrEqual(member, constant);
+            {
+                if (member.Type == stringType)
+                    ret = Expression.GreaterThanOrEqual(Expression.Call(member, Constants.CompareToMethod, constant), Expression.Constant(0));
+                else
+                    ret = Expression.GreaterThanOrEqual(member, constant);
+            }
             else if (conditionOperator == ConditionOperators.LessThan)
-                ret = Expression.LessThan(member, constant);
+            {
+                if (member.Type == stringType)
+                    ret = Expression.LessThan(Expression.Call(member, Constants.CompareToMethod, constant), Expression.Constant(0));
+                else
+                    ret = Expression.LessThan(member, constant);
+            }
             else if (conditionOperator == ConditionOperators.LessThanOrEqual)
-                ret = Expression.LessThanOrEqual(member, constant);
+            {
+                if (member.Type == stringType)
+                    ret = Expression.LessThanOrEqual(Expression.Call(member, Constants.CompareToMethod, constant), Expression.Constant(0));
+                else
+                    ret = Expression.LessThanOrEqual(member, constant);
+            }           
             else if (conditionOperator == ConditionOperators.Contains)
             {
                 if (member.Type == stringType && stringComparision.HasValue)

@@ -123,5 +123,57 @@ namespace PoweredSoft.DynamicLinq.Test
             b = Persons.AsQueryable().Where(t => t.FirstName.EndsWith("VID", StringComparison.OrdinalIgnoreCase));
             QueryableAssert.AreEqual(a, b, "CaseInsensitive");
         }
+
+        [DataTestMethod]
+        [DataRow("Denis")]
+        [DataRow("Ann")]
+        [DataRow("Tony")]
+        public void LessThan(string firstName)
+        {
+            IQueryable<MockPersonObject> a, b;
+           
+            a = Persons.AsQueryable().Query(t => t.LessThan("FirstName", firstName));
+            b = Persons.AsQueryable().Where(t => t.FirstName.CompareTo(firstName) < 0);
+            QueryableAssert.AreEqual(a, b);
+        }
+
+        [DataTestMethod]
+        [DataRow("Denis")]
+        [DataRow("Ann")]
+        [DataRow("Tony")]
+        public void LessThanOrEqual(string firstName)
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            a = Persons.AsQueryable().Query(t => t.LessThanOrEqual("FirstName", firstName));
+            b = Persons.AsQueryable().Where(t => t.FirstName.CompareTo(firstName) <= 0);
+            QueryableAssert.AreEqual(a, b);
+        }
+
+        [DataTestMethod]
+        [DataRow("Denis")]
+        [DataRow("Ann")]
+        [DataRow("Tony")]
+        public void GreaterThan(string firstName)
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            a = Persons.AsQueryable().Query(t => t.GreaterThan("FirstName", firstName));
+            b = Persons.AsQueryable().Where(t => t.FirstName.CompareTo(firstName) > 0);
+            QueryableAssert.AreEqual(a, b);
+        }
+
+        [DataTestMethod]
+        [DataRow("Denis")]
+        [DataRow("Ann")]
+        [DataRow("Tony")]
+        public void GreaterThanOrEqual(string firstName)
+        {
+            IQueryable<MockPersonObject> a, b;
+
+            a = Persons.AsQueryable().Query(t => t.GreaterThanOrEqual("FirstName", firstName));
+            b = Persons.AsQueryable().Where(t => t.FirstName.CompareTo(firstName) >= 0);
+            QueryableAssert.AreEqual(a, b);
+        }
     }
 }

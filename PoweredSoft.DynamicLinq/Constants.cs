@@ -78,5 +78,6 @@ namespace PoweredSoft.DynamicLinq
         internal static readonly MethodInfo IndexOfMethod = typeof(string).GetMethod("IndexOf", new Type[] { typeof(string), typeof(StringComparison) });
         internal static readonly MethodInfo AnyMethod = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public).First(t => t.Name == "Any" && t.GetParameters().Count() == 2);
         internal static readonly MethodInfo AllMethod = typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public).First(t => t.Name == "All" && t.GetParameters().Count() == 2);
+        internal static readonly MethodInfo CompareToMethod = typeof(string).GetMethod("CompareTo", new Type[] { typeof(string) });
     }
 }
