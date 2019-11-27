@@ -7,6 +7,7 @@ using PoweredSoft.DynamicLinq.Dal.Pocos;
 using PoweredSoft.DynamicLinq;
 using Microsoft.EntityFrameworkCore;
 using PoweredSoft.DynamicLinq.EntityFrameworkCore;
+using PoweredSoft.DynamicLinq.Test.Helpers;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
@@ -113,6 +114,38 @@ namespace PoweredSoft.DynamicLinq.Test
             var author = query.FirstOrDefault();
             Assert.IsNotNull(author);
         }
+
+        [TestMethod]
+        public void GroupBy()
+        {
+            var context = GetCoreContext(nameof(TestWhereOr));
+            SeedForTests(context);
+
+            var authorsWithFamilyNameCount = context.Authors
+                .GroupBy(t => new
+                {
+                    t.LastName,
+                    t.FirstName
+                }).Select(t => new
+                {
+                    t.Key,
+                    Count = t.Count()
+                }).ToList();
+
+            var authorsWithFamilyNameCountDynamic = context.Authors
+                .GroupBy(t => t.Path("FirstName").Path("LastName"))
+                .Select(t => t.Key("FirstName", "FirstName").Key("LastName", "LastName").Count("Count"))
+                .ToDynamicClassList();
+
+            Assert.AreEqual(authorsWithFamilyNameCount.Count, authorsWithFamilyNameCountDynamic.Count);
+            for(var i = 0; i < authorsWithFamilyNameCount.Count; i++)
+            {
+                Assert.AreEqual(authorsWithFamilyNameCount[i].Key.FirstName, authorsWithFamilyNameCountDynamic[i].GetDynamicPropertyValue("FirstName"));
+                Assert.AreEqual(authorsWithFamilyNameCount[i].Key.LastName, authorsWithFamilyNameCountDynamic[i].GetDynamicPropertyValue("LastName"));
+                Assert.AreEqual(authorsWithFamilyNameCount[i].Count, authorsWithFamilyNameCountDynamic[i].GetDynamicPropertyValue("Count"));
+            }
+        }
+
 
         [TestMethod]
         public void TestWhereOr()
