@@ -9,11 +9,10 @@
     <Product>DynamicLinq by PoweredSoft</Product>
     <Description>Allows users to make dynamic query over a IQueryable&lt;T&gt;</Description>
     <RepositoryUrl>https://github.com/PoweredSoft/DynamicLinq</RepositoryUrl>
+    <PackageIconUrl>https://secure.gravatar.com/avatar/4e32f73820c16718909a06c2927f1f8b?s=512&amp;amp;r=g&amp;amp;d=retro</PackageIconUrl>
     <RepositoryType>github</RepositoryType>
     <PackageTags>dynamic linq queryable</PackageTags>
-    <AssemblyVersion>1.1.9.0</AssemblyVersion>
-    <FileVersion>1.1.9.0</FileVersion>
-    <Version>1.1.9</Version>
+    <Version>1.1.0$(VersionSuffix)</Version>
     <PackageProjectUrl>https://github.com/PoweredSoft/DynamicLinq</PackageProjectUrl>
     <PackageId>PoweredSoft.DynamicLinq</PackageId>
     <PackageReleaseNotes>Added not contains thanks to Jon-Galloway.

@@ -10,9 +10,8 @@
     <RepositoryUrl>https://github.com/PoweredSoft/DynamicLinq</RepositoryUrl>
     <PackageTags>entity framework core efcore ef dynamic linq</PackageTags>
     <PackageProjectUrl>https://github.com/PoweredSoft/DynamicLinq</PackageProjectUrl>
-    <Version>1.1.9</Version>
-    <AssemblyVersion>1.1.9.0</AssemblyVersion>
-    <FileVersion>1.1.9.0</FileVersion>
+    <PackageIconUrl>https://secure.gravatar.com/avatar/4e32f73820c16718909a06c2927f1f8b?s=512&amp;amp;r=g&amp;amp;d=retro</PackageIconUrl>
+    <Version>1.1.0$(VersionSuffix)</Version>
     <Description>EF Integration of DynamicLinq</Description>
     <PackageId>PoweredSoft.DynamicLinq.EntityFrameworkCore</PackageId>
     <PackageReleaseNotes>First Release of efcore extensions</PackageReleaseNotes>
