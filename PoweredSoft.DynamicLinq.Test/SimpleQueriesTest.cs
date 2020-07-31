@@ -135,9 +135,9 @@ namespace PoweredSoft.DynamicLinq.Test
             // subject.
             var posts = new List<Post>()
             {
-                new Post { Id = 1, AuthorId = 1, Title = "Hello 1", Content = "World" },
-                new Post { Id = 2, AuthorId = 1, Title = "Hello 2", Content = "World" },
-                new Post { Id = 3, AuthorId = 2, Title = "Hello 3", Content = "World" },
+                new Post { Id = 1, AuthorId = 1, Title = "Hello 1", Content = "World"},
+                new Post { Id = 2, AuthorId = 1, Title = "Hello 2", Content = "World"},
+                new Post { Id = 3, AuthorId = 2, Title = "Hello 3", Content = "World"},
             };
 
             // the query.
@@ -150,6 +150,25 @@ namespace PoweredSoft.DynamicLinq.Test
 
             Assert.IsTrue(first.Id == 3);
             Assert.IsTrue(second.Id == 1);
+        }
+
+        [TestMethod]
+        public void TestingSort2()
+        {
+            // subject.
+            var posts = new List<Post>()
+            {
+                new Post { Id = 1, AuthorId = 1, Title = "Hello 1", Content = "World", Comments = new List<Comment> { }  },
+                new Post { Id = 2, AuthorId = 1, Title = "Hello 2", Content = "World", Comments = new List<Comment> { }  },
+                new Post { Id = 3, AuthorId = 2, Title = "Hello 3", Content = "World", Comments = new List<Comment> { }  },
+            };
+
+            // the query.
+            var query = posts.AsQueryable();
+            
+            // just testing that the expressionm can be created, some drivers support seleting in collections.
+            var query2 = query.OrderByDescending("Comments");
+            var query3 = query.OrderByDescending("Comments.PostId");
         }
     }
 }

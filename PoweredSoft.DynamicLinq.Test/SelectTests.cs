@@ -23,9 +23,69 @@ namespace PoweredSoft.DynamicLinq.Test
         public List<string> FirstNames { get; set; }
     }
 
+    public class MockPerson
+    {
+        public string Name { get; set; }
+        public MockListOfPhone Phones { get; set; }
+    }
+
+    public class MockPhone
+    {
+        public string Number { get; set; }
+    }
+
+    public class MockListOfPhone : List<MockPhone>
+    {
+
+    }
+
     [TestClass]
     public class SelectTests
     {
+        [TestMethod]
+        public void TestSelectWithInheritedList()
+        {
+            var list = new List<MockPerson>()
+            {
+                new MockPerson
+                {
+                    Name = "David Lebee",
+                    Phones = new MockListOfPhone
+                    {
+                        new MockPhone
+                        {
+                            Number = "0000000000"
+                        }
+                    }
+                },
+                new MockPerson
+                {
+                    Name = "Yubing Liang",
+                    Phones = new MockListOfPhone
+                    {
+                        new MockPhone
+                        {
+                            Number = "1111111111"
+                        }
+                    }
+                }
+            };
+
+            var names = list.AsQueryable()
+                .Where(t => t.Equal("Phones.Number", "1111111111"))
+                .Select(t =>
+                {
+                    t.Path("Name");
+                    t.FirstOrDefault("Phones.Number", "Number", SelectCollectionHandling.Flatten);
+                })
+                .ToDynamicClassList();
+
+            Assert.IsTrue(names.Count() == 1);
+            var firstPerson = names.First();
+            Assert.AreEqual("Yubing Liang", firstPerson.GetDynamicPropertyValue<string>("Name"));
+            Assert.AreEqual("1111111111", firstPerson.GetDynamicPropertyValue<string>("Number"));
+        }
+
         [TestMethod]
         public void TestSelect()
         {

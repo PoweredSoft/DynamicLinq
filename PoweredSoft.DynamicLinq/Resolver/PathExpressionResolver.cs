@@ -74,8 +74,9 @@ namespace PoweredSoft.DynamicLinq.Resolver
                     if (isSelectMany)
                     {
                         var selectType = parent.GroupEnumerableType();
+                        var groupExpressionEnumerableType = QueryableHelpers.GetTypeOfEnumerable(groupExpression.Type, true);
                         var selectExpression = Expression.Call(typeof(Enumerable), "SelectMany",
-                            new Type[] { selectType, groupExpression.Type.GenericTypeArguments.First() },
+                            new Type[] { selectType, groupExpressionEnumerableType },
                             parentExpression, groupExpressionLambda);
                         currentExpression = selectExpression;
                     }
@@ -109,9 +110,10 @@ namespace PoweredSoft.DynamicLinq.Resolver
 
                     if (isSelectMany)
                     {
+                        var currentExpressionEnumerableType = QueryableHelpers.GetTypeOfEnumerable(currentExpression.Type, true);
                         var currentExpressionLambda = Expression.Lambda(currentExpression, group.Parameter);
                         currentExpression = Expression.Call(typeof(Enumerable), "SelectMany",
-                            new Type[] { selectType, currentExpression.Type.GenericTypeArguments.First() },
+                            new Type[] { selectType, currentExpressionEnumerableType },
                             parentExpression, currentExpressionLambda);
                     }
                     else
@@ -144,7 +146,8 @@ namespace PoweredSoft.DynamicLinq.Resolver
             Expression ifTrueExpression = null;
             if (QueryableHelpers.IsGenericEnumerable(nullType))
             {
-                var listType = typeof(List<>).MakeGenericType(nullType.GenericTypeArguments.First());
+                var enumerableType = QueryableHelpers.GetTypeOfEnumerable(nullType, true);
+                var listType = typeof(List<>).MakeGenericType(enumerableType);
                 ifTrueExpression = Expression.New(listType);
 
             }
