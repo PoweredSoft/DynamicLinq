@@ -253,7 +253,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             Expression selectExpression;
             if (QueryableHelpers.IsGenericEnumerable(innerSelectType) && selectCollectionHandling == SelectCollectionHandling.Flatten)
-                selectExpression = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { selectType, innerSelectType.GenericTypeArguments.First() }, parameter, innerLambdaExpression);
+                selectExpression = Expression.Call(typeof(Enumerable), "SelectMany", new Type[] { selectType, QueryableHelpers.GetTypeOfEnumerable(innerSelectType, true) }, parameter, innerLambdaExpression);
             else
                 selectExpression = Expression.Call(typeof(Enumerable), "Select", new Type[] { selectType, innerSelectType }, parameter, innerLambdaExpression);
 
@@ -359,7 +359,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
             else
             {
                 // enumerable.
-                var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
+                var listGenericArgumentType = QueryableHelpers.GetTypeOfEnumerable(memberExpression.Type, true);
 
                 // sub param.
                 var innerParam = Expression.Parameter(listGenericArgumentType);
@@ -432,7 +432,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
         public static IQueryable CreateOrderByExpression(IQueryable query, string path, QueryOrderByDirection direction, bool append = true)
         {
             var parameter = Expression.Parameter(query.ElementType, "t");
-            var member = QueryableHelpers.ResolvePathForExpression(parameter, path);
+            var member = QueryableHelpers.ResolvePathForExpression(parameter, path, false);
 
             string sortCommand = null;
             if (direction == QueryOrderByDirection.Descending)
@@ -503,7 +503,7 @@ namespace PoweredSoft.DynamicLinq.Helpers
 
             if (IsGenericEnumerable(memberExpression))
             {
-                var listGenericArgumentType = memberExpression.Type.GetGenericArguments().First();
+                var listGenericArgumentType = QueryableHelpers.GetTypeOfEnumerable(memberExpression.Type, true);
                 var innerParameter = Expression.Parameter(listGenericArgumentType, $"t{++recursionStep}");
                 var innerLambda = InternalCreateConditionExpression(recursionStep, listGenericArgumentType, innerParameter, innerParameter, parts.Skip(1).ToList(), condition, value, convertStrategy, collectionHandling, nullChecking, stringComparison, negate);
 
@@ -623,12 +623,43 @@ namespace PoweredSoft.DynamicLinq.Helpers
         public static bool IsGenericEnumerable(Expression member) => IsGenericEnumerable(member.Type);
         public static bool IsGenericEnumerable(Type type)
         {
-            if (!type.IsGenericType)
+            if (type == typeof(string))
                 return false;
 
-            var genericArgumentType = type.GenericTypeArguments.First();
-            var ret = typeof(IEnumerable<>).MakeGenericType(genericArgumentType).IsAssignableFrom(type);
-            return ret;
+            if (type.IsGenericType)
+            {
+                var makeGenericType = typeof(IEnumerable<>).MakeGenericType(type.GetGenericArguments()[0]);
+                var possible =  makeGenericType.IsAssignableFrom(type);
+                if (possible)
+                    return true;
+            }
+      
+            var result = type.GetInterfaces().Any(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            return result;
+        }
+
+        public static Type GetTypeOfEnumerable(Type genericEnumerableType, bool throwIfNotEnumerable)
+        {
+            Type result = null;
+
+            if (genericEnumerableType.IsGenericType)
+            {
+                var makeGenericType = typeof(IEnumerable<>).MakeGenericType(genericEnumerableType.GetGenericArguments()[0]);
+                var possible = makeGenericType.IsAssignableFrom(genericEnumerableType);
+                if (possible)
+                    return genericEnumerableType.GetGenericArguments()[0];
+            }
+
+            result = genericEnumerableType.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            if (result == null)
+            {
+                if (throwIfNotEnumerable)
+                    throw new Exception("Not a IEnumerable<T>");
+
+                return null;
+            }
+
+            return result.GetGenericArguments().First();
         }
     }
 }

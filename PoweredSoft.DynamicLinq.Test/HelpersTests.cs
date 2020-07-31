@@ -7,9 +7,28 @@ using PoweredSoft.DynamicLinq.Helpers;
 
 namespace PoweredSoft.DynamicLinq.Test
 {
+    class Foo
+    {
+
+    }
+
+    class ListOfFoo : List<Foo>
+    {
+
+    }
+
     [TestClass]
     public class HelpersTests
     {
+
+        [TestMethod]
+        public void TestInheritanceOfListAsGenericEnumerableType()
+        {
+            var shouldBeTrue = QueryableHelpers.IsGenericEnumerable(typeof(ListOfFoo));
+            Assert.IsTrue(shouldBeTrue);
+            var type = QueryableHelpers.GetTypeOfEnumerable(typeof(ListOfFoo), true);
+            Assert.IsTrue(type == typeof(Foo));
+        }
 
         [TestMethod]
         public void TestCreateFilterExpression()

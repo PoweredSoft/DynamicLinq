@@ -50,7 +50,7 @@ namespace PoweredSoft.DynamicLinq.Parser
                 {
                     Type = memberExpression.Type,
                     IsGenericEnumerable = QueryableHelpers.IsGenericEnumerable(memberExpression),
-                    EnumerableType = memberExpression.Type.GenericTypeArguments.FirstOrDefault(),
+                    EnumerableType = QueryableHelpers.GetTypeOfEnumerable(memberExpression.Type, false),
                     Parent = parent,
                     Name = pp
                 };
