@@ -3,6 +3,7 @@ using PoweredSoft.DynamicLinq.Parser;
 using PoweredSoft.DynamicLinq.Resolver;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -471,8 +472,18 @@ namespace PoweredSoft.DynamicLinq.Helpers
             var partStr = parts.First();
             var isLast = parts.Count == 1;
 
-            // the member expression.
-            var memberExpression = Expression.PropertyOrField(current, partStr);
+            Expression memberExpression;
+            if (current != null && current.Type == typeof(string) && partStr.Contains("()"))
+            {
+                var finalMethodName = partStr.Replace("()", string.Empty);
+                var callingMethod = GetStringCallingMethod(finalMethodName);  //typeof(string).GetMethod(finalMethodName, new Type[0]);
+                memberExpression = Expression.Call(current, callingMethod);
+            }
+            else
+            {
+                // the member expression.
+                memberExpression = Expression.PropertyOrField(current, partStr);
+            }
 
             // TODO : maybe support that last part is collection but what do we do?
             // not supported yet.
@@ -535,7 +546,19 @@ namespace PoweredSoft.DynamicLinq.Helpers
             }
         }
 
-        public static Expression InAndNotIn(ParameterExpression parameter, ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, MemberExpression memberExpression)
+        private static ConcurrentDictionary<string, MethodInfo> _stringMethodCache = new ConcurrentDictionary<string, MethodInfo>();
+        private static MethodInfo GetStringCallingMethod(string methodName)
+        {
+            if (methodName == null)
+                throw new ArgumentNullException(nameof(methodName));
+
+            return _stringMethodCache.GetOrAdd(methodName, mn =>
+            {
+                return typeof(string).GetMethod(mn, new Type[0]);
+            });
+        }
+
+        public static Expression InAndNotIn(ParameterExpression parameter, ConditionOperators condition, object value, QueryConvertStrategy convertStrategy, Expression memberExpression)
         {
             var enumerableValue = value as IEnumerable;
             if (enumerableValue == null)

@@ -31,6 +31,70 @@ namespace PoweredSoft.DynamicLinq.Test
         }
 
         [TestMethod]
+        public void EqualLowerCase()
+        {
+            // subject.
+            var authors = new List<Author>()
+            {
+                new Author { Id = long.MaxValue, FirstName = "David", LastName = "Lebee" }
+            };
+
+            // the query.
+            var query = authors.AsQueryable();
+
+            // simple where.
+            var newQuery = query.Where("FirstName.ToLower()", ConditionOperators.Equal, "david");
+
+            // must match.
+            Assert.IsTrue(newQuery.Any(), "Must have at least one author that matches");
+        }
+
+        [TestMethod]
+        public void EqualLowerCaseNullCheck()
+        {
+            // subject.
+            var authors = new List<Author>()
+            {
+                new Author { Id = long.MaxValue, FirstName = null, LastName = "Lebee" },
+                new Author { Id = long.MaxValue, FirstName = "David", LastName = "Lebee" },
+            };
+
+            // the query.
+            var query = authors.AsQueryable();
+
+            // simple where.
+            var newQuery = query.Where(wb =>
+            {
+                wb.Equal("FirstName.ToLower()", "david").NullChecking(true);
+            }); 
+
+            // must match.
+            Assert.IsTrue(newQuery.Any(), "Must have at least one author that matches");
+        }
+
+        [TestMethod]
+        public void DoubleMethodCheck()
+        {
+            // subject.
+            var authors = new List<Author>()
+            {
+                new Author { Id = long.MaxValue, FirstName = "David ", LastName = "Lebee" },
+            };
+
+            // the query.
+            var query = authors.AsQueryable();
+
+            // simple where.
+            var newQuery = query.Where(wb =>
+            {
+                wb.Equal("FirstName.Trim().ToLower()", "david").NullChecking(true);
+            });
+
+            // must match.
+            Assert.IsTrue(newQuery.Any(), "Must have at least one author that matches");
+        }
+
+        [TestMethod]
         public void Contains()
         {
             // subject.
